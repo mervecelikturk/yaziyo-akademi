@@ -1,0 +1,2 @@
+# yaziyo-akademi
+html, js
