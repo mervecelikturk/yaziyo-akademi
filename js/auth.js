@@ -16,6 +16,11 @@ import {
     clearAllSupabaseAuthKeys,
 } from './lib/authStorage.js';
 
+const { homeHref, pageHref } = window.YaziyoPaths || {
+    homeHref: () => '../Index.html',
+    pageHref: (filename) => filename,
+};
+
 // Dinamik CSS (Görünürlük Kontrolü + Auth FOUC Önleme)
 const style = document.createElement('style');
 style.innerHTML = `
@@ -155,7 +160,7 @@ const handleAuthClick = async (e) => {
         }
     }
 
-    window.location.href = hasSession ? 'profil.html' : 'girisKayit.html';
+    window.location.href = hasSession ? pageHref('profil.html') : pageHref('girisKayit.html');
 };
 
 function attachAuthEvents() {
@@ -188,7 +193,7 @@ window.performLogout = async () => {
     }
 
     await forceAuthCleanup(getSupabaseClient());
-    window.location.replace('index.html');
+    window.location.replace(homeHref());
 };
 
 attachAuthEvents();
@@ -199,11 +204,11 @@ function updateUIElements(user) {
     document.querySelectorAll('#auth-button, #auth-nav-btn').forEach((authBtn) => {
         authBtn.classList.add('yaziyo-auth-btn');
         if (isLoggedIn) {
-            authBtn.href = 'profil.html';
+            authBtn.href = pageHref('profil.html');
             authBtn.setAttribute('aria-label', 'Profilim');
             authBtn.innerHTML = '<i class="fa-solid fa-user yaziyo-auth-btn-icon" aria-hidden="true"></i> <span class="yaziyo-auth-btn-text">Profilim</span>';
         } else {
-            authBtn.href = 'girisKayit.html';
+            authBtn.href = pageHref('girisKayit.html');
             authBtn.setAttribute('aria-label', 'Giriş yap veya kayıt ol');
             authBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket yaziyo-auth-btn-icon" aria-hidden="true"></i> <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--full">Giriş Yap / Kayıt Ol</span><span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--short">Giriş</span>';
         }

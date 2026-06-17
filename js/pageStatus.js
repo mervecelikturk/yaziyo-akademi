@@ -6,7 +6,7 @@
     const STORAGE_KEY = 'yaziyo-page-status';
 
     const PAGES = [
-        { id: 'anasayfa', label: 'Ana Sayfa', href: 'index.html', defaultActive: true },
+        { id: 'anasayfa', label: 'Ana Sayfa', href: 'Index.html', defaultActive: true },
         { id: 'profil', label: 'Profil', href: 'profil.html', defaultActive: true },
         { id: 'hiz-testi', label: 'Hız Testi', href: 'hizTesti.html', defaultActive: true },
         { id: 'klavye-calismasi', label: 'Klavye Çalışması', href: 'klavyeCalismasi.html', defaultActive: true },
@@ -181,13 +181,21 @@
         });
     }
 
+    function resolveHref(page) {
+        const paths = global.YaziyoPaths;
+        if (!paths) return page.href;
+        if (page.id === 'anasayfa') return paths.homeHref();
+        return paths.pageHref(page.href);
+    }
+
     function applyPage(page, active) {
+        const href = resolveHref(page);
         if (page.navLabel) {
-            applyByNavLabel(page.navLabel, active, page.href);
+            applyByNavLabel(page.navLabel, active, href);
         } else if (page.href) {
             applyByHref(page.href, active);
         }
-        applyDirectLink(page.id, active, page.href);
+        applyDirectLink(page.id, active, href);
     }
 
     function applyToNavbar() {

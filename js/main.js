@@ -332,8 +332,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isLoggedIn) {
                     footerMsg.innerHTML = '';
                 } else {
+                    const girisHref = (window.YaziyoPaths?.pageHref('girisKayit.html')) || 'girisKayit.html';
                     footerMsg.innerHTML =
-                        '<a href="girisKayit.html" class="inline-flex items-center gap-1 text-yaziyo-gold hover:underline transition-all font-semibold">' +
+                        '<a href="' + girisHref + '" class="inline-flex items-center gap-1 text-yaziyo-gold hover:underline transition-all font-semibold">' +
                         '<i class="fa-solid fa-right-to-bracket"></i> Giriş yap / Kayıt ol' +
                         '</a>';
                 }

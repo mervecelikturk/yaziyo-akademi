@@ -19,6 +19,8 @@ import {
     formatAuthError,
 } from './authVerification.js';
 
+const { homeHref } = window.YaziyoPaths || { homeHref: () => '../Index.html' };
+
 let resetEmailCooldownTimer = null;
 let resetEmailCooldownLeft = 0;
 
@@ -148,7 +150,7 @@ async function handleForgotPassword(e) {
 }
 
 function redirectToHome() {
-    window.location.href = 'index.html';
+    window.location.href = homeHref();
 }
 
 /** Başarılı giriş/kayıt sonrası oturumu doğru depoya yazar */
