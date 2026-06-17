@@ -19,7 +19,7 @@ import {
     formatAuthError,
 } from './authVerification.js';
 
-const { homeHref } = window.YaziyoPaths || { homeHref: () => '../Index.html' };
+const { homeHref } = window.YaziyoPaths || { homeHref: () => '../index.html' };
 
 let resetEmailCooldownTimer = null;
 let resetEmailCooldownLeft = 0;

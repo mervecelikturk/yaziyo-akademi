@@ -1,5 +1,5 @@
 /**
- * YAZİYO — kök (Index.html) ve pages/ dizinleri arasında göreli yollar
+ * YAZİYO — kök (index.html) ve pages/ dizinleri arasında göreli yollar
  */
 (function (global) {
     function isInPagesDir() {
@@ -7,7 +7,7 @@
     }
 
     function homeHref() {
-        return isInPagesDir() ? '../Index.html' : 'Index.html';
+        return isInPagesDir() ? '../index.html' : 'index.html';
     }
 
     function pageHref(filename) {

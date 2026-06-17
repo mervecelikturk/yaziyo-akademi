@@ -6,7 +6,7 @@
     const STORAGE_KEY = 'yaziyo-page-status';
 
     const PAGES = [
-        { id: 'anasayfa', label: 'Ana Sayfa', href: 'Index.html', defaultActive: true },
+        { id: 'anasayfa', label: 'Ana Sayfa', href: 'index.html', defaultActive: true },
         { id: 'profil', label: 'Profil', href: 'profil.html', defaultActive: true },
         { id: 'hiz-testi', label: 'Hız Testi', href: 'hizTesti.html', defaultActive: true },
         { id: 'klavye-calismasi', label: 'Klavye Çalışması', href: 'klavyeCalismasi.html', defaultActive: true },

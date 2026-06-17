@@ -5,7 +5,7 @@
 (function (global) {
     function getPaths() {
         return global.YaziyoPaths || {
-            homeHref: () => '../Index.html',
+            homeHref: () => '../index.html',
             pageHref: (f) => f,
             assetHref: (r) => '../' + r,
         };

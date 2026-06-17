@@ -17,7 +17,7 @@ import {
 } from './lib/authStorage.js';
 
 const { homeHref, pageHref } = window.YaziyoPaths || {
-    homeHref: () => '../Index.html',
+    homeHref: () => '../index.html',
     pageHref: (filename) => filename,
 };
 
