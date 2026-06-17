@@ -1,0 +1,1575 @@
+ADANA
+Adliyeler
+Adana Adliyesi
+Aladağ Adliyesi
+Ceyhan Adliyesi
+Feke Adliyesi
+İmamoğlu Adliyesi
+Karaisalı Adliyesi
+Karataş Adliyesi
+Kozan Adliyesi
+Pozantı Adliyesi
+Saimbeyli Adliyesi
+Tufanbeyli Adliyesi
+Yumurtalık Adliyesi
+BAM
+Adana Bölge Adliye Mahkemesi
+CTE
+Adana Denetimli Serbestlik Müdürlüğü
+Adana Açık Ceza İnfaz Kurumu
+Adana Kadın Kapalı Ceza İnfaz Kurumu
+Adana Çocuk Kapalı Ceza İnfaz Kurumu
+Adana Kürkçüler F Tipi Yüksek Güvenlikli Kapalı Ceza İnfaz Kurumu
+Adana Suluca Açık Ceza İnfaz Kurumu
+Pozantı M Tipi Kapalı Ceza İnfaz Kurumu
+Pozantı Çocuk Eğitimevi Müdürlüğü
+ADIYAMAN
+Adliyeler
+Adıyaman Adliyesi
+Besni Adliyesi
+Çelikhan Adliyesi
+Gerger Adliyesi
+Gölbaşı Adliyesi
+Kahta Adliyesi
+Samsat Adliyesi
+Tut Adliyesi
+BAM
+Bulunmuyor
+CTE
+Adıyaman Denetimli Serbestlik Müdürlüğü
+Adıyaman Açık Ceza İnfaz Kurumu
+Adıyaman Kapalı Ceza İnfaz Kurumu
+AFYONKARAHİSAR
+Adliyeler
+Afyonkarahisar Adliyesi
+Bolvadin Adliyesi
+Çay Adliyesi
+Dinar Adliyesi
+Emirdağ Adliyesi
+İscehisar Adliyesi
+Sandıklı Adliyesi
+Sinanpaşa Adliyesi
+Şuhut Adliyesi
+BAM
+Bulunmuyor
+CTE
+Afyonkarahisar Denetimli Serbestlik Müdürlüğü
+Afyonkarahisar 1 No'lu T Tipi Kapalı Ceza İnfaz Kurumu
+Afyonkarahisar 2 No'lu T Tipi Kapalı Ceza İnfaz Kurumu
+Afyonkarahisar Açık Ceza İnfaz Kurumu
+AĞRI
+Adliyeler
+Ağrı Adliyesi
+Diyadin Adliyesi
+Doğubayazıt Adliyesi
+Eleşkirt Adliyesi
+Hamur Adliyesi
+Patnos Adliyesi
+Tutak Adliyesi
+BAM
+Bulunmuyor
+CTE
+Ağrı Denetimli Serbestlik Müdürlüğü
+Ağrı Kapalı Ceza İnfaz Kurumu
+Ağrı Açık Ceza İnfaz Kurumu
+Patnos L Tipi Kapalı Ceza İnfaz Kurumu
+AKSARAY
+Adliyeler
+Aksaray Adliyesi
+Ortaköy Adliyesi
+Eskil Adliyesi
+Gülağaç Adliyesi
+Sultanhanı Adliyesi
+BAM
+Bulunmuyor
+CTE
+Aksaray Denetimli Serbestlik Müdürlüğü
+Aksaray T Tipi Kapalı Ceza İnfaz Kurumu
+Aksaray Açık Ceza İnfaz Kurumu
+AMASYA
+Adliyeler
+Amasya Adliyesi
+Gümüşhacıköy Adliyesi
+Merzifon Adliyesi
+Suluova Adliyesi
+Taşova Adliyesi
+BAM
+Bulunmuyor
+CTE
+Amasya Denetimli Serbestlik Müdürlüğü
+Amasya Kapalı Ceza İnfaz Kurumu
+Amasya Açık Ceza İnfaz Kurumu
+ANKARA
+Adliyeler
+Ankara Batı Adliyesi
+Ankara Adliyesi (Sıhhiye)
+Ayaş Adliyesi
+Bala Adliyesi
+Beypazarı Adliyesi
+Çamlıdere Adliyesi
+Çubuk Adliyesi
+Elmadağ Adliyesi
+Evren Adliyesi
+Gölbaşı Adliyesi
+Haymana Adliyesi
+Kahramankazan Adliyesi
+Kalecik Adliyesi
+Kızılcahamam Adliyesi
+Nallıhan Adliyesi
+Polatlı Adliyesi
+Şereflikoçhisar Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi
+CTE
+Ankara Denetimli Serbestlik Müdürlüğü
+Ankara Batı Denetimli Serbestlik Müdürlüğü
+Sincan 1 No'lu L Tipi Kapalı Ceza İnfaz Kurumu
+Sincan 2 No'lu L Tipi Kapalı Ceza İnfaz Kurumu
+Sincan 3 No'lu L Tipi Kapalı Ceza İnfaz Kurumu
+Sincan 4 No'lu L Tipi Kapalı Ceza İnfaz Kurumu
+Sincan 1 No'lu F Tipi Yüksek Güvenlikli Ceza İnfaz Kurumu
+Sincan 2 No'lu F Tipi Yüksek Güvenlikli Ceza İnfaz Kurumu
+Sincan Kadın Kapalı Ceza İnfaz Kurumu
+Sincan Açık Ceza İnfaz Kurumu
+Ankara Çocuk Kapalı Ceza İnfaz Kurumu
+Ankara Çocuk Eğitimevi
+Kalecik Açık Ceza İnfaz Kurumu
+ANTALYA
+Adliyeler
+Antalya Adliyesi
+Akseki Adliyesi
+Alanya Adliyesi
+Elmalı Adliyesi
+Finike Adliyesi
+Gazipaşa Adliyesi
+Kemer Adliyesi
+Korkuteli Adliyesi
+Kumluca Adliyesi
+Manavgat Adliyesi
+Serik Adliyesi
+BAM
+Antalya Bölge Adliye Mahkemesi
+CTE
+Antalya Denetimli Serbestlik Müdürlüğü
+Alanya Denetimli Serbestlik Müdürlüğü
+Antalya L Tipi Kapalı Ceza İnfaz Kurumu
+Antalya Yüksek Güvenlikli Kapalı Ceza İnfaz Kurumu
+Antalya Açık Ceza İnfaz Kurumu
+Antalya S Tipi Kapalı Ceza İnfaz Kurumu
+Alanya L Tipi Kapalı Ceza İnfaz Kurumu
+Manavgat S Tipi Kapalı Ceza İnfaz Kurumu
+ARDAHAN
+Adliyeler
+Ardahan Adliyesi
+Çıldır Adliyesi
+Göle Adliyesi
+Hanak Adliyesi
+Posof Adliyesi
+BAM
+Bulunmuyor
+CTE
+Ardahan Denetimli Serbestlik Müdürlüğü
+Ardahan Açık Ceza İnfaz Kurumu
+Ardahan Kapalı Ceza İnfaz Kurumu
+ARTVİN
+Adliyeler
+Artvin Adliyesi
+Arhavi Adliyesi
+Borçka Adliyesi
+Hopa Adliyesi
+Şavşat Adliyesi
+Yusufeli Adliyesi
+BAM
+Bulunmuyor
+CTE
+Artvin Denetimli Serbestlik Müdürlüğü
+Artvin Kapalı Ceza İnfaz Kurumu
+Artvin Açık Ceza İnfaz Kurumu
+AYDIN
+Adliyeler
+Aydın Adliyesi
+Bozdoğan Adliyesi
+Buharkent Adliyesi
+Çine Adliyesi
+Didim Adliyesi
+Efeler Adliyesi
+Germencik Adliyesi
+Karacasu Adliyesi
+Karpuzlu Adliyesi
+Koçarlı Adliyesi
+Köşk Adliyesi
+Kuşadası Adliyesi
+Kuyucak Adliyesi
+Nazilli Adliyesi
+Söke Adliyesi
+Sultanhisar Adliyesi
+Yenipazar Adliyesi
+BAM
+İzmir Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Aydın Denetimli Serbestlik Müdürlüğü
+Aydın Açık Ceza İnfaz Kurumu
+Aydın Kapalı Ceza İnfaz Kurumu
+Aydın E Tipi Kapalı Ceza İnfaz Kurumu
+Nazilli Ceza İnfaz Kurumu Kampüsü
+BALIKESİR
+Adliyeler
+Balıkesir Adliyesi
+Ayvalık Adliyesi
+Bandırma Adliyesi
+Bigadiç Adliyesi
+Burhaniye Adliyesi
+Edremit Adliyesi
+Erdek Adliyesi
+Gönen Adliyesi
+Havran Adliyesi
+Kepsut Adliyesi
+Manyas Adliyesi
+Savaştepe Adliyesi
+Sındırgı Adliyesi
+BAM
+Bulunmuyor
+CTE
+Balıkesir Denetimli Serbestlik Müdürlüğü
+Bandırma Denetimli Serbestlik Müdürlüğü
+Balıkesir Açık Ceza İnfaz Kurumu
+Bandırma Kapalı Ceza İnfaz Kurumu
+Burhaniye T Tipi Kapalı Ceza İnfaz Kurumu
+Bandırma 1 ve 2 Nolu Kapalı Ceza İnfaz Kurumu
+Edremit Açık Ceza İnfaz Kurumu
+BARTIN
+Adliyeler
+Bartın Adliyesi
+Amasra Adliyesi
+Kurucaşile Adliyesi
+Ulus Adliyesi
+BAM
+Bulunmuyor
+CTE
+Bartın Denetimli Serbestlik Müdürlüğü
+Bartın Açık Ceza İnfaz Kurumu
+Bartın Kapalı Ceza İnfaz Kurumu
+BATMAN
+Adliyeler
+Batman Adliyesi
+Beşiri Adliyesi
+Gercüş Adliyesi
+Hasankeyf Adliyesi
+Kozluk Adliyesi
+Sason Adliyesi
+BAM
+Diyarbakır Bölge Adliye Mahkemesi (yetki alanında)
+CTE
+Batman Denetimli Serbestlik Müdürlüğü
+Batman Açık Ceza İnfaz Kurumu
+Batman M Tipi Kapalı Ceza İnfaz Kurumu
+Batman L Tipi Kapalı Ceza İnfaz Kurumu
+BAYBURT
+Adliyeler
+Bayburt Adliyesi
+Aydıntepe Adliyesi
+Demirözü Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi (yetki alanında)
+CTE
+Bayburt Denetimli Serbestlik Müdürlüğü
+Bayburt Açık Ceza İnfaz Kurumu
+Bayburt Kapalı Ceza İnfaz Kurumu
+BİLECİK
+Adliyeler
+Bilecik Adliyesi
+Bozüyük Adliyesi
+Gölpazarı Adliyesi
+İnhisar Adliyesi
+Osmaneli Adliyesi
+Pazaryeri Adliyesi
+Söğüt Adliyesi
+Yenipazar Adliyesi
+BAM
+Bursa Bölge Adliye Mahkemesi (yetki alanında)
+CTE
+Bilecik Denetimli Serbestlik Müdürlüğü
+Bilecik Açık Ceza İnfaz Kurumu
+Bilecik Kapalı Ceza İnfaz Kurumu
+BİNGÖL
+Adliyeler
+Bingöl Adliyesi
+Adaklı Adliyesi
+Genç Adliyesi
+Karlıova Adliyesi
+Kiğı Adliyesi
+Solhan Adliyesi
+Yayladere Adliyesi
+Yedisu Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi (yetki alanında)
+CTE
+Bingöl Denetimli Serbestlik Müdürlüğü
+Bingöl Açık Ceza İnfaz Kurumu
+Bingöl Kapalı Ceza İnfaz Kurumu
+BİTLİS
+Adliyeler
+Bitlis Adliyesi
+Adilcevaz Adliyesi
+Ahlat Adliyesi
+Güroymak Adliyesi
+Hizan Adliyesi
+Mutki Adliyesi
+Tatvan Adliyesi
+BAM
+Van Bölge Adliye Mahkemesi (yetki alanında)
+CTE
+Bitlis Denetimli Serbestlik Müdürlüğü
+Bitlis Açık Ceza İnfaz Kurumu
+Bitlis Kapalı Ceza İnfaz Kurumu
+BOLU
+Adliyeler
+Bolu Adliyesi
+Dörtdivan Adliyesi
+Gerede Adliyesi
+Göynük Adliyesi
+Kıbrıscık Adliyesi
+Mengen Adliyesi
+Mudurnu Adliyesi
+Seben Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanında)
+CTE
+Bolu F Tipi Yüksek Güvenlikli Ceza İnfaz Kurumu
+Bolu T Tipi Kapalı Ceza İnfaz Kurumu
+Bolu Açık Ceza İnfaz Kurumu
+Bolu Denetimli Serbestlik Müdürlüğü
+BURDUR
+Adliyeler
+Burdur Adliyesi
+Ağlasun Adliyesi
+Altınyayla Adliyesi
+Bucak Adliyesi
+Çavdır Adliyesi
+Çeltikçi Adliyesi
+Gölhisar Adliyesi
+Karamanlı Adliyesi
+Kemer Adliyesi
+Tefenni Adliyesi
+Yeşilova Adliyesi
+BAM
+Antalya Bölge Adliye Mahkemesi (yetki alanında)
+CTE
+Burdur Denetimli Serbestlik Müdürlüğü
+Burdur E Tipi Kapalı Ceza İnfaz Kurumu
+Burdur Açık Ceza İnfaz Kurumu
+BURSA
+Adliyeler
+Bursa Adliyesi
+Gemlik Adliyesi
+Gürsu Adliyesi
+İnegöl Adliyesi
+İznik Adliyesi
+Karacabey Adliyesi
+Keles Adliyesi
+Kestel Adliyesi
+Mudanya Adliyesi
+Mustafakemalpaşa Adliyesi
+Orhaneli Adliyesi
+Orhangazi Adliyesi
+Yenişehir Adliyesi
+BAM
+Bursa Bölge Adliye Mahkemesi
+CTE
+Bursa H Tipi Yüksek Güvenlikli Ceza İnfaz Kurumu
+Bursa E Tipi Kapalı Ceza İnfaz Kurumu
+Bursa T Tipi Kapalı Ceza İnfaz Kurumu
+Bursa L Tipi Kapalı Ceza İnfaz Kurumu
+Bursa Açık Ceza İnfaz Kurumu
+Bursa Kadın Kapalı Ceza İnfaz Kurumu
+Bursa Denetimli Serbestlik Müdürlüğü
+ÇANKIRI
+Adliyeler
+Çankırı Adliyesi
+Çerkeş Adliyesi
+Eldivan Adliyesi
+Ilgaz Adliyesi
+Kızılırmak Adliyesi
+Kurşunlu Adliyesi
+Orta Adliyesi
+Şabanözü Adliyesi
+Yapraklı Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Çankırı Denetimli Serbestlik Müdürlüğü
+Çankırı Açık Ceza İnfaz Kurumu
+Çankırı Kapalı Ceza İnfaz Kurumu
+ÇORUM
+Adliyeler
+Çorum Adliyesi
+Alaca Adliyesi
+Bayat Adliyesi
+Boğazkale Adliyesi
+Dodurga Adliyesi
+İskilip Adliyesi
+Kargı Adliyesi
+Laçin Adliyesi
+Mecitözü Adliyesi
+Oğuzlar Adliyesi
+Osmancık Adliyesi
+Sungurlu Adliyesi
+Uğurludağ Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Çorum Denetimli Serbestlik Müdürlüğü
+Çorum L Tipi Kapalı Ceza İnfaz Kurumu
+Çorum Açık Ceza İnfaz Kurumu
+ÇANAKKALE
+Adliyeler
+Çanakkale Adliyesi
+Ayvacık Adliyesi
+Bayramiç Adliyesi
+Biga Adliyesi
+Bozcaada Adliyesi
+Çan Adliyesi
+Eceabat Adliyesi
+Ezine Adliyesi
+Gelibolu Adliyesi
+Gökçeada Adliyesi
+Lapseki Adliyesi
+Yenice Adliyesi
+BAM
+Balıkesir Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Çanakkale Denetimli Serbestlik Müdürlüğü
+Çanakkale Açık Ceza İnfaz Kurumu
+Çanakkale Kapalı Ceza İnfaz Kurumu
+DENİZLİ
+Adliyeler
+Denizli Adliyesi
+Acıpayam Adliyesi
+Babadağ Adliyesi
+Baklan Adliyesi
+Bekilli Adliyesi
+Beyağaç Adliyesi
+Bozkurt Adliyesi
+Buldan Adliyesi
+Çal Adliyesi
+Çameli Adliyesi
+Çardak Adliyesi
+Çivril Adliyesi
+Güney Adliyesi
+Honaz Adliyesi
+Kale Adliyesi
+Sarayköy Adliyesi
+Serinhisar Adliyesi
+Tavas Adliyesi
+BAM
+Denizli Bölge Adliye Mahkemesi
+CTE
+Denizli Denetimli Serbestlik Müdürlüğü
+Denizli Açık Ceza İnfaz Kurumu
+Denizli T Tipi Kapalı Ceza İnfaz Kurumu
+Denizli D Tipi Kapalı Ceza İnfaz Kurumu
+Denizli Kadın Kapalı Ceza İnfaz Kurumu
+DİYARBAKIR
+Adliyeler
+Diyarbakır Adliyesi
+Bağlar Adliyesi
+Bismil Adliyesi
+Çermik Adliyesi
+Çınar Adliyesi
+Çüngüş Adliyesi
+Dicle Adliyesi
+Eğil Adliyesi
+Ergani Adliyesi
+Hani Adliyesi
+Hazro Adliyesi
+Kayapınar Adliyesi
+Kocaköy Adliyesi
+Kulp Adliyesi
+Lice Adliyesi
+Silvan Adliyesi
+BAM
+Diyarbakır Bölge Adliye Mahkemesi
+CTE
+Diyarbakır Denetimli Serbestlik Müdürlüğü
+Diyarbakır D Tipi Kapalı Ceza İnfaz Kurumu
+Diyarbakır E Tipi Kapalı Ceza İnfaz Kurumu
+Diyarbakır Açık Ceza İnfaz Kurumu
+Diyarbakır Çocuk Eğitimevi
+Diyarbakır Kadın Kapalı Ceza İnfaz Kurumu
+DÜZCE
+Adliyeler
+Düzce Adliyesi
+Akçakoca Adliyesi
+Cumayeri Adliyesi
+Çilimli Adliyesi
+Gölyaka Adliyesi
+Gümüşova Adliyesi
+Kaynaşlı Adliyesi
+Yığılca Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Düzce Denetimli Serbestlik Müdürlüğü
+Düzce T Tipi Kapalı Ceza İnfaz Kurumu
+Düzce Açık Ceza İnfaz Kurumu
+EDİRNE
+Adliyeler
+Edirne Adliyesi
+Keşan Adliyesi
+Uzunköprü Adliyesi
+İpsala Adliyesi
+Havsa Adliyesi
+Lalapaşa Adliyesi
+Meriç Adliyesi
+Süloğlu Adliyesi
+BAM
+Bulunmuyor (İstanbul BAM yetki alanı)
+CTE
+Edirne Denetimli Serbestlik Müdürlüğü
+Edirne Açık Ceza İnfaz Kurumu
+Edirne Kapalı Ceza İnfaz Kurumu
+ELAZIĞ
+Adliyeler
+Elazığ Adliyesi
+Ağın Adliyesi
+Alacakaya Adliyesi
+Arıcak Adliyesi
+Baskil Adliyesi
+Karakoçan Adliyesi
+Keban Adliyesi
+Kovancılar Adliyesi
+Maden Adliyesi
+Palu Adliyesi
+Sivrice Adliyesi
+BAM
+Bulunmuyor (Diyarbakır BAM yetki alanı)
+CTE
+Elazığ Denetimli Serbestlik Müdürlüğü
+Elazığ Açık Ceza İnfaz Kurumu
+Elazığ Kapalı Ceza İnfaz Kurumu
+ERZİNCAN
+Adliyeler
+Erzincan Adliyesi
+Çayırlı Adliyesi
+İliç Adliyesi
+Kemah Adliyesi
+Kemaliye Adliyesi
+Otlukbeli Adliyesi
+Refahiye Adliyesi
+Tercan Adliyesi
+Üzümlü Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Erzincan Denetimli Serbestlik Müdürlüğü
+Erzincan Açık Ceza İnfaz Kurumu
+Erzincan Kapalı Ceza İnfaz Kurumu
+ERZURUM
+Adliyeler
+Erzurum Adliyesi
+Aşkale Adliyesi
+Aziziye Adliyesi
+Çat Adliyesi
+Hınıs Adliyesi
+Horasan Adliyesi
+İspir Adliyesi
+Karaçoban Adliyesi
+Karayazı Adliyesi
+Köprüköy Adliyesi
+Narman Adliyesi
+Oltu Adliyesi
+Olur Adliyesi
+Pasinler Adliyesi
+Pazaryolu Adliyesi
+Şenkaya Adliyesi
+Tekman Adliyesi
+Tortum Adliyesi
+Uzundere Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi
+CTE
+Erzurum Denetimli Serbestlik Müdürlüğü
+Erzurum Açık Ceza İnfaz Kurumu
+Erzurum Kapalı Ceza İnfaz Kurumu
+Erzurum Kadın Kapalı Ceza İnfaz Kurumu
+Erzurum Çocuk Eğitimevi
+ESKİŞEHİR
+Adliyeler
+Eskişehir Adliyesi
+Alpu Adliyesi
+Beylikova Adliyesi
+Çifteler Adliyesi
+Günyüzü Adliyesi
+Han Adliyesi
+İnönü Adliyesi
+Mahmudiye Adliyesi
+Mihalgazi Adliyesi
+Mihalıççık Adliyesi
+Sarıcakaya Adliyesi
+Seyitgazi Adliyesi
+Sivrihisar Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Eskişehir Denetimli Serbestlik Müdürlüğü
+Eskişehir Açık Ceza İnfaz Kurumu
+Eskişehir Kapalı Ceza İnfaz Kurumu
+GAZİANTEP
+Adliyeler
+Gaziantep Adliyesi
+Araban Adliyesi
+İslahiye Adliyesi
+Karkamış Adliyesi
+Nizip Adliyesi
+Nurdağı Adliyesi
+Oğuzeli Adliyesi
+Şahinbey Adliyesi
+Şehitkamil Adliyesi
+BAM
+Gaziantep Bölge Adliye Mahkemesi
+CTE
+Gaziantep Denetimli Serbestlik Müdürlüğü
+Gaziantep Açık Ceza İnfaz Kurumu
+Gaziantep H Tipi Kapalı Ceza İnfaz Kurumu
+Gaziantep L Tipi Kapalı Ceza İnfaz Kurumu
+Gaziantep T Tipi Kapalı Ceza İnfaz Kurumu
+Gaziantep Kadın Kapalı Ceza İnfaz Kurumu
+GİRESUN
+Adliyeler
+Giresun Adliyesi
+Alucra Adliyesi
+Bulancak Adliyesi
+Çamoluk Adliyesi
+Çanakçı Adliyesi
+Dereli Adliyesi
+Doğankent Adliyesi
+Espiye Adliyesi
+Eynesil Adliyesi
+Görele Adliyesi
+Güce Adliyesi
+Keşap Adliyesi
+Piraziz Adliyesi
+Şebinkarahisar Adliyesi
+Tirebolu Adliyesi
+BAM
+Samsun Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Giresun Denetimli Serbestlik Müdürlüğü
+Giresun Açık Ceza İnfaz Kurumu
+Giresun Kapalı Ceza İnfaz Kurumu
+GÜMÜŞHANE
+Adliyeler
+Gümüşhane Adliyesi
+Kelkit Adliyesi
+Köse Adliyesi
+Kürtün Adliyesi
+Şiran Adliyesi
+Torul Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Gümüşhane Denetimli Serbestlik Müdürlüğü
+Gümüşhane Açık Ceza İnfaz Kurumu
+Gümüşhane Kapalı Ceza İnfaz Kurumu
+HAKKARİ
+Adliyeler
+Hakkari Adliyesi
+Çukurca Adliyesi
+Derecik Adliyesi
+Şemdinli Adliyesi
+Yüksekova Adliyesi
+BAM
+Van Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Hakkari Denetimli Serbestlik Müdürlüğü
+Hakkari Açık Ceza İnfaz Kurumu
+Hakkari Kapalı Ceza İnfaz Kurumu
+HATAY
+Adliyeler
+Hatay Adliyesi
+Antakya Adliyesi
+Altınözü Adliyesi
+Arsuz Adliyesi
+Belen Adliyesi
+Defne Adliyesi
+Dörtyol Adliyesi
+Erzin Adliyesi
+Hassa Adliyesi
+İskenderun Adliyesi
+Kırıkhan Adliyesi
+Kumlu Adliyesi
+Payas Adliyesi
+Reyhanlı Adliyesi
+Samandağ Adliyesi
+Yayladağı Adliyesi
+BAM
+Gaziantep Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Hatay Denetimli Serbestlik Müdürlüğü
+Hatay Açık Ceza İnfaz Kurumu
+Hatay T Tipi Kapalı Ceza İnfaz Kurumu
+Hatay L Tipi Kapalı Ceza İnfaz Kurumu
+İskenderun T Tipi Kapalı Ceza İnfaz Kurumu
+Hatay Kadın Kapalı Ceza İnfaz Kurumu
+IĞDIR
+Adliyeler
+Iğdır Adliyesi
+Aralık Adliyesi
+Karakoyunlu Adliyesi
+Tuzluca Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Iğdır Denetimli Serbestlik Müdürlüğü
+Iğdır Açık Ceza İnfaz Kurumu
+Iğdır Kapalı Ceza İnfaz Kurumu
+ISPARTA
+Adliyeler
+Isparta Adliyesi
+Aksu Adliyesi
+Atabey Adliyesi
+Eğirdir Adliyesi
+Gelendost Adliyesi
+Gönen Adliyesi
+Keçiborlu Adliyesi
+Senirkent Adliyesi
+Sütçüler Adliyesi
+Şarkikaraağaç Adliyesi
+Uluborlu Adliyesi
+Yalvaç Adliyesi
+Yenişarbademli Adliyesi
+BAM
+Antalya Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Isparta Denetimli Serbestlik Müdürlüğü
+Isparta Açık Ceza İnfaz Kurumu
+Isparta Kapalı Ceza İnfaz Kurumu
+İSTANBUL
+Adliyeler
+İstanbul Adliyesi (Çağlayan)
+Bakırköy Adliyesi
+Küçükçekmece Adliyesi
+Anadolu Adliyesi (Kartal)
+Gaziosmanpaşa Adliyesi
+Büyükçekmece Adliyesi
+Silivri Adliyesi
+Bakırköy Çocuk Ağır Ceza Merkezi (ilişkili)
+İstanbul Bölge Adliye Mahkemesi (BAM)
+BAM
+İstanbul Bölge Adliye Mahkemesi
+CTE
+Marmara Kapalı Ceza İnfaz Kurumu (Silivri)
+Bakırköy Kadın Kapalı Cezaevi
+Maltepe Ceza İnfaz Kurumu Kampüsü
+Silivri Ceza İnfaz Kurumları Kampüsü
+Metris Cezaevi
+İstanbul Denetimli Serbestlik Müdürlükleri (çoklu: Avrupa + Anadolu)
+Çocuk Eğitim Evleri (İstanbul)
+İZMİR
+Adliyeler
+İzmir Adliyesi
+Karşıyaka Adliyesi
+Bornova Adliyesi
+Bayraklı Adliyesi (yeni merkez)
+Ödemiş Adliyesi
+Tire Adliyesi
+Bergama Adliyesi
+Menemen Adliyesi
+Torbalı Adliyesi
+Seferihisar Adliyesi
+BAM
+İzmir Bölge Adliye Mahkemesi
+CTE
+İzmir 1 No’lu Kapalı Cezaevi
+İzmir 2 No’lu Kapalı Cezaevi
+Şakran Ceza İnfaz Kurumları (Aliağa)
+İzmir Açık Ceza İnfaz Kurumu
+Menemen Kadın Kapalı Cezaevi
+İzmir Denetimli Serbestlik Müdürlüğü
+KAHRAMANMARAŞ
+Adliyeler
+Kahramanmaraş Adliyesi
+Afşin Adliyesi
+Andırın Adliyesi
+Çağlayancerit Adliyesi
+Elbistan Adliyesi
+Göksun Adliyesi
+Nurhak Adliyesi
+Pazarcık Adliyesi
+Türkoğlu Adliyesi
+BAM
+Gaziantep Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Kahramanmaraş Denetimli Serbestlik Müdürlüğü
+Kahramanmaraş Açık Ceza İnfaz Kurumu
+Kahramanmaraş Kapalı Ceza İnfaz Kurumu
+Elbistan Ceza İnfaz Kurumu Kampüsü
+KARABÜK
+Adliyeler
+Karabük Adliyesi
+Eflani Adliyesi
+Eskipazar Adliyesi
+Ovacık Adliyesi
+Safranbolu Adliyesi
+Yenice Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Karabük Denetimli Serbestlik Müdürlüğü
+Karabük Açık Ceza İnfaz Kurumu
+Karabük Kapalı Ceza İnfaz Kurumu
+KARAMAN
+Adliyeler
+Karaman Adliyesi
+Ayrancı Adliyesi
+Başyayla Adliyesi
+Ermenek Adliyesi
+Kazımkarabekir Adliyesi
+Sarıveliler Adliyesi
+BAM
+Konya Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Karaman Denetimli Serbestlik Müdürlüğü
+Karaman Açık Ceza İnfaz Kurumu
+Karaman T Tipi Kapalı Ceza İnfaz Kurumu
+KARS
+Adliyeler
+Kars Adliyesi
+Akyaka Adliyesi
+Arpaçay Adliyesi
+Digor Adliyesi
+Kağızman Adliyesi
+Sarıkamış Adliyesi
+Selim Adliyesi
+Susuz Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Kars Denetimli Serbestlik Müdürlüğü
+Kars Açık Ceza İnfaz Kurumu
+Kars Kapalı Ceza İnfaz Kurumu
+KASTAMONU
+Adliyeler
+Kastamonu Adliyesi
+Abana Adliyesi
+Ağlı Adliyesi
+Araç Adliyesi
+Azdavay Adliyesi
+Bozkurt Adliyesi
+Cide Adliyesi
+Çatalzeytin Adliyesi
+Daday Adliyesi
+Devrekani Adliyesi
+Doğanyurt Adliyesi
+Hanönü Adliyesi
+İhsangazi Adliyesi
+İnebolu Adliyesi
+Küre Adliyesi
+Pınarbaşı Adliyesi
+Şenpazar Adliyesi
+Taşköprü Adliyesi
+Tosya Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Kastamonu Denetimli Serbestlik Müdürlüğü
+Kastamonu Açık Ceza İnfaz Kurumu
+Kastamonu Kapalı Ceza İnfaz Kurumu
+KAYSERİ
+Adliyeler
+Kayseri Adliyesi
+Bünyan Adliyesi
+Develi Adliyesi
+Felahiye Adliyesi
+Hacılar Adliyesi
+İncesu Adliyesi
+Kocasinan Adliyesi
+Melikgazi Adliyesi
+Özvatan Adliyesi
+Pınarbaşı Adliyesi
+Sarıoğlan Adliyesi
+Sarız Adliyesi
+Talas Adliyesi
+Tomarza Adliyesi
+Yahyalı Adliyesi
+Yeşilhisar Adliyesi
+BAM
+Kayseri Bölge Adliye Mahkemesi
+CTE
+Kayseri Denetimli Serbestlik Müdürlüğü
+Kayseri 1 Nolu T Tipi Kapalı Ceza İnfaz Kurumu
+Kayseri 2 Nolu T Tipi Kapalı Ceza İnfaz Kurumu
+Kayseri Kapalı Ceza İnfaz Kurumu Kampüsü
+Kayseri Açık Ceza İnfaz Kurumu
+KIRIKKALE
+Adliyeler
+Kırıkkale Adliyesi
+Bahşili Adliyesi
+Balışeyh Adliyesi
+Çelebi Adliyesi
+Delice Adliyesi
+Karakeçili Adliyesi
+Keskin Adliyesi
+Sulakyurt Adliyesi
+Yahşihan Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Kırıkkale Denetimli Serbestlik Müdürlüğü
+Kırıkkale F Tipi Kapalı Ceza İnfaz Kurumu
+Kırıkkale Kapalı Ceza İnfaz Kurumu
+Kırıkkale Açık Ceza İnfaz Kurumu
+KIRKLARELİ
+Adliyeler
+Kırklareli Adliyesi
+Babaeski Adliyesi
+Demirköy Adliyesi
+Kofçaz Adliyesi
+Lüleburgaz Adliyesi
+Pehlivanköy Adliyesi
+Pınarhisar Adliyesi
+Vize Adliyesi
+BAM
+İstanbul Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Kırklareli Denetimli Serbestlik Müdürlüğü
+Kırklareli Açık Ceza İnfaz Kurumu
+Kırklareli Kapalı Ceza İnfaz Kurumu
+KIRŞEHİR
+Adliyeler
+Kırşehir Adliyesi
+Akçakent Adliyesi
+Akpınar Adliyesi
+Boztepe Adliyesi
+Çiçekdağı Adliyesi
+Kaman Adliyesi
+Mucur Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Kırşehir Denetimli Serbestlik Müdürlüğü
+Kırşehir Açık Ceza İnfaz Kurumu
+Kırşehir Kapalı Ceza İnfaz Kurumu
+KİLİS
+Adliyeler
+Kilis Adliyesi
+Elbeyli Adliyesi
+Musabeyli Adliyesi
+Polateli Adliyesi
+BAM
+Gaziantep Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Kilis Denetimli Serbestlik Müdürlüğü
+Kilis Açık Ceza İnfaz Kurumu
+Kilis Kapalı Ceza İnfaz Kurumu
+KOCAELİ
+Adliyeler
+Kocaeli Adliyesi
+Gebze Adliyesi
+Gölcük Adliyesi
+Kandıra Adliyesi
+Karamürsel Adliyesi
+Körfez Adliyesi
+BAM
+İstanbul Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Kocaeli Denetimli Serbestlik Müdürlüğü
+Kocaeli 1 Nolu Kapalı Ceza İnfaz Kurumu
+Kocaeli 2 Nolu Kapalı Ceza İnfaz Kurumu
+Kocaeli Açık Ceza İnfaz Kurumu
+Kocaeli Kadın Kapalı Ceza İnfaz Kurumu
+KONYA
+Adliyeler
+Konya Adliyesi
+Akşehir Adliyesi
+Beyşehir Adliyesi
+Bozkır Adliyesi
+Cihanbeyli Adliyesi
+Çeltik Adliyesi
+Çumra Adliyesi
+Derbent Adliyesi
+Ereğli Adliyesi
+Hadim Adliyesi
+Halkapınar Adliyesi
+Hüyük Adliyesi
+Ilgın Adliyesi
+Kadınhanı Adliyesi
+Karapınar Adliyesi
+Kulu Adliyesi
+Sarayönü Adliyesi
+Seydişehir Adliyesi
+Taşkent Adliyesi
+Tuzlukçu Adliyesi
+Yalıhüyük Adliyesi
+BAM
+Konya Bölge Adliye Mahkemesi
+CTE
+Konya Denetimli Serbestlik Müdürlüğü
+Konya E Tipi Kapalı Ceza İnfaz Kurumu
+Konya T Tipi Kapalı Ceza İnfaz Kurumu
+Konya Açık Ceza İnfaz Kurumu
+Konya Kadın Kapalı Ceza İnfaz Kurumu
+KÜTAHYA
+Adliyeler
+Kütahya Adliyesi
+Altıntaş Adliyesi
+Aslanapa Adliyesi
+Çavdarhisar Adliyesi
+Domaniç Adliyesi
+Dumlupınar Adliyesi
+Emet Adliyesi
+Gediz Adliyesi
+Hisarcık Adliyesi
+Pazarlar Adliyesi
+Simav Adliyesi
+Şaphane Adliyesi
+Tavşanlı Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Kütahya Denetimli Serbestlik Müdürlüğü
+Kütahya T Tipi Kapalı ve Açık Ceza İnfaz Kurumu
+Kütahya E Tipi Kapalı Ceza İnfaz Kurumu
+Gediz K1 Tipi Kapalı Ceza İnfaz Kurumu
+Simav A3 Tipi Kapalı Ceza İnfaz Kurumu
+Tavşanlı Açık Ceza İnfaz Kurumu
+MALATYA
+Adliyeler
+Malatya Adliyesi
+Akçadağ Adliyesi
+Arapgir Adliyesi
+Arguvan Adliyesi
+Battalgazi Adliyesi
+Darende Adliyesi
+Doğanşehir Adliyesi
+Doğanyol Adliyesi
+Hekimhan Adliyesi
+Kale Adliyesi
+Kuluncak Adliyesi
+Pütürge Adliyesi
+Yazıhan Adliyesi
+Yeşilyurt Adliyesi
+BAM
+Gaziantep Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Malatya Denetimli Serbestlik Müdürlüğü
+Malatya Açık Ceza İnfaz Kurumu
+Malatya Kapalı Ceza İnfaz Kurumu
+Malatya E Tipi Kapalı Ceza İnfaz Kurumu
+Akçadağ Ceza İnfaz Kurumu Kampüsü
+MANİSA
+Adliyeler
+Manisa Adliyesi
+Ahmetli Adliyesi
+Akhisar Adliyesi
+Alaşehir Adliyesi
+Demirci Adliyesi
+Gölmarmara Adliyesi
+Gördes Adliyesi
+Kırkağaç Adliyesi
+Köprübaşı Adliyesi
+Kula Adliyesi
+Salihli Adliyesi
+Sarıgöl Adliyesi
+Saruhanlı Adliyesi
+Selendi Adliyesi
+Soma Adliyesi
+Şehzadeler Adliyesi
+Turgutlu Adliyesi
+Yunusemre Adliyesi
+BAM
+İzmir Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Manisa Denetimli Serbestlik Müdürlüğü
+Manisa Açık Ceza İnfaz Kurumu
+Manisa T Tipi Kapalı Ceza İnfaz Kurumu
+Manisa E Tipi Kapalı Ceza İnfaz Kurumu
+Manisa Kadın Kapalı Ceza İnfaz Kurumu
+Akhisar Ceza İnfaz Kurumu Kampüsü
+MARDİN
+Adliyeler
+Mardin Adliyesi
+Artuklu Adliyesi
+Dargeçit Adliyesi
+Derik Adliyesi
+Kızıltepe Adliyesi
+Mazıdağı Adliyesi
+Midyat Adliyesi
+Nusaybin Adliyesi
+Ömerli Adliyesi
+Savur Adliyesi
+BAM
+Diyarbakır Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Mardin Denetimli Serbestlik Müdürlüğü
+Mardin Açık Ceza İnfaz Kurumu
+Mardin Kapalı Ceza İnfaz Kurumu
+Mardin T Tipi Kapalı Ceza İnfaz Kurumu
+MERSİN
+Adliyeler
+Mersin Adliyesi
+Anamur Adliyesi
+Aydıncık Adliyesi
+Bozyazı Adliyesi
+Çamlıyayla Adliyesi
+Erdemli Adliyesi
+Gülnar Adliyesi
+Mezitli Adliyesi
+Mut Adliyesi
+Silifke Adliyesi
+Tarsus Adliyesi
+Toroslar Adliyesi
+Yenişehir Adliyesi
+BAM
+Adana Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Mersin Denetimli Serbestlik Müdürlüğü
+Mersin Açık Ceza İnfaz Kurumu
+Mersin Tarsus Kampüs Ceza İnfaz Kurumu
+Mersin Kadın Kapalı Ceza İnfaz Kurumu
+Mersin Çocuk Eğitimevi
+MUĞLA
+Adliyeler
+Muğla Adliyesi
+Bodrum Adliyesi
+Dalaman Adliyesi
+Datça Adliyesi
+Fethiye Adliyesi
+Kavaklıdere Adliyesi
+Köyceğiz Adliyesi
+Marmaris Adliyesi
+Menteşe Adliyesi
+Milas Adliyesi
+Ortaca Adliyesi
+Seydikemer Adliyesi
+Ula Adliyesi
+Yatağan Adliyesi
+BAM
+Antalya Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Muğla Denetimli Serbestlik Müdürlüğü
+Muğla Açık Ceza İnfaz Kurumu
+Muğla E Tipi Kapalı Ceza İnfaz Kurumu
+Bodrum Açık Ceza İnfaz Kurumu
+MUŞ
+Adliyeler
+Muş Adliyesi
+Bulanık Adliyesi
+Hasköy Adliyesi
+Korkut Adliyesi
+Malazgirt Adliyesi
+Varto Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Muş Denetimli Serbestlik Müdürlüğü
+Muş Açık Ceza İnfaz Kurumu
+Muş Kapalı Ceza İnfaz Kurumu
+NEVŞEHİR
+Adliyeler
+Nevşehir Adliyesi
+Acıgöl Adliyesi
+Avanos Adliyesi
+Derinkuyu Adliyesi
+Gülşehir Adliyesi
+Hacıbektaş Adliyesi
+Kozaklı Adliyesi
+Ürgüp Adliyesi
+BAM
+Kayseri Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Nevşehir Denetimli Serbestlik Müdürlüğü
+Nevşehir Açık Ceza İnfaz Kurumu
+Nevşehir Kapalı Ceza İnfaz Kurumu
+NİĞDE
+Adliyeler
+Niğde Adliyesi
+Altunhisar Adliyesi
+Bor Adliyesi
+Çamardı Adliyesi
+Çiftlik Adliyesi
+Ulukışla Adliyesi
+BAM
+Kayseri Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Niğde Denetimli Serbestlik Müdürlüğü
+Niğde Açık Ceza İnfaz Kurumu
+Niğde Kapalı Ceza İnfaz Kurumu
+ORDU
+Adliyeler
+Ordu Adliyesi
+Akkuş Adliyesi
+Altınordu Adliyesi
+Aybastı Adliyesi
+Çamaş Adliyesi
+Çatalpınar Adliyesi
+Çaybaşı Adliyesi
+Fatsa Adliyesi
+Gölköy Adliyesi
+Gülyalı Adliyesi
+Gürgentepe Adliyesi
+İkizce Adliyesi
+Kabadüz Adliyesi
+Kabataş Adliyesi
+Korgan Adliyesi
+Kumru Adliyesi
+Mesudiye Adliyesi
+Perşembe Adliyesi
+Ulubey Adliyesi
+BAM
+Samsun Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Ordu Denetimli Serbestlik Müdürlüğü
+Ordu Açık Ceza İnfaz Kurumu
+Ordu Kapalı Ceza İnfaz Kurumu
+OSMANİYE
+Adliyeler
+Osmaniye Adliyesi
+Bahçe Adliyesi
+Düziçi Adliyesi
+Hasanbeyli Adliyesi
+Kadirli Adliyesi
+Sumbas Adliyesi
+Toprakkale Adliyesi
+BAM
+Gaziantep Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Osmaniye Denetimli Serbestlik Müdürlüğü
+Osmaniye Açık Ceza İnfaz Kurumu
+Osmaniye T Tipi Kapalı Ceza İnfaz Kurumu
+RİZE
+Adliyeler
+Rize Adliyesi
+Ardeşen Adliyesi
+Çamlıhemşin Adliyesi
+Çayeli Adliyesi
+Derepazarı Adliyesi
+Fındıklı Adliyesi
+Güneysu Adliyesi
+Hemşin Adliyesi
+İkizdere Adliyesi
+Kalkandere Adliyesi
+Pazar Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Rize Denetimli Serbestlik Müdürlüğü
+Rize Açık Ceza İnfaz Kurumu
+Rize Kapalı Ceza İnfaz Kurumu
+SAKARYA
+Adliyeler
+Sakarya Adliyesi
+Akyazı Adliyesi
+Arifiye Adliyesi
+Ferizli Adliyesi
+Geyve Adliyesi
+Hendek Adliyesi
+Karapürçek Adliyesi
+Karasu Adliyesi
+Kaynarca Adliyesi
+Kocaali Adliyesi
+Pamukova Adliyesi
+Sapanca Adliyesi
+Söğütlü Adliyesi
+Taraklı Adliyesi
+BAM
+Sakarya Bölge Adliye Mahkemesi
+CTE
+Sakarya Denetimli Serbestlik Müdürlüğü
+Sakarya Açık Ceza İnfaz Kurumu
+Sakarya Kapalı Ceza İnfaz Kurumu
+Sakarya T Tipi Ceza İnfaz Kurumu
+SAMSUN
+Adliyeler
+Samsun Adliyesi
+Alaçam Adliyesi
+Asarcık Adliyesi
+Atakum Adliyesi
+Ayvacık Adliyesi
+Bafra Adliyesi
+Canik Adliyesi
+Çarşamba Adliyesi
+Havza Adliyesi
+İlkadım Adliyesi
+Kavak Adliyesi
+Ladik Adliyesi
+19 Mayıs Adliyesi
+Salıpazarı Adliyesi
+Terme Adliyesi
+Vezirköprü Adliyesi
+Yakakent Adliyesi
+BAM
+Samsun Bölge Adliye Mahkemesi
+CTE
+Samsun Denetimli Serbestlik Müdürlüğü
+Samsun Açık Ceza İnfaz Kurumu
+Samsun Kapalı Ceza İnfaz Kurumu
+Samsun Kavak Ceza İnfaz Kurumu Kampüsü
+Bafra Ceza İnfaz Kurumu
+SİİRT
+Adliyeler
+Siirt Adliyesi
+Aydınlar (Tillo) Adliyesi
+Baykan Adliyesi
+Eruh Adliyesi
+Kurtalan Adliyesi
+Pervari Adliyesi
+Şirvan Adliyesi
+BAM
+Diyarbakır Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Siirt Denetimli Serbestlik Müdürlüğü
+Siirt Açık Ceza İnfaz Kurumu
+Siirt Kapalı Ceza İnfaz Kurumu
+SİNOP
+Adliyeler
+Sinop Adliyesi
+Ayancık Adliyesi
+Boyabat Adliyesi
+Dikmen Adliyesi
+Durağan Adliyesi
+Erfelek Adliyesi
+Gerze Adliyesi
+Saraydüzü Adliyesi
+Türkeli Adliyesi
+BAM
+Samsun Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Sinop Denetimli Serbestlik Müdürlüğü
+Sinop Açık Ceza İnfaz Kurumu
+Sinop Kapalı Ceza İnfaz Kurumu
+SİVAS
+Adliyeler
+Sivas Adliyesi
+Akıncılar Adliyesi
+Altınyayla Adliyesi
+Divriği Adliyesi
+Doğanşar Adliyesi
+Gemerek Adliyesi
+Gürün Adliyesi
+Hafik Adliyesi
+İmranlı Adliyesi
+Kangal Adliyesi
+Koyulhisar Adliyesi
+Şarkışla Adliyesi
+Suşehri Adliyesi
+Ulaş Adliyesi
+Yıldızeli Adliyesi
+Zara Adliyesi
+BAM
+Kayseri Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Sivas Denetimli Serbestlik Müdürlüğü
+Sivas Açık Ceza İnfaz Kurumu
+Sivas Kapalı Ceza İnfaz Kurumu
+Sivas Kampüs Ceza İnfaz Kurumu
+ŞANLIURFA
+Adliyeler
+Şanlıurfa Adliyesi
+Akçakale Adliyesi
+Birecik Adliyesi
+Bozova Adliyesi
+Ceylanpınar Adliyesi
+Eyyübiye Adliyesi
+Halfeti Adliyesi
+Haliliye Adliyesi
+Harran Adliyesi
+Hilvan Adliyesi
+Karaköprü Adliyesi
+Siverek Adliyesi
+Suruç Adliyesi
+Viranşehir Adliyesi
+BAM
+Gaziantep Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Şanlıurfa Denetimli Serbestlik Müdürlüğü
+Şanlıurfa Açık Ceza İnfaz Kurumu
+Şanlıurfa T Tipi Kapalı Ceza İnfaz Kurumu
+Şanlıurfa E Tipi Kapalı Ceza İnfaz Kurumu
+Halfeti Ceza İnfaz Kurumu
+ŞIRNAK
+Adliyeler
+Şırnak Adliyesi
+Beytüşşebap Adliyesi
+Cizre Adliyesi
+Güçlükonak Adliyesi
+İdil Adliyesi
+Silopi Adliyesi
+Uludere Adliyesi
+BAM
+Diyarbakır Bölge Adliye Mahkemesi (yetki alanı)
+CTE
+Şırnak Denetimli Serbestlik Müdürlüğü
+Şırnak Açık Ceza İnfaz Kurumu
+Şırnak Kapalı Ceza İnfaz Kurumu
+TEKİRDAĞ
+Adliyeler
+Tekirdağ Adliyesi
+Çerkezköy Adliyesi
+Çorlu Adliyesi
+Ergene Adliyesi
+Hayrabolu Adliyesi
+Kapaklı Adliyesi
+Malkara Adliyesi
+Marmaraereğlisi Adliyesi
+Muratlı Adliyesi
+Saray Adliyesi
+Şarköy Adliyesi
+BAM
+İstanbul Bölge Adliye Mahkemesi
+CTE
+Tekirdağ Denetimli Serbestlik Müdürlüğü
+Tekirdağ Açık Ceza İnfaz Kurumu
+Tekirdağ 1 Nolu Kapalı Ceza İnfaz Kurumu
+Tekirdağ 2 Nolu Kapalı Ceza İnfaz Kurumu
+Tekirdağ F Tipi Yüksek Güvenlikli Ceza İnfaz Kurumu
+Çorlu Ceza İnfaz Kurumu Kampüsü
+TOKAT
+Adliyeler
+Tokat Adliyesi
+Almus Adliyesi
+Artova Adliyesi
+Başçiftlik Adliyesi
+Erbaa Adliyesi
+Niksar Adliyesi
+Pazar Adliyesi
+Reşadiye Adliyesi
+Sulusaray Adliyesi
+Turhal Adliyesi
+Yeşilyurt Adliyesi
+Zile Adliyesi
+BAM
+Samsun Bölge Adliye Mahkemesi
+CTE
+Tokat Denetimli Serbestlik Müdürlüğü
+Tokat Açık Ceza İnfaz Kurumu
+Tokat Kapalı Ceza İnfaz Kurumu
+TRABZON
+Adliyeler
+Trabzon Adliyesi
+Akçaabat Adliyesi
+Araklı Adliyesi
+Arsin Adliyesi
+Beşikdüzü Adliyesi
+Çarşıbaşı Adliyesi
+Çaykara Adliyesi
+Dernekpazarı Adliyesi
+Düzköy Adliyesi
+Hayrat Adliyesi
+Köprübaşı Adliyesi
+Maçka Adliyesi
+Of Adliyesi
+Ortahisar Adliyesi
+Sürmene Adliyesi
+Şalpazarı Adliyesi
+Tonya Adliyesi
+Vakfıkebir Adliyesi
+Yomra Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi
+CTE
+Trabzon Denetimli Serbestlik Müdürlüğü
+Trabzon Açık Ceza İnfaz Kurumu
+Trabzon Kapalı Ceza İnfaz Kurumu
+TUNCELİ
+Adliyeler
+Tunceli Adliyesi
+Çemişgezek Adliyesi
+Hozat Adliyesi
+Mazgirt Adliyesi
+Nazımiye Adliyesi
+Ovacık Adliyesi
+Pertek Adliyesi
+Pülümür Adliyesi
+BAM
+Erzurum Bölge Adliye Mahkemesi
+CTE
+Tunceli Denetimli Serbestlik Müdürlüğü
+Tunceli Açık Ceza İnfaz Kurumu
+Tunceli Kapalı Ceza İnfaz Kurumu
+UŞAK
+Adliyeler
+Uşak Adliyesi
+Banaz Adliyesi
+Eşme Adliyesi
+Karahallı Adliyesi
+Sivaslı Adliyesi
+Ulubey Adliyesi
+BAM
+İzmir Bölge Adliye Mahkemesi
+CTE
+Uşak Denetimli Serbestlik Müdürlüğü
+Uşak Açık Ceza İnfaz Kurumu
+Uşak Kapalı Ceza İnfaz Kurumu
+VAN
+Adliyeler
+Van Adliyesi
+Bahçesaray Adliyesi
+Başkale Adliyesi
+Çaldıran Adliyesi
+Çatak Adliyesi
+Edremit Adliyesi
+Erciş Adliyesi
+Gevaş Adliyesi
+Gürpınar Adliyesi
+İpekyolu Adliyesi
+Muradiye Adliyesi
+Özalp Adliyesi
+Saray Adliyesi
+BAM
+Van Bölge Adliye Mahkemesi
+CTE
+Van Denetimli Serbestlik Müdürlüğü
+Van Açık Ceza İnfaz Kurumu
+Van T Tipi Kapalı Ceza İnfaz Kurumu
+Van F Tipi Yüksek Güvenlikli Ceza İnfaz Kurumu
+YALOVA
+Adliyeler
+Yalova Adliyesi
+Altınova Adliyesi
+Armutlu Adliyesi
+Çiftlikköy Adliyesi
+Çınarcık Adliyesi
+Termal Adliyesi
+BAM
+Bursa Bölge Adliye Mahkemesi
+CTE
+Yalova Denetimli Serbestlik Müdürlüğü
+Yalova Açık Ceza İnfaz Kurumu
+Yalova Kapalı Ceza İnfaz Kurumu
+YOZGAT
+Adliyeler
+Yozgat Adliyesi
+Akdağmadeni Adliyesi
+Aydıncık Adliyesi
+Boğazlıyan Adliyesi
+Çandır Adliyesi
+Çayıralan Adliyesi
+Çekerek Adliyesi
+Kadışehri Adliyesi
+Saraykent Adliyesi
+Sarıkaya Adliyesi
+Sorgun Adliyesi
+Şefaatli Adliyesi
+Yerköy Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi
+CTE
+Yozgat Denetimli Serbestlik Müdürlüğü
+Yozgat Açık Ceza İnfaz Kurumu
+Yozgat Kapalı Ceza İnfaz Kurumu
+ZONGULDAK
+Adliyeler
+Zonguldak Adliyesi
+Alaplı Adliyesi
+Çaycuma Adliyesi
+Devrek Adliyesi
+Ereğli (Karadeniz Ereğli) Adliyesi
+Gökçebey Adliyesi
+BAM
+Ankara Bölge Adliye Mahkemesi
+CTE
+Zonguldak Denetimli Serbestlik Müdürlüğü
+Zonguldak Açık Ceza İnfaz Kurumu
+Zonguldak Kapalı Ceza İnfaz Kurumu
+Karadeniz Ereğli Ceza İnfaz Kurumu

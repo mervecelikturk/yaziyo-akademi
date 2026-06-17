@@ -1,0 +1,24 @@
+{
+  "kurum_tipleri": [
+    "ADLIYE",
+    "BAM",
+    "CUMHURIYET_BASSAVCILIGI",
+    "ICRA_DAIRESI",
+    "CTE_CEZA_INF",
+    "DENETIMLI_SERBESTLIK",
+    "ADLI_TIP",
+    "EGITIM_EVI"
+  ],
+  "cte_alt_turleri": [
+    "ACIK",
+    "KAPALI",
+    "T_TIPI",
+    "L_TIPI",
+    "F_TIPI",
+    "M_TIPI",
+    "KADIN",
+    "COCUK",
+    "YUKSEK_GUVENLIK"
+  ],
+  "kaynak_notu": "CTE ve ilçe adliyesi kayıtları yalnızca data/meta/kurum-kaynaklari.json dosyasına eklendiğinde üretilir; kesin olmayan kurum uydurulmaz."
+}

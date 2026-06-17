@@ -1,0 +1,1053 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="YAZİYO'ya Hoş Geldin - Zabıt Katipliği Çalışma Platformuna giriş yapın veya kayıt olun.">
+    <title>YAZİYO’ya Hoş Geldin</title>
+    <link rel="icon" type="image/png" href="../images/logo.png">
+
+    <!-- ========================================== -->
+    <!-- GECE/GÜNDÜZ MODU - FOUC Önleme -->
+    <script>
+        (function () {
+            // Siteye ilk girişte her zaman gündüz (light) modu zorunlu
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+    <!-- ========================================== -->
+
+    <!-- Google Fonts: Poppins & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#0F172A',
+                        'dark-card': '#1E2937',
+                        'dark-text': '#F1F5F9',
+                        'dark-text-secondary': '#CBD5E1',
+                        'dark-border': '#334155',
+                        'light-bg': '#F8F4ED',
+                        'light-card': '#FFFFFF',
+                        'light-text': '#1E2937',
+                        'light-text-secondary': '#334155',
+                        'light-border': '#E6D9C2',
+                        'light-gold': '#D97706',
+                        'yaziyo-gold': 'rgb(var(--yaziyo-gold-rgb) / <alpha-value>)',
+                        'yaziyo-green': 'rgb(var(--yaziyo-green-rgb) / <alpha-value>)',
+                        'yaziyo-bg': 'rgb(var(--yaziyo-bg-rgb) / <alpha-value>)',
+                        'yaziyo-card': 'rgb(var(--yaziyo-card-rgb) / <alpha-value>)',
+                        'yaziyo-text': 'rgb(var(--yaziyo-text-rgb) / <alpha-value>)',
+                        'yaziyo-text-secondary': 'rgb(var(--yaziyo-text-secondary-rgb) / <alpha-value>)',
+                        'yaziyo-border': 'rgb(var(--yaziyo-border-rgb) / <alpha-value>)',
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow-gold': '0 0 15px rgba(var(--yaziyo-gold-rgb), 0.3)',
+                    }
+                }
+            },
+            plugins: [
+                function ({ addVariant }) {
+                    addVariant('light', '.light &');
+                }
+            ]
+        };
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Özel CSS Dosyası -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/auth-verify.css">
+
+    <!-- Supabase JS Client (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+    <style>
+        /* Sayfa Özelinde İnce Ayarlar */
+        .tab-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-focus-ring:focus {
+            box-shadow: 0 0 0 4px rgba(var(--yaziyo-gold-rgb), 0.15);
+            background-color: rgb(var(--yaziyo-card-rgb)) !important;
+            transform: translateY(-1px);
+        }
+
+        /* Sekme Alt Çizgi Animasyonu */
+        .tab-underline {
+            position: absolute;
+            bottom: 0;
+            height: 2px;
+            background-color: rgb(var(--yaziyo-gold-rgb));
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+
+<body
+    data-hide-notification-badge="true"
+    class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- HEADER -->
+    <header id="main-header"
+        class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
+
+            <!-- Logo Alanı (Sol) -->
+            <a href="index.html" class="flex items-center gap-2 group" id="logo-link">
+                <img src="../images/logo.png" alt="YAZİYO Logo"
+                    class="h-5 sm:h-6 w-auto object-contain rounded-lg border-2 border-yaziyo-gold transition-transform duration-300 group-hover:scale-105"
+                    id="header-logo">
+                <span
+                    class="font-poppins font-extrabold text-yaziyo-gold text-sm sm:text-base tracking-widest select-none">YAZİYO</span>
+            </a>
+
+            <!-- Sağ Taraf: Tema Değiştir + Giriş Yap -->
+            <div class="flex items-center gap-2 sm:gap-3">
+
+                <!-- GECE/GÜNDÜZ MODU DEĞİŞTİRME BUTONU -->
+                <div class="relative group">
+                    <button id="theme-toggle-btn" class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card
+                               text-yaziyo-gold transition-all duration-300 hover:scale-110 hover:rotate-12 hover:border-yaziyo-gold
+                               hover:shadow-glow-gold active:scale-95" aria-label="Tema Değiştir">
+                        <i class="fa-solid fa-sun text-base sm:text-lg theme-icon-sun"></i>
+                        <i class="fa-solid fa-moon text-base sm:text-lg theme-icon-moon"></i>
+                    </button>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border
+                                rounded text-[11px] text-light-text-secondary dark:text-dark-text-secondary font-inter whitespace-nowrap
+                                opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50">
+                        Tema Değiştir
+                    </span>
+                </div>
+
+                <!-- BİLDİRİM BUTONU -->
+                <div class="relative group">
+                    <button id="notification-btn" class="flex relative items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card
+                               text-light-text-secondary dark:text-dark-text-secondary transition-all duration-300 hover:scale-110 hover:text-yaziyo-gold hover:border-yaziyo-gold
+                               hover:shadow-glow-gold active:scale-95" aria-label="Bildirimler">
+                        <i class="fa-solid fa-bell text-base sm:text-lg"></i>
+                        <span
+                            class="hidden absolute top-2 right-2 w-[8px] h-[8px] bg-red-500 rounded-full border border-light-card dark:border-dark-border"></span>
+                    </button>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border
+                                rounded text-[11px] text-light-text-secondary dark:text-dark-text-secondary font-inter whitespace-nowrap
+                                opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50">
+                        Bildirimler
+                    </span>
+                </div>
+
+                <!-- Günlük Seri -->
+                <div class="relative group">
+                    <div
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-yaziyo-border bg-yaziyo-card cursor-not-allowed select-none">
+                        <i class="fa-solid fa-fire text-orange-400 text-base sm:text-lg"></i>
+                        <span id="streak-count" class="font-poppins font-bold text-sm text-orange-400">0</span>
+                    </div>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-yaziyo-card border border-yaziyo-border rounded text-[11px] text-yaziyo-text-secondary font-inter whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">Günlük
+                        Seri</span>
+                </div>
+                <a href="girisKayit.html" id="auth-button" class="relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-lg
+                          transition-all duration-300 hover:shadow-glow-gold hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Giriş Yap / Kayıt Ol</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Header Alt Çizgi -->
+        <div class="w-full h-px bg-light-border dark:bg-dark-border transition-colors duration-300"></div>
+
+        <!-- NAVBAR (Navigasyon) -->
+        <nav id="main-navbar" class="bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-md transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+
+                <!-- Desktop Menü -->
+                <ul id="desktop-menu"
+                    class="hidden lg:flex items-center justify-center gap-x-0.5 xl:gap-x-1 py-2 text-[9px] xl:text-[10px] 2xl:text-[11px] font-medium flex-nowrap">
+                    <li><a href="index.html" class="nav-link" data-page="anasayfa">Ana Sayfa</a></li>
+                    <li><a href="profil.html" class="nav-link" data-page="profil">Profil</a></li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="hizTesti.html" class="nav-dropdown-item">Hız Testi</a></li>
+                            <li><a href="klavyeCalismasi.html" class="nav-dropdown-item">Klavye Çalışması</a></li>
+                            <li><a href="ozelMetinCalismasi.html" class="nav-dropdown-item">Özel Metin Çalışması</a></li>
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Klavye Sınavı</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="oyunlar">Oyunlar <i
+                                class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled cursor-not-allowed">Klavye Düellosu</a></li>
+                            <li><a href="kelimeEvi.html" class="nav-dropdown-item">Kelime Evi</a></li>
+                            <li><a href="arabaYarisi.html" class="nav-dropdown-item">Araba Yarışı</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="mulakatlar">Mülakatlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Sözlü Mülakat</a></li>
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Mülakat Simülasyonu</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled" data-page="becayis">Becayiş</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled" data-page="haberler">Haberler</a></li>
+                    <li><a href="kpssCalismasi.html" class="nav-link" data-page="kpss-calismasi">KPSS Çalışması</a></li>
+                    <li><a href="iletisim.html" class="nav-link" data-page="iletisim">İletişim</a></li>
+                </ul>
+
+
+                <!-- Mobil Hamburger Butonu -->
+                <div class="lg:hidden flex items-center justify-between py-2">
+                    <span
+                        class="text-light-text-secondary dark:text-dark-text-secondary text-sm font-inter transition-colors duration-300">Menü</span>
+                    <button id="hamburger-btn"
+                        class="text-light-text dark:text-dark-text p-2 rounded-lg hover:bg-light-card dark:hover:bg-dark-card transition-colors duration-300"
+                        aria-label="Menüyü aç/kapat">
+                        <i class="fa-solid fa-bars text-xl" id="hamburger-icon"></i>
+                    </button>
+                </div>
+
+                <!-- Mobil Menü -->
+                <div id="mobile-menu" class="lg:hidden hidden overflow-hidden transition-all duration-300">
+                    <ul class="flex flex-col gap-1 pb-4 text-sm">
+                        <li><a href="index.html" class="mobile-nav-link" data-page="anasayfa">Ana Sayfa</a></li>
+                        <li><a href="profil.html" class="mobile-nav-link" data-page="profil">Profil</a></li>
+                        <li class="mobile-dropdown">
+                            <button class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="hizTesti.html" class="mobile-nav-link text-[0.8em]">Hız Testi</a></li>
+                                <li><a href="klavyeCalismasi.html" class="mobile-nav-link text-[0.8em]">Klavye Çalışması</a></li>
+                                <li><a href="ozelMetinCalismasi.html" class="mobile-nav-link text-[0.8em]">Özel Metin Çalışması</a></li>
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Klavye Sınavı</a></li>
+                            </ul>
+                        </li>
+                        <li class="mobile-dropdown">
+                            <button
+                                class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between"
+                                data-page="oyunlar">Oyunlar <i
+                                    class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em] cursor-not-allowed">Klavye Düellosu</a></li>
+                                <li><a href="kelimeEvi.html" class="mobile-nav-link text-[0.8em]">Kelime Evi</a></li>
+                                <li><a href="arabaYarisi.html" class="mobile-nav-link text-[0.8em]">Araba Yarışı</a></li>
+                            </ul>
+                        </li>
+                        <li class="mobile-dropdown">
+                            <button class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between" data-page="mulakatlar">Mülakatlar <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Sözlü Mülakat</a></li>
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Mülakat Simülasyonu</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="becayis">Becayiş</a></li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="haberler">Haberler</a></li>
+                        <li><a href="kpssCalismasi.html" class="mobile-nav-link" data-page="kpss-calismasi">KPSS Çalışması</a></li>
+                        <li><a href="iletisim.html" class="mobile-nav-link" data-page="iletisim">İletişim</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ANA İÇERİK: Giriş / Kayıt Paneli -->
+    <main
+        class="flex-grow flex flex-col lg:flex-row min-h-[calc(100vh-140px)] bg-gradient-to-br from-light-bg via-white to-light-bg dark:from-dark-bg dark:via-slate-900 dark:to-dark-bg transition-colors duration-500">
+
+        <!-- SOL TARAF: Görsel Alanı (Masaüstü) -->
+        <div class="hidden lg:block lg:w-3/5 xl:w-2/3 relative overflow-hidden group" id="auth-bookshelf-panel">
+            <div id="auth-bookshelf-slider"
+                class="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
+                <img src="../images/bookshelf.png" alt="Kitaplık — Nutuk, Ceza Kanunu ve klasikler"
+                    class="auth-bookshelf-slide auth-bookshelf-slide--active absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
+                    data-slide="0">
+                <img src="../images/bookshelf-2.png" alt="Kitaplık — Dede Korkut, Mesnevi, Safahat ve daha fazlası"
+                    class="auth-bookshelf-slide absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0"
+                    data-slide="1">
+                <img src="../images/bookshelf-3.png" alt="Kitaplık — Sinekli Bakkal, Türk'ün Ateşle İmtihanı, Ateşten Gömlek"
+                    class="auth-bookshelf-slide absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 opacity-0"
+                    data-slide="2">
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-r from-black/20 to-transparent pointer-events-none"></div>
+
+            <!-- Görsel Üzeri Bilgi -->
+            <div class="absolute bottom-12 left-12 z-10 text-white max-w-md">
+                <h2 class="font-poppins font-extrabold text-4xl mb-4 drop-shadow-lg text-yaziyo-gold">Geleceğin
+                    Katipleri<br>Burada yetişiyor.</h2>
+                <p class="font-inter text-lg text-slate-100 drop-shadow-md">Türkiye'nin en kapsamlı zabıt katipliği
+                    çalışma platformuna hoş geldiniz.</p>
+            </div>
+        </div>
+
+        <!-- SA�? TARAF: Form Kartı -->
+        <div class="w-full lg:w-2/5 xl:w-1/3 flex items-center justify-center p-6 sm:p-12">
+            <div
+                class="w-full max-w-md bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl overflow-hidden transition-all duration-300">
+
+                <div class="p-8 sm:p-10">
+                    <!-- Üst Başlık -->
+                    <div class="text-center mb-8">
+                        <h1
+                            class="font-poppins font-extrabold text-2xl sm:text-3xl text-light-text dark:text-dark-text mb-2">
+                            YAZİYO’ya Hoş Geldin</h1>
+                        <p class="text-light-text-secondary dark:text-dark-text-secondary text-sm font-inter">Hemen
+                            giriş yap veya aramıza katıl!</p>
+                    </div>
+
+                    <!-- Sekme Seçimi (Tabs) -->
+                    <div id="auth-tabs"
+                        class="relative flex items-center justify-center mb-10 border-b border-light-border dark:border-dark-border">
+                        <button id="tab-login"
+                            class="flex-1 py-3 text-sm font-poppins font-bold transition-all duration-300 text-yaziyo-gold focus:outline-none">Giriş
+                            Yap</button>
+                        <button id="tab-register"
+                            class="flex-1 py-3 text-sm font-poppins font-bold transition-all duration-300 text-light-text-secondary dark:text-dark-text-secondary focus:outline-none">Kayıt
+                            Ol</button>
+                        <!-- Kayar Çizgi -->
+                        <div id="tab-active-indicator"
+                            class="absolute bottom-0 left-0 w-1/2 h-0.5 bg-yaziyo-gold transition-all duration-300 shadow-[0_0_8px_rgba(var(--yaziyo-gold-rgb),0.5)] pointer-events-none">
+                        </div>
+                    </div>
+
+                    <!-- GİRİŞ YAP FORMU -->
+                    <div id="login-form-container" class="tab-transition block opacity-100 scale-100">
+                        <form onsubmit="handleLogin(event)" class="space-y-5">
+                            <div class="space-y-2">
+                                <label for="login-email"
+                                    class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider ml-1">E-posta
+                                    Adresi</label>
+                                <div class="relative">
+                                    <i
+                                        class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                                    <input type="email" id="login-email" required autocomplete="username"
+                                        class="w-full pl-11 pr-4 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300"
+                                        placeholder="ornek@mail.com">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center px-1">
+                                    <label for="login-password"
+                                        class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Şifre</label>
+                                    <a href="#" id="forgot-password-link" class="text-[11px] text-yaziyo-gold hover:underline font-medium">Şifremi
+                                        Unuttum?</a>
+                                </div>
+                                <div class="relative">
+                                    <i
+                                        class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                                    <input type="password" id="login-password" required autocomplete="current-password"
+                                        class="w-full pl-11 pr-12 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300"
+                                        placeholder="••••••••">
+                                    <button type="button" id="toggle-login-password"
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-light-text-secondary hover:text-yaziyo-gold transition-colors">
+                                        <i class="fa-solid fa-eye text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 px-1">
+                                <label for="remember-me" class="flex items-center gap-2 cursor-pointer group">
+                                    <input type="checkbox" id="remember-me"
+                                        class="w-4 h-4 rounded border-light-border dark:border-dark-border text-yaziyo-gold focus:ring-yaziyo-gold/30">
+                                    <span
+                                        class="text-xs text-light-text-secondary dark:text-dark-text-secondary group-hover:text-light-text dark:group-hover:text-dark-text transition-colors">Beni
+                                        Hatırla</span>
+                                </label>
+                                <span class="text-[10px] text-light-text-secondary/70 dark:text-dark-text-secondary/70 ml-1 hidden sm:inline" title="İşaretli: tarayıcı kapansa da giriş kalır. İşaretsiz: yalnızca bu oturum.">(bu cihazda oturumu saklar)</span>
+                            </div>
+                            <button type="submit"
+                                class="w-full py-4 mt-2 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-black text-base rounded-xl shadow-glow-gold hover:scale-[1.02] active:scale-95 transition-all duration-300">
+                                GİRİŞ YAP
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- KAYIT OL FORMU -->
+                    <div id="register-form-container" class="tab-transition hidden opacity-0 scale-95">
+                        <form onsubmit="handleRegister(event)" class="space-y-4">
+                            <!-- Ad Soyad Ayrımı -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-2">
+                                    <label for="reg-name"
+                                        class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider ml-1">Ad</label>
+                                    <div class="relative">
+                                        <i
+                                            class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                                        <input type="text" id="reg-name" required autocomplete="given-name"
+                                            class="w-full pl-11 pr-4 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300"
+                                            placeholder="Adınız">
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="reg-surname"
+                                        class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider ml-1">Soyad</label>
+                                    <div class="relative">
+                                        <i
+                                            class="fa-solid fa-user-tag absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                                        <input type="text" id="reg-surname" required autocomplete="family-name"
+                                            class="w-full pl-11 pr-4 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300"
+                                            placeholder="Soyadınız">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="reg-email"
+                                    class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider ml-1">E-posta
+                                    Adresi</label>
+                                <div class="relative">
+                                    <i
+                                        class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                                    <input type="email" id="reg-email" required autocomplete="email"
+                                        class="w-full pl-11 pr-4 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300"
+                                        placeholder="ornek@mail.com">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="space-y-2 relative">
+                                    <label for="reg-password"
+                                        class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider ml-1">Şifre</label>
+                                    <div class="relative">
+                                        <input type="password" id="reg-password" required autocomplete="new-password"
+                                            class="w-full px-4 pr-10 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300">
+                                        <button type="button" id="toggle-reg-password"
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-light-text-secondary hover:text-yaziyo-gold transition-colors">
+                                            <i class="fa-solid fa-eye text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Şifre Güç Barı ve Kurallar (Yazmaya başlayınca açılır) -->
+                                    <div id="password-validation-container" class="absolute top-full left-0 w-full mt-2 hidden flex-col z-20 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-3 rounded-xl shadow-xl transition-all duration-300 opacity-0 translate-y-[-10px]">
+                                        <!-- Şifre Güç Barı -->
+                                        <div class="w-full bg-light-border dark:bg-dark-border rounded-full overflow-hidden h-1.5">
+                                            <div id="password-strength-bar" class="h-full w-0 transition-all duration-500 bg-red-500"></div>
+                                        </div>
+                                        <div class="flex justify-between items-center mt-1">
+                                            <span id="password-strength-text" class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Zayıf</span>
+                                        </div>
+                                        <!-- Şifre Kuralları -->
+                                        <ul id="password-rules" class="space-y-1 mt-2">
+                                            <li data-rule="length" class="text-[10px] flex items-center gap-1.5 text-light-text-secondary dark:text-dark-text-secondary transition-colors duration-300">
+                                                <i class="fa-solid fa-circle-xmark text-[8px]"></i> 8-64 Karakter
+                                            </li>
+                                            <li data-rule="upper" class="text-[10px] flex items-center gap-1.5 text-light-text-secondary dark:text-dark-text-secondary transition-colors duration-300">
+                                                <i class="fa-solid fa-circle-xmark text-[8px]"></i> En az 1 Büyük Harf
+                                            </li>
+                                            <li data-rule="lower" class="text-[10px] flex items-center gap-1.5 text-light-text-secondary dark:text-dark-text-secondary transition-colors duration-300">
+                                                <i class="fa-solid fa-circle-xmark text-[8px]"></i> En az 1 Küçük Harf
+                                            </li>
+                                            <li data-rule="number" class="text-[10px] flex items-center gap-1.5 text-light-text-secondary dark:text-dark-text-secondary transition-colors duration-300">
+                                                <i class="fa-solid fa-circle-xmark text-[8px]"></i> En az 1 Rakam
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="space-y-2 relative">
+                                    <label for="reg-password-confirm"
+                                        class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider ml-1">Şifre Tekrar</label>
+                                    <div class="relative">
+                                        <input type="password" id="reg-password-confirm" required
+                                            class="w-full px-4 pr-10 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300">
+                                        <button type="button" id="toggle-reg-password-confirm"
+                                            class="absolute right-3 top-1/2 -translate-y-1/2 text-light-text-secondary transition-colors">
+                                            <i class="fa-solid fa-eye text-xs"></i>
+                                        </button>
+                                    </div>
+                                    <div id="password-match-status" class="absolute top-full right-0 mt-2 hidden items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition-all duration-300 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border px-3 py-1.5 rounded-lg shadow-md z-20">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span>Şifreler Eşleşmiyor</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-2 px-1">
+                                <input type="checkbox" id="terms-accept"
+                                    class="w-4 h-4 mt-0.5 shrink-0 rounded border-light-border dark:border-dark-border text-yaziyo-gold focus:ring-yaziyo-gold/30">
+                                <label for="terms-accept"
+                                    class="text-xs text-light-text-secondary dark:text-dark-text-secondary leading-relaxed cursor-pointer">
+                                    <button type="button" id="terms-open-link"
+                                        class="text-yaziyo-gold hover:underline font-semibold text-left">Üyelik Sözleşmesi, KVKK Aydınlatma Metni ve Gizlilik Politikası</button>'nı
+                                    okudum ve kabul ediyorum.
+                                </label>
+                            </div>
+                            <button type="submit" id="reg-submit-btn" disabled
+                                class="w-full py-4 mt-4 bg-gradient-to-r from-yaziyo-gold/50 to-yellow-600/50 text-slate-900/50 font-poppins font-black text-base rounded-xl shadow-none cursor-not-allowed transition-all duration-300">
+                                KAYIT OL
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- GOOGLE İLE GİRİ�? BUTONU İLERİDE AKTİF EDİLECEK -->
+
+
+                    <div id="forgot-password-panel" class="hidden">
+                        <div class="text-center py-2">
+                            <div class="verify-panel-icon">
+                                <i class="fa-solid fa-key"></i>
+                            </div>
+                            <h2 class="font-poppins font-bold text-lg mb-2">Şifremi unuttum</h2>
+                            <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-5">
+                                Kayıtlı e-postanıza şifre sıfırlama linki göndereceğiz.
+                            </p>
+                            <div id="forgot-success-msg" class="hidden text-center mb-4">
+                                <p class="text-sm text-green-600 dark:text-green-400 font-medium mb-2">
+                                    <i class="fa-solid fa-circle-check mr-1"></i> E-posta gönderildi
+                                </p>
+                                <p class="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+                                    <span id="forgot-sent-email" class="verify-email-display"></span> adresini kontrol edin.
+                                </p>
+                            </div>
+                            <form id="forgot-password-form" class="space-y-4 text-left">
+                                <div id="forgot-form-fields" class="space-y-4">
+                                    <div class="space-y-2">
+                                        <label for="forgot-email" class="text-xs font-bold uppercase text-light-text-secondary dark:text-dark-text-secondary ml-1">E-posta</label>
+                                        <div class="relative">
+                                            <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                                            <input type="email" id="forgot-email" required autocomplete="email"
+                                                class="w-full pl-11 pr-4 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 rounded-xl focus:outline-none focus:border-yaziyo-gold"
+                                                placeholder="ornek@mail.com">
+                                        </div>
+                                    </div>
+                                    <button type="submit" id="forgot-submit-btn"
+                                        class="w-full py-3.5 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-xl hover:scale-[1.02] active:scale-95 transition-all">
+                                        <i class="fa-solid fa-paper-plane mr-2"></i>
+                                        <span id="forgot-submit-label">Sıfırlama linki gönder</span>
+                                    </button>
+                                </div>
+                            </form>
+                            <button type="button" id="back-from-forgot-btn"
+                                class="w-full py-3 mt-2 text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold transition-colors">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Giriş formuna dön
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <div class="relative flex items-center justify-center mb-6">
+                            <div class="w-full h-px bg-light-border/50 dark:bg-dark-border/50"></div>
+                            <span
+                                class="absolute px-4 bg-light-card dark:bg-dark-card text-[11px] font-bold text-light-text-secondary/50 dark:text-dark-text-secondary/50 uppercase tracking-widest">veya</span>
+                        </div>
+                        <button disabled
+                            class="w-full flex items-center justify-center gap-3 py-3 border border-light-border dark:border-dark-border bg-stone-100/30 dark:bg-slate-800/30 text-light-text-secondary dark:text-dark-text-secondary rounded-xl opacity-60 cursor-not-allowed grayscale transition-all duration-300">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
+                                class="w-5 h-5">
+                            <span class="font-inter font-semibold text-sm">Google ile Giriş Yap</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+        <!-- ============================================ -->
+    <!-- FOOTER (Alt Bilgi) -->
+    <!-- ============================================ -->
+    <footer id="main-footer"
+        class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col items-center gap-4">
+
+                <!-- Logo ve Marka -->
+                <div class="flex flex-col items-center">
+                    <div class="flex items-center gap-2 mb-0.5">
+                        <img src="../images/logo.png" alt="YAZİYO Logo"
+                            class="h-4 w-auto object-contain rounded-lg border border-yaziyo-gold">
+                        <span class="font-poppins font-extrabold text-yaziyo-gold text-base tracking-widest">YAZİYO</span>
+                    </div>
+                    <p
+                        class="text-light-text-secondary dark:text-dark-text-secondary text-xs font-inter transition-colors duration-300">
+                        Zabıt Katipliği Çalışma Platformu</p>
+                </div>
+
+                <!-- İletişim & Sosyal Medya -->
+                <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
+                    <!-- E-posta -->
+                    <div
+                        class="flex items-center gap-2 text-light-text-secondary dark:text-dark-text-secondary transition-colors duration-300">
+                        <i class="fa-solid fa-envelope text-yaziyo-gold text-sm"></i>
+                        <a href="mailto:yaziyo.destek@gmail.com"
+                            class="font-inter text-xs hover:text-yaziyo-gold transition-colors duration-300">yaziyo.destek@gmail.com</a>
+                    </div>
+
+                    <!-- Sosyal Medya İkonları -->
+                    <div class="flex items-center gap-4">
+                        <a href="https://www.instagram.com/yaziyo_zabit.katipligi/" id="social-instagram"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-instagram text-lg"></i>
+                        </a>
+                        <a href="https://www.tiktok.com/@zabit.katipligi_yaziyo?_r=1&_t=ZS-95NG3JvVk9s" id="social-tiktok"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors" aria-label="TikTok" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-tiktok text-lg"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Çizgi Ayırıcı -->
+                <div class="w-full max-w-md h-px bg-light-border dark:bg-dark-border transition-colors duration-300">
+                </div>
+
+                <!-- Telif Hakkı -->
+                <p
+                    class="text-light-text-secondary dark:text-dark-text-secondary text-[10px] sm:text-xs font-inter tracking-wide transition-colors duration-300">
+                    © 2026 YAZİYO. Tüm hakları saklıdır.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth bildirimleri -->
+    <div id="auth-toast-container" class="auth-toast-container" aria-live="polite"></div>
+
+    <!-- JAVASCRIPT -->
+    <script src="../js/pageStatus.js"></script>
+    <script src="../js/girisKayitBookshelf.js"></script>
+    <script src="../js/siteNavbar.js"></script>
+    <script src="../js/main.js"></script>
+    <script type="module" src="../js/auth.js"></script>
+    <script type="module" src="../js/authForms.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('login-form-container');
+            const registerForm = document.getElementById('register-form-container');
+            const loginTabBtn = document.getElementById('tab-login');
+            const registerTabBtn = document.getElementById('tab-register');
+            const indicator = document.getElementById('tab-active-indicator');
+
+            /**
+             * Sekme Değiştirme Fonksiyonu
+             */
+            function switchTab(tab) {
+                console.log("Sekme değiştirme isteği:", tab);
+                if (!loginForm || !registerForm || !indicator) {
+                    console.error("Tab bileşenleri eksik!", { loginForm, registerForm, indicator });
+                    return;
+                }
+
+                if (tab === 'login') {
+                    // Kayıt formunu gizle
+                    registerForm.classList.add('hidden', 'opacity-0', 'scale-95');
+                    registerForm.classList.remove('block', 'opacity-100', 'scale-100');
+
+                    // Giriş formunu göster
+                    loginForm.classList.remove('hidden');
+                    loginForm.classList.add('block');
+                    setTimeout(() => {
+                        loginForm.classList.add('opacity-100', 'scale-100');
+                        loginForm.classList.remove('opacity-0', 'scale-95');
+                    }, 10);
+
+                    // Tab Buton Stilleri
+                    loginTabBtn.classList.add('text-yaziyo-gold');
+                    loginTabBtn.classList.remove('text-light-text-secondary', 'dark:text-dark-text-secondary');
+                    registerTabBtn.classList.add('text-light-text-secondary', 'dark:text-dark-text-secondary');
+                    registerTabBtn.classList.remove('text-yaziyo-gold');
+                    indicator.style.left = '0%';
+                } else {
+                    // Giriş formunu gizle
+                    loginForm.classList.add('hidden', 'opacity-0', 'scale-95');
+                    loginForm.classList.remove('block', 'opacity-100', 'scale-100');
+
+                    // Kayıt formunu göster
+                    registerForm.classList.remove('hidden');
+                    registerForm.classList.add('block');
+                    setTimeout(() => {
+                        registerForm.classList.add('opacity-100', 'scale-100');
+                        registerForm.classList.remove('opacity-0', 'scale-95');
+                    }, 10);
+
+                    // Tab Buton Stilleri
+                    registerTabBtn.classList.add('text-yaziyo-gold');
+                    registerTabBtn.classList.remove('text-light-text-secondary', 'dark:text-dark-text-secondary');
+                    loginTabBtn.classList.add('text-light-text-secondary', 'dark:text-dark-text-secondary');
+                    loginTabBtn.classList.remove('text-yaziyo-gold');
+                    indicator.style.left = '50%';
+                }
+            }
+
+            if (loginTabBtn) loginTabBtn.addEventListener('click', () => switchTab('login'));
+            if (registerTabBtn) registerTabBtn.addEventListener('click', () => switchTab('register'));
+
+            window.switchTab = switchTab;
+
+            // Toggle Password Function
+            function togglePassword(inputId, button) {
+                const input = document.getElementById(inputId);
+                const icon = button.querySelector('i');
+                if (!input || !icon) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            }
+
+            document.getElementById('toggle-login-password')?.addEventListener('click', (e) => togglePassword('login-password', e.currentTarget));
+            document.getElementById('toggle-reg-password')?.addEventListener('click', (e) => togglePassword('reg-password', e.currentTarget));
+            document.getElementById('toggle-reg-password-confirm')?.addEventListener('click', (e) => togglePassword('reg-password-confirm', e.currentTarget));
+
+            // ==========================================
+            // �?İFRE GÜÇLÜLÜK VE DO�?RULAMA MANTI�?I
+            // ==========================================
+            const regPassword = document.getElementById('reg-password');
+            const regConfirm = document.getElementById('reg-password-confirm');
+            const strengthBar = document.getElementById('password-strength-bar');
+            const strengthText = document.getElementById('password-strength-text');
+            const submitBtn = document.getElementById('reg-submit-btn');
+            const matchStatus = document.getElementById('password-match-status');
+
+            // Türkçe harfler dahil (Ş, İ, Ğ vb.) — yalnızca ASCII A-Z değil
+            const rules = {
+                length: pw => pw.length >= 8 && pw.length <= 64,
+                upper: pw => /[\p{Lu}]/u.test(pw),
+                lower: pw => /[\p{Ll}]/u.test(pw),
+                number: pw => /[0-9]/.test(pw),
+                noSpace: pw => !/\s/.test(pw)
+            };
+
+            function updateUI() {
+                if (!regPassword) return;
+                const pw = regPassword.value;
+                const results = {
+                    length: rules.length(pw),
+                    upper: rules.upper(pw),
+                    lower: rules.lower(pw),
+                    number: rules.number(pw)
+                };
+
+                let metCount = 0;
+                Object.keys(results).forEach(rule => {
+                    const el = document.querySelector(`[data-rule="${rule}"]`);
+                    if (!el) return;
+                    const icon = el.querySelector('i');
+                    if (results[rule]) {
+                        el.classList.add('text-green-500');
+                        el.classList.remove('text-light-text-secondary', 'dark:text-dark-text-secondary', 'text-red-500');
+                        icon?.classList.replace('fa-circle-xmark', 'fa-circle-check');
+                        metCount++;
+                    } else {
+                        if (pw.length > 0) {
+                            el.classList.add('text-red-500');
+                            el.classList.remove('text-green-500', 'text-light-text-secondary', 'dark:text-dark-text-secondary');
+                        } else {
+                            el.classList.add('text-light-text-secondary', 'dark:text-dark-text-secondary');
+                            el.classList.remove('text-green-500', 'text-red-500');
+                        }
+                        icon?.classList.replace('fa-circle-check', 'fa-circle-xmark');
+                    }
+                });
+
+                // Şifre Güç Barı Güncelleme
+                if (strengthBar && strengthText) {
+                    const percent = (metCount / 4) * 100;
+                    strengthBar.style.width = `${percent}%`;
+                    
+                    if (metCount <= 1) {
+                        strengthBar.className = 'h-full transition-all duration-500 bg-red-500';
+                        strengthText.innerText = 'Zayıf';
+                        strengthText.className = 'text-[10px] font-bold uppercase tracking-wider text-red-500';
+                    } else if (metCount <= 3) {
+                        strengthBar.className = 'h-full transition-all duration-500 bg-yellow-500';
+                        strengthText.innerText = 'Orta';
+                        strengthText.className = 'text-[10px] font-bold uppercase tracking-wider text-yellow-500';
+                    } else {
+                        strengthBar.className = 'h-full transition-all duration-500 bg-green-500';
+                        strengthText.innerText = 'Güçlü';
+                        strengthText.className = 'text-[10px] font-bold uppercase tracking-wider text-green-500';
+                    }
+                }
+
+                checkFormValidity();
+            }
+
+            const termsAccept = document.getElementById('terms-accept');
+
+            function checkFormValidity() {
+                if (!regPassword || !regConfirm || !submitBtn) return;
+                const pw = regPassword.value;
+                const cpw = regConfirm.value;
+                
+                const allRulesMet = Object.values(rules).every(rule => rule(pw));
+                const passwordsMatch = pw === cpw && pw.length > 0;
+                const termsOk = termsAccept?.checked === true;
+
+                // Eşleşme Durumu UI
+                if (matchStatus) {
+                    if (cpw.length > 0) {
+                        matchStatus.classList.remove('hidden');
+                        matchStatus.classList.add('flex');
+                        const span = matchStatus.querySelector('span');
+                        const icon = matchStatus.querySelector('i');
+                        if (passwordsMatch) {
+                            matchStatus.className = 'px-1 mt-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-green-500';
+                            if (span) span.innerText = 'Şifreler Eşleşti';
+                            if (icon) icon.className = 'fa-solid fa-circle-check';
+                        } else {
+                            matchStatus.className = 'px-1 mt-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-red-500';
+                            if (span) span.innerText = 'Şifreler Eşleşmiyor';
+                            if (icon) icon.className = 'fa-solid fa-circle-xmark';
+                        }
+                    } else {
+                        matchStatus.classList.add('hidden');
+                        matchStatus.classList.remove('flex');
+                    }
+                }
+
+                // Buton Durumu Toggle (şifre kuralları + sözleşme onayı)
+                if (allRulesMet && passwordsMatch && termsOk) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('bg-yaziyo-gold/50', 'to-yellow-600/50', 'text-slate-900/50', 'shadow-none', 'cursor-not-allowed');
+                    submitBtn.classList.add('bg-yaziyo-gold', 'to-yellow-600', 'text-slate-900', 'shadow-glow-gold', 'cursor-pointer', 'hover:scale-[1.02]', 'active:scale-95');
+                } else {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('bg-yaziyo-gold/50', 'to-yellow-600/50', 'text-slate-900/50', 'shadow-none', 'cursor-not-allowed');
+                    submitBtn.classList.remove('bg-yaziyo-gold', 'to-yellow-600', 'text-slate-900', 'shadow-glow-gold', 'cursor-pointer', 'hover:scale-[1.02]', 'active:scale-95');
+                }
+            }
+
+            // Şifre kuralları popup göster/gizle
+            const validationContainer = document.getElementById('password-validation-container');
+            
+            function toggleValidationPopup() {
+                if (!validationContainer || !regPassword) return;
+                
+                const pw = regPassword.value;
+                const allRulesMet = Object.values(rules).every(rule => rule(pw));
+                
+                // SadeceŞifre girilmeye başlandıysa VE tüm kurallar HATA veriyorsa/eksikse göster
+                if (pw.length > 0 && !allRulesMet) {
+                    validationContainer.classList.remove('hidden');
+                    validationContainer.classList.add('flex');
+                    setTimeout(() => {
+                        validationContainer.classList.remove('opacity-0', 'translate-y-[-10px]');
+                        validationContainer.classList.add('opacity-100', 'translate-y-0');
+                    }, 10);
+                } else {
+                    // Şifre boşsa veya TÜM kurallar sağlandıysa gizle
+                    validationContainer.classList.remove('opacity-100', 'translate-y-0');
+                    validationContainer.classList.add('opacity-0', 'translate-y-[-10px]');
+                    setTimeout(() => {
+                        validationContainer.classList.add('hidden');
+                        validationContainer.classList.remove('flex');
+                    }, 300);
+                }
+            }
+
+            regPassword?.addEventListener('input', () => {
+                updateUI();
+                toggleValidationPopup();
+            });
+            
+            regConfirm?.addEventListener('input', checkFormValidity);
+            termsAccept?.addEventListener('change', checkFormValidity);
+            window.addEventListener('terms-accept-changed', checkFormValidity);
+        });
+
+        /* handleLogin / handleRegister → js/authForms.js */
+    </script>
+    <!-- ÜYELİK SÖZLEŞMESİ MODALI -->
+    <div id="terms-modal" class="terms-modal fixed inset-0 z-[110] hidden items-center justify-center p-4 sm:p-6"
+        role="dialog" aria-modal="true" aria-labelledby="terms-modal-title">
+        <div id="terms-modal-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="terms-modal-content"
+            class="terms-modal__panel relative w-full max-w-2xl max-h-[min(90vh,42rem)] flex flex-col bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-2xl transform scale-95 opacity-0 transition-all duration-300 overflow-hidden">
+            <div
+                class="flex items-start justify-between gap-4 px-5 sm:px-6 py-4 border-b border-light-border dark:border-dark-border shrink-0">
+                <div>
+                    <h2 id="terms-modal-title"
+                        class="font-poppins font-bold text-sm sm:text-base text-light-text dark:text-dark-text leading-snug pr-2">
+                        YAZİYO PLATFORMU ÜYELİK SÖZLEŞMESİ, KVKK AYDINLATMA METNİ VE GİZLİLİK POLİTİKASI
+                    </h2>
+                    <p class="text-[11px] text-light-text-secondary dark:text-dark-text-secondary mt-1">Yürürlük Tarihi:
+                        10.06.2026</p>
+                </div>
+                <button type="button" id="terms-modal-close"
+                    class="shrink-0 w-9 h-9 flex items-center justify-center rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-bg dark:hover:bg-dark-bg hover:text-red-500 transition-all"
+                    aria-label="Kapat">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="terms-modal__body px-5 sm:px-6 py-4 overflow-y-auto text-left font-inter text-xs sm:text-sm text-light-text-secondary dark:text-dark-text-secondary leading-relaxed space-y-4">
+                <p>İşbu Üyelik Sözleşmesi, KVKK Aydınlatma Metni ve Gizlilik Politikası; Yaziyo Platformu ile Platform’a üye olan gerçek kişi kullanıcı arasında akdedilmiştir.</p>
+                <p>Platform’a erişim sağlanması, üyelik oluşturulması veya hizmetlerin kullanılması ile birlikte Kullanıcı, işbu Sözleşme’de yer alan tüm hüküm ve şartları kayıtsız ve şartsız olarak kabul etmiş sayılır.</p>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">1. TANIMLAR</h3>
+                    <p><strong class="text-light-text dark:text-dark-text">Platform:</strong> Yaziyo adı altında hizmet veren web tabanlı yazılım ve dijital hizmetler bütünü</p>
+                    <p><strong class="text-light-text dark:text-dark-text">Kullanıcı:</strong> Platform’a üye olan ve hizmetlerden yararlanan gerçek kişi</p>
+                    <p><strong class="text-light-text dark:text-dark-text">Hizmet:</strong> Klavye çalışmaları, eğitim modülleri, oyunlar, testler, profil sistemi ve benzeri dijital içerikler</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">2. ÜYELİK KOŞULLARI</h3>
+                    <p>2.1. Kullanıcı, üyelik sırasında beyan ettiği tüm bilgilerin doğru, eksiksiz ve güncel olduğunu kabul ve taahhüt eder.</p>
+                    <p>2.2. Platform, yanlış, yanıltıcı veya eksik bilgi verilmesi halinde üyeliği askıya alma veya tamamen sonlandırma hakkını saklı tutar.</p>
+                    <p>2.3. Üyelik kişiseldir ve üçüncü kişilere devredilemez.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">3. HESAP GÜVENLİĞİ</h3>
+                    <p>3.1. Kullanıcı, hesap bilgilerinin gizliliğini korumakla yükümlüdür.</p>
+                    <p>3.2. Kullanıcı hesabı üzerinden gerçekleştirilen tüm işlemler münhasıran Kullanıcı’ya ait kabul edilir.</p>
+                    <p>3.3. Hesap güvenliğinin ihlal edilmesinden doğabilecek zararlardan Platform sorumlu tutulamaz.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">4. KULLANIM ŞARTLARI VE YASAKLI FAALİYETLER</h3>
+                    <p>Kullanıcı aşağıdaki faaliyetlerde bulunmayacağını kabul eder:</p>
+                    <p>Yürürlükteki mevzuata aykırı içerik üretmek veya paylaşmak</p>
+                    <p>Platform’un güvenliğini tehdit eden yazılım, kod veya girişimlerde bulunmak</p>
+                    <p>Otomatik sistemler (bot, script vb.) kullanmak suretiyle sistemi kötüye kullanmak</p>
+                    <p>Diğer kullanıcıların haklarını ihlal etmek veya taciz etmek</p>
+                    <p>Platform, bu tür durumların tespiti halinde hizmeti derhal sonlandırma hakkına sahiptir.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">5. HİZMETİN SUNULMASI</h3>
+                    <p>5.1. Platform, hizmetlerin kesintisiz ve hatasız olacağını garanti etmez.</p>
+                    <p>5.2. Teknik bakım, güncelleme, altyapı değişiklikleri veya mücbir sebepler nedeniyle hizmete erişim geçici olarak durdurulabilir.</p>
+                    <p>5.3. Platform, hizmet içeriğini değiştirme, güncelleme veya tamamen kaldırma hakkını saklı tutar.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">6. FİKRİ MÜLKİYET HAKLARI</h3>
+                    <p>6.1. Platform’a ait tüm yazılım, tasarım, arayüz, içerik ve marka unsurları fikri mülkiyet hukuku kapsamında korunmaktadır.</p>
+                    <p>6.2. Kullanıcı, Platform içeriğini izinsiz olarak çoğaltamaz, kopyalayamaz, dağıtamaz veya ticari amaçla kullanamaz.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">7. KİŞİSEL VERİLERİN İŞLENMESİ (KVKK AYDINLATMA METNİ)</h3>
+                    <p>7.1. 6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”) uyarınca, veri sorumlusu sıfatıyla Platform tarafından aşağıda belirtilen kişisel veriler işlenmektedir:</p>
+                    <p>E-posta adresi</p>
+                    <p>Kullanıcı adı</p>
+                    <p>IP adresi</p>
+                    <p>Kullanım ve işlem verileri (skorlar, aktiviteler, log kayıtları)</p>
+                    <p>7.2. Kişisel veriler aşağıdaki amaçlarla işlenmektedir:</p>
+                    <p>Üyelik işlemlerinin yürütülmesi</p>
+                    <p>Hizmetlerin sunulması ve geliştirilmesi</p>
+                    <p>Güvenlik süreçlerinin yürütülmesi</p>
+                    <p>Sistem performans analizi</p>
+                    <p>Yasal yükümlülüklerin yerine getirilmesi</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">8. KİŞİSEL VERİLERİN AKTARIMI</h3>
+                    <p>8.1. Kişisel veriler, açık rıza olmaksızın üçüncü kişilere satılmaz.</p>
+                    <p>8.2. Ancak hizmetin sunulabilmesi amacıyla altyapı sağlayıcıları (örneğin barındırma hizmetleri, veritabanı ve e-posta servisleri) ile sınırlı ölçüde paylaşılabilir.</p>
+                    <p>8.3. Bu hizmet sağlayıcılar, verileri yalnızca teknik amaçlarla işlemekle yükümlüdür.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">9. VERİ SAHİBİNİN HAKLARI</h3>
+                    <p>Kullanıcı, KVKK’nın 11. maddesi kapsamında:</p>
+                    <p>Kişisel verilerinin işlenip işlenmediğini öğrenme</p>
+                    <p>İşlenen veriler hakkında bilgi talep etme</p>
+                    <p>Verilerin düzeltilmesini veya silinmesini isteme</p>
+                    <p>İşlemeye itiraz etme</p>
+                    <p>haklarına sahiptir.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">10. E-POSTA BİLDİRİMLERİ</h3>
+                    <p>10.1. Kullanıcı, kayıt ve doğrulama süreçlerinde e-posta iletişimini kabul eder.</p>
+                    <p>10.2. Sistem bildirimleri, güvenlik uyarıları ve hizmet bilgilendirmeleri gönderilebilir.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">11. ÇEREZ (COOKIE) KULLANIMI</h3>
+                    <p>Platform, kullanıcı deneyimini geliştirmek amacıyla çerez teknolojilerinden faydalanabilir.</p>
+                    <p>Bu kapsamda:</p>
+                    <p>Oturum yönetimi</p>
+                    <p>Kullanıcı tercihleri</p>
+                    <p>Performans ve analiz verileri</p>
+                    <p>işlenebilir.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">12. SORUMLULUĞUN SINIRLANDIRILMASI</h3>
+                    <p>Platform, Kullanıcı’nın kusurundan kaynaklanan veri kaybı, sistem ihlali veya üçüncü taraf saldırılarından dolayı sorumlu tutulamaz.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">13. SÖZLEŞME DEĞİŞİKLİKLERİ</h3>
+                    <p>Platform, işbu Sözleşme hükümlerini tek taraflı olarak değiştirme hakkını saklı tutar. Güncel metin Platform’da yayımlandığı anda yürürlüğe girer.</p>
+                </div>
+                <div>
+                    <h3 class="font-poppins font-bold text-light-text dark:text-dark-text text-sm mb-2">14. YÜRÜRLÜK</h3>
+                    <p>Kullanıcı, Platform’a üye olarak işbu Sözleşme’yi okuduğunu, anladığını ve tüm hükümleri kabul ettiğini beyan eder.</p>
+                </div>
+            </div>
+            <div class="px-5 sm:px-6 py-4 border-t border-light-border dark:border-dark-border shrink-0">
+                <button type="button" id="terms-modal-accept"
+                    class="w-full py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-glow-gold">
+                    Okudum, kabul ediyorum
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BİLDİRİM MODALI -->
+    <div id="notification-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <!-- Backdrop (Dışarıya Tıklama Alanı) -->
+        <div id="notification-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+
+        <!-- Modal İçeriği -->
+        <div id="notification-content"
+            class="relative w-full max-w-sm mx-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl shadow-2xl p-6 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center">
+
+            <!-- Kapat Butonu -->
+            <button id="notification-close"
+                class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-bg dark:hover:bg-dark-bg hover:text-red-500 transition-all duration-300">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Modal İkonu -->
+            <div
+                class="w-16 h-16 rounded-full bg-yaziyo-gold/10 flex items-center justify-center text-yaziyo-gold text-3xl mb-5 shadow-glow-gold">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+
+            <!-- Modal Başlık ve Metni -->
+            <h3
+                class="text-xl font-poppins font-bold text-light-text dark:text-dark-text mb-2 transition-colors duration-300 text-center">
+                Bildirimler</h3>
+            <p id="notification-empty-msg"
+                class="text-light-text-secondary dark:text-dark-text-secondary font-inter text-center mb-6 transition-colors duration-300 text-sm">
+                Bildirimlerinizi görmek için giriş yapın.
+            </p>
+
+            <div class="w-full h-px bg-light-border dark:bg-dark-border mb-4 transition-colors duration-300"></div>
+
+            <p id="notification-footer-msg" class="text-xs text-yaziyo-gold font-inter font-medium tracking-wide text-center">
+                <a href="girisKayit.html" class="inline-flex items-center gap-1 text-yaziyo-gold hover:underline transition-all font-semibold"><i class="fa-solid fa-right-to-bracket"></i> Giriş yap / Kayıt ol</a>
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>
+

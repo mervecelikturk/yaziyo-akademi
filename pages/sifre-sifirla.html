@@ -1,0 +1,284 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YAZİYO — Yeni şifrenizi belirleyin.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Şifre Sıfırlama - YAZİYO</title>
+    <link rel="icon" type="image/png" href="../images/logo.png">
+
+    <script>
+        (function () {
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#0F172A',
+                        'dark-card': '#1E2937',
+                        'dark-text': '#F1F5F9',
+                        'dark-text-secondary': '#CBD5E1',
+                        'dark-border': '#334155',
+                        'light-bg': '#F8F4ED',
+                        'light-card': '#FFFFFF',
+                        'light-text': '#1E2937',
+                        'light-text-secondary': '#334155',
+                        'light-border': '#E6D9C2',
+                        'yaziyo-gold': 'rgb(var(--yaziyo-gold-rgb) / <alpha-value>)',
+                        'yaziyo-bg': 'rgb(var(--yaziyo-bg-rgb) / <alpha-value>)',
+                        'yaziyo-card': 'rgb(var(--yaziyo-card-rgb) / <alpha-value>)',
+                        'yaziyo-text': 'rgb(var(--yaziyo-text-rgb) / <alpha-value>)',
+                        'yaziyo-text-secondary': 'rgb(var(--yaziyo-text-secondary-rgb) / <alpha-value>)',
+                        'yaziyo-border': 'rgb(var(--yaziyo-border-rgb) / <alpha-value>)',
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow-gold': '0 0 15px rgba(var(--yaziyo-gold-rgb), 0.3)',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/auth-verify.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        .input-focus-ring:focus {
+            box-shadow: 0 0 0 4px rgba(var(--yaziyo-gold-rgb), 0.15);
+            background-color: rgb(var(--yaziyo-card-rgb)) !important;
+            transform: translateY(-1px);
+        }
+
+        .reset-page-bg {
+            background: linear-gradient(135deg,
+                    rgb(var(--yaziyo-bg-rgb)) 0%,
+                    rgba(255, 255, 255, 0.6) 45%,
+                    rgb(var(--yaziyo-bg-rgb)) 100%);
+        }
+
+        html.dark .reset-page-bg {
+            background: linear-gradient(135deg,
+                    #0f172a 0%,
+                    #1e293b 50%,
+                    #0f172a 100%);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
+
+    <header
+        class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 border-b border-light-border dark:border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="../images/logo.png" alt="YAZİYO Logo"
+                    class="h-5 sm:h-6 w-auto object-contain rounded-lg border-2 border-yaziyo-gold transition-transform duration-300 group-hover:scale-105">
+                <span
+                    class="font-poppins font-extrabold text-yaziyo-gold text-sm sm:text-base tracking-widest select-none">YAZİYO</span>
+            </a>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="theme-toggle-btn"
+                    class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold transition-all duration-300 hover:scale-110 hover:border-yaziyo-gold"
+                    aria-label="Tema Değiştir">
+                    <i class="fa-solid fa-sun text-base theme-icon-sun"></i>
+                    <i class="fa-solid fa-moon text-base theme-icon-moon"></i>
+                </button>
+                <a href="girisKayit.html"
+                    class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-poppins font-bold text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold transition-colors">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Giriş Yap
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow reset-page-bg">
+        <div class="verify-result-page">
+
+            <!-- Yükleniyor: e-posta linki doğrulanıyor -->
+            <div id="reset-loading" class="verify-result-card">
+                <div class="verify-result-card__spinner" aria-hidden="true"></div>
+                <h1 class="font-poppins font-bold text-xl sm:text-2xl text-light-text dark:text-dark-text mb-2">
+                    Link doğrulanıyor
+                </h1>
+                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary font-inter">
+                    Lütfen bekleyin, güvenli oturumunuz hazırlanıyor...
+                </p>
+            </div>
+
+            <!-- Form: yeni şifre belirleme -->
+            <div id="reset-form-wrap"
+                class="hidden w-full max-w-md bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 sm:p-10 text-left">
+                <div class="text-center mb-8">
+                    <div class="verify-panel-icon">
+                        <i class="fa-solid fa-key"></i>
+                    </div>
+                    <h1 class="font-poppins font-extrabold text-2xl text-light-text dark:text-dark-text mb-2">
+                        Yeni Şifre Belirle
+                    </h1>
+                    <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary font-inter">
+                        Hesabınız için güçlü bir şifre oluşturun.
+                    </p>
+                </div>
+
+                <form id="reset-password-form" class="space-y-5">
+                    <div class="space-y-2">
+                        <label for="reset-password"
+                            class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider ml-1">
+                            Yeni Şifre
+                        </label>
+                        <div class="relative">
+                            <i
+                                class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                            <input type="password" id="reset-password" required autocomplete="new-password"
+                                class="w-full pl-11 pr-12 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300"
+                                placeholder="••••••••">
+                            <button type="button" id="toggle-reset-password"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-light-text-secondary hover:text-yaziyo-gold transition-colors"
+                                aria-label="Şifreyi göster">
+                                <i class="fa-solid fa-eye text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="reset-password-confirm"
+                            class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider ml-1">
+                            Şifre Tekrar
+                        </label>
+                        <div class="relative">
+                            <i
+                                class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                            <input type="password" id="reset-password-confirm" required autocomplete="new-password"
+                                class="w-full pl-11 pr-12 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300"
+                                placeholder="••••••••">
+                            <button type="button" id="toggle-reset-password-confirm"
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-light-text-secondary hover:text-yaziyo-gold transition-colors"
+                                aria-label="Şifreyi göster">
+                                <i class="fa-solid fa-eye text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Şifre gücü ve kurallar -->
+                    <div
+                        class="rounded-xl border border-light-border dark:border-dark-border bg-yaziyo-bg/30 p-4 space-y-3">
+                        <div class="w-full bg-light-border dark:bg-dark-border rounded-full overflow-hidden h-1.5">
+                            <div id="reset-strength-bar" class="h-full w-0 transition-all duration-500 bg-red-500">
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span id="reset-strength-text"
+                                class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Zayıf</span>
+                        </div>
+                        <ul class="space-y-1.5">
+                            <li data-reset-rule="length"
+                                class="text-[10px] flex items-center gap-1.5 text-light-text-secondary dark:text-dark-text-secondary">
+                                <i class="fa-solid fa-circle-xmark text-[8px]"></i> 8-64 karakter
+                            </li>
+                            <li data-reset-rule="upper"
+                                class="text-[10px] flex items-center gap-1.5 text-light-text-secondary dark:text-dark-text-secondary">
+                                <i class="fa-solid fa-circle-xmark text-[8px]"></i> En az 1 büyük harf
+                            </li>
+                            <li data-reset-rule="lower"
+                                class="text-[10px] flex items-center gap-1.5 text-light-text-secondary dark:text-dark-text-secondary">
+                                <i class="fa-solid fa-circle-xmark text-[8px]"></i> En az 1 küçük harf
+                            </li>
+                            <li data-reset-rule="number"
+                                class="text-[10px] flex items-center gap-1.5 text-light-text-secondary dark:text-dark-text-secondary">
+                                <i class="fa-solid fa-circle-xmark text-[8px]"></i> En az 1 rakam
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" id="reset-password-submit"
+                        class="verify-btn-primary mt-2 shadow-glow-gold active:scale-95">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        ŞİFREMİ GÜNCELLE
+                    </button>
+                </form>
+
+                <p class="mt-6 text-center text-xs text-light-text-secondary dark:text-dark-text-secondary">
+                    <a href="girisKayit.html" class="text-yaziyo-gold hover:underline font-semibold">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Giriş sayfasına dön
+                    </a>
+                </p>
+            </div>
+
+            <!-- Hata: geçersiz veya süresi dolmuş link -->
+            <div id="reset-error-wrap" class="hidden verify-result-card">
+                <div class="verify-result-card__icon verify-result-card__icon--error" aria-hidden="true">
+                    <i class="fa-solid fa-link-slash"></i>
+                </div>
+                <h1 class="font-poppins font-bold text-xl sm:text-2xl text-light-text dark:text-dark-text mb-3">
+                    Link geçersiz
+                </h1>
+                <p id="reset-error-message"
+                    class="text-sm text-light-text-secondary dark:text-dark-text-secondary font-inter mb-6 leading-relaxed">
+                    Sıfırlama linkinin süresi dolmuş veya daha önce kullanılmış olabilir.
+                </p>
+                <div class="space-y-3">
+                    <a href="girisKayit.html?forgot=1" class="verify-btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Yeni sıfırlama linki iste
+                    </a>
+                    <a href="girisKayit.html"
+                        class="inline-flex items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold transition-colors">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Giriş sayfasına dön
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer
+        class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center">
+            <p class="text-light-text-secondary dark:text-dark-text-secondary text-[10px] sm:text-xs font-inter">
+                © 2026 YAZİYO. Tüm hakları saklıdır.
+            </p>
+        </div>
+    </footer>
+
+    <div id="auth-toast-container" class="auth-toast-container" aria-live="polite"></div>
+    <script src="../js/siteNavbar.js"></script>
+
+    <script src="../js/main.js"></script>
+    <script type="module" src="../js/sifreSifirla.js"></script>
+</body>
+
+</html>

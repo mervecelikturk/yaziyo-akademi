@@ -1,0 +1,351 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YAZİYO Yönetici Paneli- Sözlü Mülakat Yönetimi.">
+    <title>Sözlü Mülakat - Admin - YAZİYO</title>
+    <link rel="icon" type="image/png" href="../images/logo.png">
+
+    <script>
+        (function () {
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const t = localStorage.getItem('yaziyo-theme');
+            if (t === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#0F172A', 'dark-card': '#1E2937', 'dark-text': '#F1F5F9',
+                        'dark-text-secondary': '#CBD5E1', 'dark-border': '#334155',
+                        'light-bg': '#F8F4ED', 'light-card': '#FFFFFF', 'light-text': '#1E2937',
+                        'light-text-secondary': '#334155', 'light-border': '#E6D9C2',
+                        'yaziyo-gold': 'rgb(var(--yaziyo-gold-rgb) / <alpha-value>)',
+                    },
+                    fontFamily: { 'poppins': ['Poppins', 'sans-serif'], 'inter': ['Inter', 'sans-serif'] },
+                    boxShadow: { 'glow-gold': '0 0 15px rgba(217, 119, 6, 0.3)' }
+                }
+            },
+            plugins: [function ({ addVariant }) { addVariant('light', '.light &'); }]
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--yaziyo-gold-rgb) / 0.3); border-radius: 10px; }
+        .admin-form-input, .admin-form-select, .admin-form-textarea {
+            width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; font-family: 'Inter', sans-serif;
+            font-size: 0.875rem; background-color: rgb(var(--yaziyo-bg-rgb) / 0.5);
+            border: 2px solid rgb(var(--yaziyo-border-rgb) / 0.8); color: rgb(var(--yaziyo-text-rgb));
+        }
+        .admin-form-input:focus, .admin-form-select:focus, .admin-form-textarea:focus {
+            outline: none; border-color: rgb(var(--yaziyo-gold-rgb)); box-shadow: 0 0 0 4px rgb(var(--yaziyo-gold-rgb) / 0.15);
+        }
+        .admin-form-textarea { min-height: 90px; resize: vertical; }
+        .admin-stat-card {
+            background: rgb(var(--yaziyo-card-rgb)); border: 1px solid rgb(var(--yaziyo-border-rgb));
+            border-radius: 1rem; padding: 1.25rem;
+        }
+        .admin-tab {
+            padding: 0.6rem 1.25rem; border-radius: 0.75rem; font-family: 'Poppins', sans-serif;
+            font-size: 0.8125rem; font-weight: 700; border: 1px solid rgb(var(--yaziyo-border-rgb));
+            background: rgb(var(--yaziyo-card-rgb)); color: rgb(var(--yaziyo-text-secondary-rgb));
+            transition: all 0.2s;
+        }
+        .admin-tab-active {
+            background: linear-gradient(135deg, rgb(var(--yaziyo-gold-rgb)), #ca8a04);
+            border-color: transparent; color: #0f172a;
+        }
+        .admin-panel.hidden { display: none; }
+    </style>
+</head>
+
+<body class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col">
+
+    <header id="main-header" class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2">
+                <img src="../images/logo.png" alt="YAZİYO" class="h-5 sm:h-6 rounded-lg border-2 border-yaziyo-gold">
+                <span class="font-poppins font-extrabold text-yaziyo-gold text-sm sm:text-base tracking-widest">YAZİYO</span>
+            </a>
+            <div class="flex items-center gap-2">
+                <button id="theme-toggle-btn" class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold" aria-label="Tema">
+                    <i class="fa-solid fa-sun theme-icon-sun"></i><i class="fa-solid fa-moon theme-icon-moon"></i>
+                </button>
+                <a href="admin.html" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm rounded-lg">
+                    <i class="fa-solid fa-user-shield"></i><span>Admin</span>
+                </a>
+            </div>
+        </div>
+        <div class="w-full h-px bg-light-border dark:bg-dark-border"></div>
+        <nav id="main-navbar" class="bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-md">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+                <ul id="desktop-menu" class="hidden sm:flex items-center justify-center gap-x-1 xl:gap-x-2 py-2 text-xs xl:text-sm font-medium">
+                    <li><a href="admin.html" class="nav-link" data-page="admin"><i class="fa-solid fa-gauge-high mr-1.5 text-[0.85em]"></i>Admin</a></li>
+                    <li><a href="kullanicilar.html" class="nav-link" data-page="kullanicilar"><i class="fa-solid fa-users mr-1.5 text-[0.85em]"></i>Kullanıcılar</a></li>
+                    <li><a href="icerikEkle.html" class="nav-link" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-1.5 text-[0.85em]"></i>İçerik Ekle</a></li>
+                    <li><a href="sinavEkle.html" class="nav-link" data-page="sinav-ekle"><i class="fa-solid fa-award mr-1.5 text-[0.85em]"></i>Sınav Ekle</a></li>
+                    <li><a href="adminHaberler.html" class="nav-link" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-1.5 text-[0.85em]"></i>Haberler</a></li>
+                    <li><a href="adminEgitimPaketleri.html" class="nav-link" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-1.5 text-[0.85em]"></i>Eğitim Paketleri</a></li>
+                    <li class="nav-dropdown">
+                        <button type="button" class="nav-link nav-dropdown-trigger active" data-page="admin-mulakatlar"><i class="fa-solid fa-microphone-lines mr-1.5 text-[0.85em]"></i>Mülakatlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="adminSozluMulakat.html" class="nav-dropdown-item active" data-page="admin-sozlu-mulakat">Sözlü Mülakat</a></li>
+                            <li><a href="adminMulakatSimulasyonu.html" class="nav-dropdown-item" data-page="admin-mulakat-simulasyonu">Mülakat Simülasyonu</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="mesajlar.html" class="nav-link" data-page="mesajlar"><i class="fa-solid fa-envelope mr-1.5 text-[0.85em]"></i>Mesajlar</a></li>
+                </ul>
+                <div class="sm:hidden flex items-center justify-between py-2">
+                    <span class="text-sm text-light-text-secondary">Admin Menü</span>
+                    <button id="hamburger-btn" class="p-2 rounded-lg hover:bg-light-card dark:hover:bg-dark-card" aria-label="Menü"><i class="fa-solid fa-bars" id="hamburger-icon"></i></button>
+                </div>
+                <div id="mobile-menu" class="sm:hidden hidden pb-4 text-sm">
+                    <ul class="flex flex-col gap-1">
+                        <li><a href="admin.html" class="mobile-nav-link" data-page="admin"><i class="fa-solid fa-gauge-high mr-2"></i>Admin</a></li>
+                        <li><a href="adminSozluMulakat.html" class="mobile-nav-link active" data-page="admin-sozlu-mulakat"><i class="fa-solid fa-microphone-lines mr-2"></i>Sözlü Mülakat</a></li>
+                        <li><a href="mesajlar.html" class="mobile-nav-link" data-page="mesajlar"><i class="fa-solid fa-envelope mr-2"></i>Mesajlar</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
+        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-6">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-poppins font-bold">Sözlü Mülakat Yönetimi</h1>
+                <p class="text-sm text-light-text-secondary mt-1 max-w-2xl">
+                    <strong>Mülakat kartları</strong> (ad, konu, soru kaynağı, 5 soru) ve <strong>soru bankası</strong> buradan yönetilir.
+                    Kullanıcı <a href="sozluMulakat.html" target="_blank" rel="noopener" class="text-yaziyo-gold font-semibold hover:underline">sözlü mülakat sayfasında</a> kartları görür.
+                </p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="sozluMulakat.html" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-sm font-semibold hover:border-yaziyo-gold hover:text-yaziyo-gold transition-all">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i> Önizleme
+                </a>
+                <button type="button" id="btn-refresh-all" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-sm font-semibold hover:border-yaziyo-gold transition-all">
+                    <i class="fa-solid fa-rotate text-xs"></i> Yenile
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button type="button" class="admin-tab admin-tab-active" data-tab="paketler">Mülakatlar</button>
+            <button type="button" class="admin-tab" data-tab="sorular">Soru Bankası</button>
+        </div>
+
+        <!-- MÜLAKATLAR -->
+        <section id="panel-paketler" class="admin-panel">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div class="admin-stat-card"><p class="text-[10px] font-bold uppercase text-light-text-secondary">Toplam Mülakat</p><p id="stat-total-paket" class="text-2xl font-poppins font-bold text-yaziyo-gold mt-1">0</p></div>
+                <div class="admin-stat-card"><p class="text-[10px] font-bold uppercase text-light-text-secondary">Yayında</p><p id="stat-active-paket" class="text-2xl font-poppins font-bold text-green-500 mt-1">0</p></div>
+                <div class="admin-stat-card"><p class="text-[10px] font-bold uppercase text-light-text-secondary">Hazır (5 soru)</p><p id="stat-ready-paket" class="text-2xl font-poppins font-bold text-orange-400 mt-1">0</p></div>
+                <div class="admin-stat-card"><p class="text-[10px] font-bold uppercase text-light-text-secondary">Soru Havuzu</p><p id="stat-pool-questions" class="text-2xl font-poppins font-bold text-slate-500 mt-1">0</p></div>
+            </div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <input id="paket-search" type="search" placeholder="Mülakat ara..." class="admin-form-input max-w-md">
+                <button type="button" id="btn-add-paket" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm rounded-lg shrink-0">
+                    <i class="fa-solid fa-plus"></i> Yeni Mülakat
+                </button>
+            </div>
+
+            <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left min-w-[720px]">
+                        <thead>
+                            <tr class="bg-light-bg/50 dark:bg-dark-bg/50 border-b border-light-border dark:border-dark-border">
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Mülakat</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Konu</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Kaynak</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary text-center">Sorular</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Durum</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paket-admin-tbody" class="divide-y divide-light-border dark:divide-dark-border"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SORU BANKASI -->
+        <section id="panel-sorular" class="admin-panel hidden">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                <div class="admin-stat-card"><p class="text-[10px] font-bold uppercase text-light-text-secondary">Toplam Soru</p><p id="stat-total-questions" class="text-2xl font-poppins font-bold text-yaziyo-gold mt-1">0</p></div>
+                <div class="admin-stat-card"><p class="text-[10px] font-bold uppercase text-light-text-secondary">Yayında</p><p id="stat-active-questions" class="text-2xl font-poppins font-bold text-green-500 mt-1">0</p></div>
+                <div class="admin-stat-card"><p class="text-[10px] font-bold uppercase text-light-text-secondary">Taslak</p><p id="stat-draft-questions" class="text-2xl font-poppins font-bold text-slate-400 mt-1">0</p></div>
+                <div class="admin-stat-card"><p class="text-[10px] font-bold uppercase text-light-text-secondary">5 Şıklı</p><p id="stat-five-options" class="text-2xl font-poppins font-bold text-orange-400 mt-1">0</p></div>
+            </div>
+
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div class="flex flex-col sm:flex-row gap-3 flex-grow max-w-3xl">
+                    <input id="question-search" type="search" placeholder="Soru ara..." class="admin-form-input">
+                    <select id="question-cat-filter" class="admin-form-select sm:max-w-[180px]"></select>
+                    <select id="question-status-filter" class="admin-form-select sm:max-w-[160px]">
+                        <option value="all">Tüm Durumlar</option>
+                        <option value="active">Yayında</option>
+                        <option value="draft">Taslak</option>
+                    </select>
+                </div>
+                <button type="button" id="btn-add-question" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm rounded-lg shrink-0">
+                    <i class="fa-solid fa-plus"></i> Yeni Soru
+                </button>
+            </div>
+
+            <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left min-w-[680px]">
+                        <thead>
+                            <tr class="bg-light-bg/50 dark:bg-dark-bg/50 border-b border-light-border dark:border-dark-border">
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Soru</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Kategori</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary text-center">Şık</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Durum</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questions-admin-tbody" class="divide-y divide-light-border dark:divide-dark-border"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Mülakat modal -->
+    <div id="paket-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4">
+        <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div data-panel class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-2xl opacity-0 scale-95 transition-all duration-300">
+            <div class="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-card/95 dark:bg-dark-card/95 backdrop-blur-md">
+                <h2 id="paket-modal-title" class="font-poppins font-bold text-lg">Yeni Mülakat</h2>
+                <button type="button" data-close-paket-modal class="w-9 h-9 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="paket-form" class="p-6 space-y-5">
+                <div>
+                    <label for="field-paket-title" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Mülakat Adı *</label>
+                    <input id="field-paket-title" required class="admin-form-input" placeholder="Örn: Mülakat A">
+                </div>
+                <div>
+                    <label for="field-paket-topic" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Mülakat İçeriği (Konu) *</label>
+                    <textarea id="field-paket-topic" required class="admin-form-textarea" placeholder="Tarih, vatandaşlık, güncel bilgiler..."></textarea>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="field-paket-source" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Soru Kaynağı</label>
+                        <select id="field-paket-source" class="admin-form-select"></select>
+                    </div>
+                    <div>
+                        <label for="field-paket-sort" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Sıra</label>
+                        <input id="field-paket-sort" type="number" value="0" class="admin-form-input">
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-xs font-bold uppercase text-light-text-secondary">5 Soru Seç *</label>
+                        <span class="text-xs font-bold text-yaziyo-gold"><span id="paket-selected-count">0</span> / 5</span>
+                    </div>
+                    <input id="paket-question-search" type="search" placeholder="Soru ara..." class="admin-form-input mb-3 text-sm">
+                    <div id="paket-question-picker" class="max-h-56 overflow-y-auto custom-scrollbar space-y-2 border border-light-border dark:border-dark-border rounded-xl p-3"></div>
+                </div>
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input id="field-paket-active" type="checkbox" checked class="rounded border-light-border text-yaziyo-gold focus:ring-yaziyo-gold">
+                    <span>Yayında (kullanıcı sayfasında kart olarak görünsün)</span>
+                </label>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" data-close-paket-modal class="flex-1 py-3 rounded-xl border border-light-border dark:border-dark-border font-bold text-sm">İptal</button>
+                    <button type="submit" id="btn-save-paket" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Soru modal -->
+    <div id="question-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4">
+        <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div data-panel class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-2xl opacity-0 scale-95 transition-all duration-300">
+            <div class="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-card/95 dark:bg-dark-card/95 backdrop-blur-md">
+                <h2 id="question-modal-title" class="font-poppins font-bold text-lg">Yeni Soru</h2>
+                <button type="button" data-close-question-modal class="w-9 h-9 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="question-form" class="p-6 space-y-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="field-category" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Kategori</label>
+                        <select id="field-category" class="admin-form-select"></select>
+                    </div>
+                    <div>
+                        <label for="field-sort" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Sıra</label>
+                        <input id="field-sort" type="number" value="0" class="admin-form-input">
+                    </div>
+                </div>
+                <div>
+                    <label for="field-question" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Soru Metni *</label>
+                    <textarea id="field-question" required class="admin-form-textarea min-h-[100px]"></textarea>
+                </div>
+                <div>
+                    <label for="field-options" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">5 Şık (her satır bir şık) *</label>
+                    <textarea id="field-options" required class="admin-form-textarea font-mono text-sm" rows="6" placeholder="A şıkkı&#10;B şıkkı&#10;..."></textarea>
+                </div>
+                <div>
+                    <label for="field-correct" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Doğru Cevap</label>
+                    <select id="field-correct" class="admin-form-select"></select>
+                </div>
+                <div>
+                    <label for="field-explanation" class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Açıklama</label>
+                    <textarea id="field-explanation" class="admin-form-textarea"></textarea>
+                </div>
+                <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input id="field-active" type="checkbox" checked class="rounded border-light-border text-yaziyo-gold focus:ring-yaziyo-gold">
+                    <span>Yayında</span>
+                </label>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" data-close-question-modal class="flex-1 py-3 rounded-xl border font-bold text-sm">İptal</button>
+                    <button type="submit" id="btn-save-question" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="fixed inset-0 z-[130] hidden items-center justify-center p-4">
+        <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div data-panel class="relative w-full max-w-md bg-light-card dark:bg-dark-card border rounded-2xl p-6 text-center opacity-0 scale-95 transition-all duration-300">
+            <h3 id="delete-modal-title" class="font-poppins font-bold text-lg mb-2">Sil</h3>
+            <p id="delete-message" class="text-sm text-light-text-secondary mb-6 whitespace-pre-line"></p>
+            <div class="flex gap-3">
+                <button type="button" data-close-delete-modal class="flex-1 py-2.5 rounded-xl border font-bold text-sm">İptal</button>
+                <button type="button" id="btn-confirm-delete" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm">Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-toast" class="hidden fixed bottom-6 right-6 z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl"></div>
+
+    <footer id="main-footer" class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 py-10 text-center">
+            <p class="text-light-text-secondary text-xs">© 2026 YAZİYO. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/pageStatus.js"></script>
+    <script src="../js/main.js"></script>
+    <script type="module" src="../js/adminSozluMulakat.js"></script>
+</body>
+
+</html>

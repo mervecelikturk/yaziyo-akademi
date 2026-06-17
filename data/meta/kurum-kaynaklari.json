@@ -1,0 +1,26 @@
+{
+  "_aciklama": "Kurum adları ve kesin kayıtlar buraya eklenecek. Boş bırakılan tipler üretilmez (uydurma yapılmaz).",
+  "ilce_adliyeleri": {},
+  "icra_daireleri": {},
+  "cte_ceza_inf": {},
+  "adli_tip": {},
+  "egitim_evi": {},
+  "ornek_ilce_adliyesi": {
+    "Ankara": [
+      { "ilce": "Sincan", "kurum_adi": "" },
+      { "ilce": "Keçiören", "kurum_adi": "" }
+    ]
+  },
+  "ornek_cte": {
+    "Ankara": [
+      { "kurum_adi": "", "alt_tur": "KAPALI" },
+      { "kurum_adi": "", "alt_tur": "ACIK" }
+    ]
+  },
+  "ornek_icra": {
+    "Ankara": [
+      { "ilce": null, "kurum_adi": "" },
+      { "ilce": "Sincan", "kurum_adi": "" }
+    ]
+  }
+}

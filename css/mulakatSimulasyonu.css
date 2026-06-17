@@ -1,0 +1,975 @@
+/* YAZİYO — Mülakat Simülasyonu */
+
+html:not(.is-logged-in) #sim-content { display: none; }
+html.is-logged-in #auth-gate { display: none; }
+
+html.ms-scene-open,
+html.ms-scene-open body {
+    overflow: hidden;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ── Kart ızgarası (sözlü mülakat ile aynı mantık) ── */
+.ms-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .ms-cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+    .ms-cards-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1280px) {
+    .ms-cards-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.ms-sim-card {
+    --ms-card-accent: rgb(var(--yaziyo-gold-rgb));
+    --ms-card-accent-soft: rgb(var(--yaziyo-gold-rgb) / 0.14);
+    display: flex;
+    flex-direction: column;
+    min-height: 220px;
+    padding: 1.25rem 1.35rem 1.35rem;
+    border-radius: 1rem;
+    border: 1px solid rgb(0 0 0 / 0.06);
+    background: linear-gradient(145deg, var(--ms-card-accent-soft), rgb(var(--yaziyo-card-rgb)));
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.ms-sim-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgb(0 0 0 / 0.1);
+}
+
+.ms-sim-card-tone-0 { --ms-card-accent: rgb(var(--yaziyo-gold-rgb)); --ms-card-accent-soft: rgb(var(--yaziyo-gold-rgb) / 0.18); }
+.ms-sim-card-tone-1 { --ms-card-accent: rgb(var(--yaziyo-green-rgb)); --ms-card-accent-soft: rgb(var(--yaziyo-green-rgb) / 0.16); }
+.ms-sim-card-tone-2 { --ms-card-accent: #0d9488; --ms-card-accent-soft: rgb(13 148 136 / 0.14); }
+.ms-sim-card-tone-3 { --ms-card-accent: #7c3aed; --ms-card-accent-soft: rgb(124 58 237 / 0.12); }
+.ms-sim-card-tone-4 { --ms-card-accent: #ea580c; --ms-card-accent-soft: rgb(234 88 12 / 0.14); }
+.ms-sim-card-tone-5 { --ms-card-accent: #2563eb; --ms-card-accent-soft: rgb(37 99 235 / 0.12); }
+.ms-sim-card-tone-6 { --ms-card-accent: #be185d; --ms-card-accent-soft: rgb(190 24 93 / 0.12); }
+.ms-sim-card-tone-7 { --ms-card-accent: #b45309; --ms-card-accent-soft: rgb(180 83 9 / 0.14); }
+
+.ms-card-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ms-card-accent);
+    margin-bottom: 0.35rem;
+}
+
+.ms-card-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    color: rgb(var(--yaziyo-text-rgb));
+    margin-bottom: 0.5rem;
+}
+
+.ms-card-desc {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    flex-grow: 1;
+    margin-bottom: 0.75rem;
+}
+
+.ms-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+.ms-card-tag {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.3rem 0.55rem;
+    border-radius: 9999px;
+    background: rgb(255 255 255 / 0.55);
+    color: var(--ms-card-accent);
+    border: 1px solid var(--ms-card-accent);
+}
+
+.ms-card-start {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border-radius: 0.75rem;
+    border: none;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    background: var(--ms-card-accent);
+    color: #0f172a;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.ms-card-start:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgb(0 0 0 / 0.12);
+}
+
+.ms-action-btn {
+    padding: 0.45rem 0.9rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(var(--yaziyo-gold-rgb));
+    color: rgb(var(--yaziyo-gold-rgb));
+    font-weight: 700;
+    font-size: 0.75rem;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* ── Deneme geçmişi ── */
+.ms-history-item {
+    padding: 0.75rem 0.85rem;
+    border-radius: 0.85rem;
+    border: 2px solid rgb(var(--yaziyo-border-rgb));
+    background: rgb(var(--yaziyo-bg-rgb) / 0.35);
+    margin-bottom: 0.5rem;
+}
+.ms-history-item:last-child { margin-bottom: 0; }
+.ms-history-item-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.35rem;
+}
+.ms-history-title { font-family: 'Poppins', sans-serif; font-size: 0.8rem; font-weight: 700; }
+.ms-history-date { font-size: 0.65rem; color: rgb(var(--yaziyo-text-secondary-rgb)); white-space: nowrap; }
+.ms-history-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.68rem;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+}
+.ms-history-meta i { color: rgb(var(--yaziyo-gold-rgb)); margin-right: 0.2rem; }
+.ms-history-badge {
+    margin-left: auto;
+    font-size: 0.58rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    border: 2px solid;
+}
+.ms-history-badge.ok { color: #166534; background: #dcfce7; border-color: #86efac; }
+.ms-history-badge.fail { color: #b91c1c; background: #fee2e2; border-color: #fca5a5; }
+
+/* ══════════════════════════════════════ */
+/* Tam ekran mülakat salonu               */
+/* ══════════════════════════════════════ */
+.ms-scene-root {
+    position: fixed;
+    inset: 0;
+    z-index: 180;
+    display: flex;
+    flex-direction: column;
+    background: #1a1510;
+    overflow: hidden;
+}
+.ms-scene-root.hidden { display: none; }
+
+.ms-scene-exit {
+    position: absolute;
+    top: 0.85rem;
+    left: 0.85rem;
+    z-index: 30;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(15, 23, 42, 0.55);
+    color: #f8fafc;
+    font-size: 0.75rem;
+    font-weight: 700;
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+.ms-scene-exit:hover {
+    background: rgba(217, 119, 6, 0.25);
+    border-color: rgba(217, 119, 6, 0.5);
+}
+
+.ms-salon {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    perspective: 900px;
+    overflow: hidden;
+}
+
+/* Duvar */
+.ms-salon-wall {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 28%;
+    background: linear-gradient(180deg, #faf6ef 0%, #ebe3d4 55%, #d9ccb8 100%);
+    z-index: 1;
+    box-shadow: inset 0 -8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.ms-wall-paneling {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 28%;
+    background: repeating-linear-gradient(
+        90deg,
+        #5c4033 0px,
+        #5c4033 3px,
+        #4a3328 3px,
+        #4a3328 48px
+    );
+    border-top: 6px solid #3d2b22;
+}
+
+.ms-wall-motto {
+    position: absolute;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    background: linear-gradient(180deg, #fffbeb, #fef3c7);
+    border: 3px solid #78350f;
+    border-radius: 0.35rem;
+    box-shadow: 0 4px 0 #78350f, inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: clamp(0.58rem, 2vw, 0.78rem);
+    color: #78350f;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    z-index: 4;
+}
+
+.ms-wall-frames {
+    position: absolute;
+    top: 22%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(1rem, 4vw, 2.5rem);
+    z-index: 5;
+}
+
+.ms-wall-frame {
+    margin: 0;
+    padding: 0;
+}
+
+.ms-frame-inner {
+    padding: 0.45rem 0.5rem 0.55rem;
+    background: linear-gradient(145deg, #92400e 0%, #78350f 50%, #5c2e0a 100%);
+    border: 4px solid #451a03;
+    border-radius: 0.2rem;
+    box-shadow:
+        0 6px 0 #3d1503,
+        0 12px 24px rgba(0, 0, 0, 0.25),
+        inset 0 2px 0 rgba(255, 255, 255, 0.15);
+}
+
+.ms-wall-frame--flag .ms-frame-inner {
+    width: clamp(88px, 14vw, 130px);
+}
+
+.ms-wall-frame--ataturk .ms-frame-inner {
+    width: clamp(72px, 11vw, 105px);
+}
+
+.ms-frame-inner img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border: 2px solid #1c1917;
+    background: #f5f5f4;
+    min-height: 60px;
+}
+
+.ms-wall-frame--flag .ms-frame-inner img {
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+}
+
+.ms-wall-frame--ataturk .ms-frame-inner img {
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    object-position: top center;
+}
+
+/* Zemin */
+.ms-salon-floor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 32%;
+    background:
+        linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.08) 8%),
+        repeating-linear-gradient(
+            90deg,
+            #c4b8a8 0px,
+            #c4b8a8 40px,
+            #b8a898 40px,
+            #b8a898 42px
+        );
+    z-index: 2;
+    box-shadow: inset 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* Aday masası — birinci şahıs */
+.ms-candidate-desk {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 12;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+}
+
+.ms-desk-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(96%, 640px);
+    filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.45));
+}
+
+.ms-desk-surface {
+    pointer-events: auto;
+    position: relative;
+    width: 100%;
+    min-height: clamp(155px, 28vh, 230px);
+    padding: 1.2rem 1.65rem 1.75rem;
+    background: linear-gradient(175deg, #a08060 0%, #7a5c44 38%, #5c4636 100%);
+    border: 4px solid #4a3728;
+    border-bottom: none;
+    border-radius: 0.65rem 0.65rem 0 0;
+    box-shadow:
+        inset 0 3px 0 rgba(255, 255, 255, 0.18),
+        inset 0 -6px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: clamp(2.25rem, 8vw, 4rem);
+    overflow: hidden;
+}
+
+.ms-desk-wood {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.35;
+    background:
+        repeating-linear-gradient(
+            92deg,
+            transparent 0px,
+            transparent 18px,
+            rgba(74, 55, 40, 0.25) 18px,
+            rgba(74, 55, 40, 0.25) 19px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            transparent 6px,
+            rgba(255, 255, 255, 0.04) 6px,
+            rgba(255, 255, 255, 0.04) 7px
+        );
+}
+
+.ms-desk-edge-bevel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0.45rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.2));
+    pointer-events: none;
+}
+
+.ms-desk-apron {
+    position: relative;
+    width: 100%;
+    height: clamp(2.5rem, 6vh, 3.25rem);
+    background: linear-gradient(180deg, #5c4636 0%, #4a3728 55%, #3d2b22 100%);
+    border: 4px solid #3d2b22;
+    border-top: 2px solid #6b5344;
+    border-radius: 0 0 0.4rem 0.4rem;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12%;
+    padding: 0 8%;
+}
+
+.ms-desk-drawer {
+    flex: 1;
+    max-width: 42%;
+    height: 55%;
+    margin-top: 0.35rem;
+    background: linear-gradient(180deg, #6b5344, #4a3728);
+    border: 2px solid #3d2b22;
+    border-radius: 0.2rem;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.25);
+    position: relative;
+}
+
+.ms-desk-drawer::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1.75rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #c4a574, #8b7355);
+    border: 1px solid #3d2b22;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.ms-desk-apron-shadow {
+    position: absolute;
+    bottom: -0.35rem;
+    left: 5%;
+    right: 5%;
+    height: 0.5rem;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 50%;
+    filter: blur(4px);
+}
+
+.ms-desk-legs {
+    width: 88%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: -0.15rem;
+    padding: 0 4%;
+}
+
+.ms-desk-leg {
+    width: clamp(2.5rem, 8vw, 3.75rem);
+    height: clamp(2.75rem, 7vh, 3.5rem);
+    background: linear-gradient(90deg, #3d2b22, #4a3728 40%, #3d2b22);
+    border: 2px solid #2a1f18;
+    border-radius: 0 0 0.25rem 0.25rem;
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.35);
+}
+
+.ms-desk-leg--left {
+    transform: perspective(120px) rotateY(8deg);
+}
+
+.ms-desk-leg--right {
+    transform: perspective(120px) rotateY(-8deg);
+}
+
+.ms-desk-hint {
+    position: absolute;
+    top: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    width: max-content;
+    max-width: 92%;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fef3c7;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    margin: 0;
+    pointer-events: none;
+}
+
+.ms-desk-keyboard,
+.ms-desk-fanus {
+    position: relative;
+    z-index: 2;
+}
+
+/* Masadaki klavye / bilgisayar */
+.ms-desk-keyboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.ms-desk-keyboard:hover:not(:disabled) {
+    transform: translateY(-4px) scale(1.03);
+}
+.ms-desk-keyboard:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+.ms-desk-keyboard.ms-desk-item--done::after {
+    content: '✓';
+    position: absolute;
+    top: -0.35rem;
+    right: -0.35rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: #22c55e;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+    z-index: 5;
+}
+
+.ms-kb-setup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ms-kb-screen {
+    display: block;
+    width: clamp(7rem, 19vw, 9.75rem);
+    height: clamp(4rem, 9.5vw, 5.35rem);
+    background: linear-gradient(180deg, #f1f5f9 0%, #94a3b8 100%);
+    border: 3px solid #334155;
+    border-radius: 0.4rem 0.4rem 0 0;
+    box-shadow:
+        inset 0 0 0 2px #64748b,
+        0 2px 6px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.ms-kb-screen::before {
+    content: '';
+    position: absolute;
+    top: 0.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 50%;
+    background: #64748b;
+    box-shadow: 0 0 0 1px #475569;
+}
+
+.ms-kb-screen::after {
+    content: '';
+    display: block;
+    margin: 0.55rem auto 0.35rem;
+    width: 76%;
+    height: 62%;
+    background: linear-gradient(180deg, #1e293b, #0f172a);
+    border-radius: 3px;
+    box-shadow: inset 0 0 8px rgba(59, 130, 246, 0.15);
+}
+
+.ms-kb-stand {
+    display: block;
+    width: clamp(2.5rem, 6vw, 3.25rem);
+    height: 0.55rem;
+    margin-top: -1px;
+    background: linear-gradient(180deg, #475569, #334155);
+    border-left: 2px solid #334155;
+    border-right: 2px solid #334155;
+    border-radius: 0 0 2px 2px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ms-kb-keys {
+    display: block;
+    width: clamp(7.5rem, 20vw, 10.25rem);
+    height: clamp(1.35rem, 3.2vw, 1.65rem);
+    margin-top: 0.15rem;
+    background:
+        linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%);
+    border: 3px solid #334155;
+    border-radius: 0.3rem;
+    box-shadow:
+        inset 0 2px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -3px 0 #94a3b8,
+        0 3px 6px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.ms-kb-keys::before {
+    content: '';
+    position: absolute;
+    inset: 0.2rem 0.35rem 0.35rem;
+    border-radius: 0.15rem;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            #94a3b8 0px,
+            #94a3b8 3px,
+            #cbd5e1 3px,
+            #cbd5e1 5px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            #94a3b8 0px,
+            #94a3b8 2px,
+            #cbd5e1 2px,
+            #cbd5e1 4px
+        );
+    opacity: 0.85;
+}
+
+.ms-kb-base {
+    display: block;
+    width: clamp(7.75rem, 21vw, 10.5rem);
+    height: 0.35rem;
+    margin-top: -2px;
+    background: #475569;
+    border-radius: 0 0 0.35rem 0.35rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Fanus */
+.ms-desk-fanus {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.ms-desk-fanus.hidden { display: none; }
+.ms-desk-fanus:hover {
+    transform: translateY(-4px) scale(1.05);
+}
+.ms-desk-fanus.ms-fanus--pulse .ms-fanus-glow {
+    animation: ms-fanus-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ms-fanus-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(1.15); }
+}
+
+.ms-fanus-glass {
+    display: block;
+    width: clamp(4.35rem, 12vw, 5.5rem);
+    height: clamp(4.35rem, 12vw, 5.5rem);
+    border-radius: 50% 50% 45% 45%;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.35), rgba(200, 220, 255, 0.15));
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+        inset 0 -8px 16px rgba(255, 255, 255, 0.2),
+        inset 0 4px 12px rgba(255, 255, 255, 0.4),
+        0 4px 12px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 2;
+}
+.ms-fanus-glass::before {
+    content: '?';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: rgba(217, 119, 6, 0.85);
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.ms-fanus-base {
+    display: block;
+    width: clamp(2.5rem, 7vw, 3.2rem);
+    height: 0.55rem;
+    margin-top: -0.15rem;
+    background: linear-gradient(180deg, #ca8a04, #92400e);
+    border: 2px solid #78350f;
+    border-radius: 0 0 0.35rem 0.35rem;
+    box-shadow: 0 3px 0 #5c2e0a;
+    z-index: 1;
+}
+
+.ms-fanus-glow {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120%;
+    height: 80%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(251, 191, 36, 0.45), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.ms-desk-item-label {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #fef3c7;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+.ms-phase-strip {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem 0.65rem;
+    background: rgba(15, 23, 42, 0.85);
+    border-top: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.ms-phase-pill {
+    font-size: 0.58rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(254, 243, 199, 0.5);
+    border: 1px solid rgba(254, 243, 199, 0.15);
+}
+.ms-phase-pill.active {
+    color: #78350f;
+    background: #fef3c7;
+    border-color: #92400e;
+}
+.ms-phase-pill.done {
+    color: #166534;
+    background: #bbf7d0;
+    border-color: #15803d;
+}
+
+/* Klavye sınav workspace stilleri: pages/mulakatSimulasyonu.html inline <style> (klavyeCalismasi.html ile aynı) */
+
+/* ── Sözlü panel ── */
+.ms-oral-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 225;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(8px);
+}
+.ms-oral-overlay.open { display: flex; }
+
+.ms-stage-card {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+    max-height: 94vh;
+    overflow-y: auto;
+    background: rgb(var(--yaziyo-card-rgb));
+    border: 1px solid rgb(var(--yaziyo-border-rgb));
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.ms-oral-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 2;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: none;
+    background: rgb(var(--yaziyo-bg-rgb) / 0.8);
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ms-oral-close:hover { color: #ef4444; }
+
+.ms-stage-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: rgb(var(--yaziyo-bg-rgb) / 0.35);
+    padding-right: 3rem;
+}
+.ms-stage-body { padding: 1.25rem; }
+
+.ms-oral-question {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.55;
+    margin-bottom: 1rem;
+}
+
+.ms-oral-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.75rem;
+    border: 2px solid rgb(var(--yaziyo-border-rgb));
+    background: rgb(var(--yaziyo-bg-rgb) / 0.35);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.ms-oral-option:hover:not(:disabled) {
+    border-color: rgb(var(--yaziyo-gold-rgb) / 0.5);
+}
+.ms-oral-option.correct {
+    border-color: rgb(var(--yaziyo-green-rgb));
+    background: rgba(34, 197, 94, 0.1);
+}
+.ms-oral-option.wrong {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+}
+.ms-oral-option:disabled { cursor: default; }
+
+.ms-oral-letter {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.45rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    background: rgb(var(--yaziyo-gold-rgb) / 0.15);
+    color: rgb(var(--yaziyo-gold-rgb));
+}
+
+/* ── Sonuç modalı ── */
+.ms-result-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 240;
+}
+.ms-result-modal.hidden { display: none; }
+
+.ms-result-card {
+    background: rgb(var(--yaziyo-card-rgb));
+    border: 1px solid rgb(var(--yaziyo-border-rgb));
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.ms-result-icon-wrap {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(var(--yaziyo-gold-rgb) / 0.12);
+    border: 1px solid rgb(var(--yaziyo-gold-rgb) / 0.3);
+}
+.ms-result-icon-wrap.fail {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+.ms-result-icon-wrap.fail #ms-result-icon-i {
+    color: #ef4444;
+}
+
+.ms-result-block {
+    background: rgb(var(--yaziyo-bg-rgb) / 0.5);
+    border: 1px solid rgb(var(--yaziyo-border-rgb));
+    border-radius: 0.875rem;
+    padding: 1rem;
+}
+.ms-result-block.muted {
+    opacity: 0.55;
+}
+
+.ms-result-block-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.ms-result-stat-val {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    font-size: 1.35rem;
+    color: rgb(var(--yaziyo-text-rgb));
+}
+.ms-result-stat-lbl {
+    font-size: 0.65rem;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    margin-top: 0.15rem;
+}
+
+@media (max-width: 640px) {
+    .ms-wall-motto { font-size: 0.52rem; padding: 0.35rem 0.6rem; }
+    .ms-desk-unit { width: min(98%, 100%); }
+    .ms-desk-surface { gap: 1.5rem; padding-bottom: 1.35rem; min-height: clamp(145px, 26vh, 200px); }
+    .ms-desk-apron { height: 2.25rem; }
+    .ms-desk-leg { height: 2.25rem; }
+}

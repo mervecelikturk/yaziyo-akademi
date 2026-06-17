@@ -1,0 +1,290 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YAZİYO Yönetici Paneli — Yetkili personel girişi.">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Yönetici Girişi - YAZİYO</title>
+    <link rel="icon" type="image/png" href="../images/logo.png">
+
+    <script>
+        (function () {
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#0F172A',
+                        'dark-card': '#1E2937',
+                        'dark-text': '#F1F5F9',
+                        'dark-text-secondary': '#CBD5E1',
+                        'dark-border': '#334155',
+                        'light-bg': '#F8F4ED',
+                        'light-card': '#FFFFFF',
+                        'light-text': '#1E2937',
+                        'light-text-secondary': '#334155',
+                        'light-border': '#E6D9C2',
+                        'yaziyo-gold': 'rgb(var(--yaziyo-gold-rgb) / <alpha-value>)',
+                        'yaziyo-bg': 'rgb(var(--yaziyo-bg-rgb) / <alpha-value>)',
+                        'yaziyo-card': 'rgb(var(--yaziyo-card-rgb) / <alpha-value>)',
+                        'yaziyo-text': 'rgb(var(--yaziyo-text-rgb) / <alpha-value>)',
+                        'yaziyo-border': 'rgb(var(--yaziyo-border-rgb) / <alpha-value>)',
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow-orange': '0 0 20px rgba(249, 115, 22, 0.35)',
+                    }
+                }
+            }
+        };
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/auth-verify.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        .admin-input-focus:focus {
+            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .admin-panel-pattern {
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(249, 115, 22, 0.25) 0%, transparent 45%),
+                radial-gradient(circle at 80% 70%, rgba(234, 88, 12, 0.2) 0%, transparent 40%),
+                linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Üst bar -->
+    <header class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 border-b border-light-border dark:border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="../images/logo.png" alt="YAZİYO Logo"
+                    class="h-5 sm:h-6 w-auto object-contain rounded-lg border-2 border-yaziyo-gold transition-transform duration-300 group-hover:scale-105">
+                <span class="font-poppins font-extrabold text-yaziyo-gold text-sm sm:text-base tracking-widest select-none">YAZİYO</span>
+            </a>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="theme-toggle-btn"
+                    class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold transition-all duration-300 hover:scale-110 hover:border-orange-500"
+                    aria-label="Tema Değiştir">
+                    <i class="fa-solid fa-sun text-base theme-icon-sun"></i>
+                    <i class="fa-solid fa-moon text-base theme-icon-moon"></i>
+                </button>
+                <a href="index.html"
+                    class="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-poppins font-bold text-light-text-secondary dark:text-dark-text-secondary hover:text-orange-500 transition-colors">
+                    <i class="fa-solid fa-house"></i>
+                    Ana Sayfa
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex flex-col lg:flex-row min-h-[calc(100vh-56px)]">
+
+        <!-- Sol: Admin görsel (masaüstü) -->
+        <div class="hidden lg:flex lg:w-3/5 xl:w-2/3 admin-panel-pattern relative overflow-hidden items-end p-12">
+            <div class="absolute inset-0 opacity-30">
+                <img src="../images/bookshelf.png" alt=""
+                    class="w-full h-full object-cover mix-blend-overlay">
+            </div>
+            <div class="relative z-10 max-w-lg text-white">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-200 text-xs font-bold uppercase tracking-wider mb-6">
+                    <i class="fa-solid fa-lock"></i>
+                    Yetkili Erişim
+                </div>
+                <h2 class="font-poppins font-extrabold text-3xl xl:text-4xl mb-4 leading-tight">
+                    Yönetici<br>
+                    <span class="text-orange-400">Kontrol Paneli</span>
+                </h2>
+                <p class="font-inter text-slate-300 text-base leading-relaxed mb-8">
+                    Haberler, içerik, sınavlar ve kullanıcı yönetimi bu panel üzerinden yapılır.
+                    Yalnızca yetkilendirilmiş hesaplar giriş yapabilir.
+                </p>
+                <ul class="space-y-3 text-sm text-slate-400">
+                    <li class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400"><i class="fa-solid fa-newspaper"></i></span>
+                        Haber ve duyuru yönetimi
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400"><i class="fa-solid fa-users"></i></span>
+                        Kullanıcı ve mesaj takibi
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400"><i class="fa-solid fa-sliders"></i></span>
+                        Sayfa ve içerik ayarları
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Sağ: Giriş kartı -->
+        <div class="w-full lg:w-2/5 xl:w-1/3 flex items-center justify-center p-4 sm:p-8 lg:p-12">
+            <div
+                class="w-full max-w-md bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl overflow-hidden">
+
+                <!-- Turuncu üst şerit -->
+                <div class="h-1.5 bg-gradient-to-r from-orange-500 via-orange-400 to-amber-500"></div>
+
+                <div class="p-6 sm:p-10">
+                    <!-- Başlık -->
+                    <div class="text-center mb-6">
+                        <div
+                            class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-2xl shadow-glow-orange">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <h1 class="font-poppins font-extrabold text-xl sm:text-2xl text-light-text dark:text-dark-text mb-1">
+                            Yönetici Girişi
+                        </h1>
+                        <p class="text-light-text-secondary dark:text-dark-text-secondary text-sm font-inter">
+                            YAZİYO admin paneline erişin
+                        </p>
+                    </div>
+
+                    <!-- Güvenlik uyarısı -->
+                    <div
+                        class="flex gap-3 p-3.5 mb-6 rounded-xl bg-orange-500/5 dark:bg-orange-500/10 border border-orange-500/20 text-left">
+                        <i class="fa-solid fa-triangle-exclamation text-orange-500 mt-0.5 shrink-0"></i>
+                        <p class="text-[11px] sm:text-xs text-light-text-secondary dark:text-dark-text-secondary leading-relaxed">
+                            Bu sayfa yalnızca <strong class="text-orange-600 dark:text-orange-400">yetkili yönetici hesapları</strong>
+                            içindir. Yetkisiz erişim denemeleri kayıt altına alınabilir.
+                        </p>
+                    </div>
+
+                    <form id="admin-login-form" class="space-y-5" autocomplete="on">
+                        <div class="space-y-2">
+                            <label for="admin-login-email"
+                                class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider ml-1">
+                                Yönetici E-posta
+                            </label>
+                            <div class="relative">
+                                <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                                <input type="email" id="admin-login-email" name="email" required
+                                    autocomplete="username"
+                                    class="w-full pl-11 pr-4 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-orange-500 hover:border-orange-500/40 admin-input-focus transition-all duration-300"
+                                    placeholder="admin@yaziyo.com">
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center px-1">
+                                <label for="admin-login-password"
+                                    class="text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
+                                    Şifre
+                                </label>
+                                <a href="girisKayit.html?forgot=1"
+                                    class="text-[11px] text-orange-500 hover:underline font-medium">
+                                    Şifremi unuttum
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
+                                <input type="password" id="admin-login-password" name="password" required
+                                    autocomplete="current-password"
+                                    class="w-full pl-11 pr-12 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-orange-500 hover:border-orange-500/40 admin-input-focus transition-all duration-300"
+                                    placeholder="••••••••">
+                                <button type="button" id="toggle-admin-password"
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-light-text-secondary hover:text-orange-500 transition-colors"
+                                    aria-label="Şifreyi göster">
+                                    <i class="fa-solid fa-eye text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1">
+                            <label for="admin-remember-me" class="flex items-center gap-2 cursor-pointer group">
+                                <input type="checkbox" id="admin-remember-me"
+                                    class="w-4 h-4 rounded border-light-border dark:border-dark-border text-orange-500 focus:ring-orange-500/30">
+                                <span
+                                    class="text-xs text-light-text-secondary dark:text-dark-text-secondary group-hover:text-light-text dark:group-hover:text-dark-text transition-colors">
+                                    Beni hatırla
+                                </span>
+                            </label>
+                        </div>
+
+                        <label for="admin-consent"
+                            class="flex items-start gap-3 p-3 rounded-xl border border-light-border/80 dark:border-dark-border/80 bg-yaziyo-bg/30 cursor-pointer hover:border-orange-500/30 transition-colors">
+                            <input type="checkbox" id="admin-consent" required
+                                class="mt-0.5 w-4 h-4 rounded text-orange-500 focus:ring-orange-500/30 shrink-0">
+                            <span class="text-[11px] sm:text-xs text-light-text-secondary dark:text-dark-text-secondary leading-relaxed">
+                                Yönetici paneline erişim yetkim olduğunu ve bu oturumun yalnızca resmi işlemler için
+                                kullanılacağını onaylıyorum.
+                            </span>
+                        </label>
+
+                        <button type="submit" id="admin-login-submit"
+                            class="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-black text-sm sm:text-base rounded-xl shadow-glow-orange hover:scale-[1.02] active:scale-95 transition-all duration-300">
+                            <i class="fa-solid fa-shield-halved mr-2"></i>
+                            YÖNETİCİ GİRİŞİ
+                        </button>
+                    </form>
+
+                    <div class="mt-8 pt-6 border-t border-light-border/60 dark:border-dark-border/60 space-y-3 text-center">
+                        <p class="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+                            Kullanıcı hesabınız mı var?
+                            <a href="girisKayit.html"
+                                class="text-yaziyo-gold font-semibold hover:underline inline-flex items-center gap-1">
+                                <i class="fa-solid fa-right-to-bracket text-[10px]"></i>
+                                Kullanıcı girişi
+                            </a>
+                        </p>
+                        <a href="index.html"
+                            class="inline-flex items-center gap-1.5 text-[11px] text-light-text-secondary/80 dark:text-dark-text-secondary/80 hover:text-orange-500 transition-colors">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            Ana sayfaya dön
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="py-4 border-t border-light-border dark:border-dark-border">
+        <p class="text-center text-[10px] text-light-text-secondary dark:text-dark-text-secondary font-inter">
+            © 2026 YAZİYO · Yönetici Paneli · Güvenli oturum
+        </p>
+    </footer>
+
+    <div id="auth-toast-container" class="auth-toast-container" aria-live="polite"></div>
+
+    <script src="../js/pageStatus.js"></script>
+    <script src="../js/main.js"></script>
+    <script type="module" src="../js/adminAuthForms.js"></script>
+</body>
+
+</html>

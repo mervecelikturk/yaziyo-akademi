@@ -1,0 +1,763 @@
+/* ============================================================ */
+/* YAZİYO - Kelime Evi (cozy builder + typing)                  */
+/* ============================================================ */
+
+:root {
+    --ke-sky-day: linear-gradient(180deg, #87CEEB 0%, #E8F4FC 55%, #C8E6C9 100%);
+    --ke-sky-dusk: linear-gradient(180deg, #FFB347 0%, #FFCC80 40%, #90CAF9 100%);
+    --ke-sky-night: linear-gradient(180deg, #1a2744 0%, #2d3a5c 50%, #1e3a2f 100%);
+    --ke-house-wall: #F5E6D3;
+    --ke-house-wall-dark: #E8D4BC;
+    --ke-house-roof: #C97B63;
+    --ke-house-trim: #D97706;
+    --ke-grass: #7CB342;
+    --ke-brick: #D4A574;
+}
+
+html:not(.is-logged-in) #ke-content { display: none; }
+html.is-logged-in #auth-gate { display: none; }
+
+/* ---- Ayarlar kartı (klavye çalışması varyantı) ---- */
+.ke-setup-card {
+    background: linear-gradient(145deg, rgba(255, 251, 245, 0.95), rgba(255, 248, 235, 0.98));
+    border: 1px solid rgba(217, 119, 6, 0.18);
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px rgba(217, 119, 6, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.dark .ke-setup-card {
+    background: linear-gradient(145deg, rgba(30, 41, 55, 0.95), rgba(15, 23, 42, 0.98));
+    border-color: rgba(217, 119, 6, 0.25);
+}
+.ke-setup-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 1rem;
+    border-radius: 9999px;
+    background: rgba(217, 119, 6, 0.1);
+    border: 1px solid rgba(217, 119, 6, 0.25);
+    color: #D97706;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.ke-field-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #D97706;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+    margin-left: 0.25rem;
+}
+.ke-select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(230, 217, 194, 0.9);
+    border-radius: 0.85rem;
+    padding: 0.7rem 1rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.dark .ke-select {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(51, 65, 85, 0.9);
+    color: #F1F5F9;
+}
+.ke-select:focus {
+    outline: none;
+    border-color: #D97706;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+}
+.ke-dropdown-trigger {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(230, 217, 194, 0.9);
+    border-radius: 0.85rem;
+    padding: 0.7rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color 0.2s;
+}
+.dark .ke-dropdown-trigger {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(51, 65, 85, 0.9);
+    color: #F1F5F9;
+}
+.ke-dropdown-trigger:hover { border-color: #D97706; }
+.ke-dropdown-menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 0.25rem;
+    z-index: 50;
+    background: #fff;
+    border: 1px solid rgba(230, 217, 194, 0.9);
+    border-radius: 0.85rem;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    max-height: 12rem;
+    overflow-y: auto;
+}
+.dark .ke-dropdown-menu {
+    background: #1E2937;
+    border-color: #334155;
+}
+.ke-dropdown-item {
+    padding: 0.55rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(230, 217, 194, 0.4);
+    transition: background 0.15s, color 0.15s;
+}
+.ke-dropdown-item:last-child { border-bottom: none; }
+.ke-dropdown-item:hover {
+    background: #D97706;
+    color: #1E2937;
+}
+.ke-start-btn {
+    width: 100%;
+    max-width: 22rem;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #D97706, #F59E0B);
+    color: #1E2937;
+    font-family: Poppins, sans-serif;
+    font-weight: 900;
+    font-size: 1.05rem;
+    border-radius: 1.1rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    box-shadow: 0 8px 24px rgba(217, 119, 6, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.ke-start-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 32px rgba(217, 119, 6, 0.4);
+}
+.ke-start-btn:active { transform: scale(0.98); }
+
+/* ---- Ses aç/kapa toggle ---- */
+.ke-sound-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.55rem 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(230, 217, 194, 0.9);
+    border-radius: 0.85rem;
+    transition: border-color 0.2s;
+}
+.dark .ke-sound-toggle-row {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: rgba(51, 65, 85, 0.9);
+}
+.ke-sound-status {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #64748B;
+    transition: color 0.2s;
+}
+.ke-sound-status.is-on {
+    color: #D97706;
+}
+.dark .ke-sound-status { color: #94A3B8; }
+.dark .ke-sound-status.is-on { color: #FBBF24; }
+
+.ke-toggle {
+    flex-shrink: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    line-height: 0;
+}
+.ke-toggle-track {
+    display: block;
+    width: 2.75rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background: #CBD5E1;
+    position: relative;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+.dark .ke-toggle-track { background: #475569; }
+.ke-toggle[aria-checked="true"] .ke-toggle-track {
+    background: linear-gradient(135deg, #D97706, #F59E0B);
+    box-shadow: 0 0 10px rgba(217, 119, 6, 0.35);
+}
+.ke-toggle-knob {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ke-toggle[aria-checked="true"] .ke-toggle-knob {
+    transform: translateX(1.25rem);
+}
+.ke-toggle:focus-visible .ke-toggle-track {
+    outline: 2px solid #D97706;
+    outline-offset: 2px;
+}
+
+/* ---- Workspace ---- */
+#ke-workspace {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    flex-direction: column;
+    background: #F9FAFB;
+    pointer-events: auto;
+}
+#ke-workspace.hidden { display: none; }
+
+.ke-hud {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.92);
+    border-bottom: 1px solid rgba(217, 119, 6, 0.15);
+    backdrop-filter: blur(8px);
+    z-index: 260;
+}
+.dark .ke-hud {
+    background: rgba(15, 23, 42, 0.92);
+    border-bottom-color: rgba(217, 119, 6, 0.2);
+}
+.ke-hud-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 3.5rem;
+}
+.ke-hud-label {
+    font-size: 0.55rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94A3B8;
+}
+.ke-hud-value {
+    font-family: Poppins, sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #1E2937;
+}
+.dark .ke-hud-value { color: #F1F5F9; }
+.ke-hud-value.gold { color: #D97706; }
+.ke-hud-value.green { color: #15803D; }
+.ke-hud-value.red { color: #DC2626; }
+.ke-hud-progress {
+    flex: 1;
+    min-width: 8rem;
+    max-width: 14rem;
+}
+.ke-hud-progress-bar {
+    height: 0.45rem;
+    background: rgba(217, 119, 6, 0.12);
+    border-radius: 9999px;
+    overflow: hidden;
+}
+.ke-hud-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #D97706, #FBBF24);
+    border-radius: 9999px;
+    width: 0%;
+    transition: width 0.35s ease;
+    will-change: width;
+}
+
+.ke-split {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Sol: Klavye alanı */
+.ke-typing-panel {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 1rem 1rem;
+    overflow-y: auto;
+    border-right: 1px solid rgba(217, 119, 6, 0.12);
+}
+#ke-text-display-card {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    min-height: 180px;
+    max-height: 220px;
+    flex-shrink: 0;
+    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+}
+#ke-text-content {
+    color: #4B5563;
+    font-size: 15px;
+    line-height: 1.5;
+    text-align: justify;
+    padding: 1.25rem;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;
+    user-select: none;
+    -webkit-user-select: none;
+}
+#ke-user-input {
+    flex: 1;
+    min-height: 140px;
+    margin-top: 0.75rem;
+    background: #FFFFFF;
+    border: 1.5px solid rgba(217, 119, 6, 0.3);
+    border-radius: 8px;
+    color: #111827;
+    font-size: 16px;
+    padding: 1rem;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+#ke-user-input:focus {
+    border-color: #D97706;
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+.word-active {
+    background-color: rgba(217, 119, 6, 0.1);
+    border-radius: 2px;
+}
+.word-wrong {
+    color: #DC2626;
+    text-decoration: underline;
+}
+.word-correct { color: #10B981; }
+
+/* Sağ: Ev alanı */
+.ke-build-panel {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    overflow: hidden;
+    background: var(--ke-sky-day);
+    transition: background 1.2s ease;
+}
+.ke-build-panel.phase-dusk { background: var(--ke-sky-dusk); }
+.ke-build-panel.phase-night { background: var(--ke-sky-night); }
+
+.ke-scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 8%;
+    transform-origin: center bottom;
+    will-change: transform;
+}
+
+/* Gökyüzü öğeleri */
+.ke-sun {
+    position: absolute;
+    top: 8%;
+    right: 12%;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, #FFE082 0%, #FFB74D 70%);
+    box-shadow: 0 0 40px rgba(255, 193, 7, 0.5);
+    will-change: transform, opacity;
+}
+.ke-moon {
+    position: absolute;
+    top: 10%;
+    right: 14%;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: #E8EAF6;
+    box-shadow: inset -6px -4px 0 #B0BEC5, 0 0 20px rgba(200, 220, 255, 0.4);
+    opacity: 0;
+    will-change: opacity;
+}
+.ke-cloud {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 9999px;
+    filter: blur(0.5px);
+    will-change: transform;
+}
+.ke-cloud::before,
+.ke-cloud::after {
+    content: '';
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+}
+.ke-cloud-1 { width: 4rem; height: 1.2rem; top: 15%; left: 10%; }
+.ke-cloud-1::before { width: 2rem; height: 2rem; top: -0.8rem; left: 0.5rem; }
+.ke-cloud-1::after { width: 2.5rem; height: 1.8rem; top: -0.6rem; right: 0.3rem; }
+.ke-cloud-2 { width: 5rem; height: 1.4rem; top: 22%; right: 20%; opacity: 0.7; }
+.ke-cloud-2::before { width: 2.2rem; height: 2.2rem; top: -1rem; left: 0.8rem; }
+.ke-cloud-2::after { width: 2.8rem; height: 2rem; top: -0.7rem; right: 0.5rem; }
+
+.ke-star {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0;
+    animation: ke-twinkle 2s ease-in-out infinite;
+}
+@keyframes ke-twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
+}
+
+.ke-bird {
+    position: absolute;
+    font-size: 0.75rem;
+    color: #37474F;
+    opacity: 0.6;
+    will-change: transform;
+    pointer-events: none;
+}
+
+/* Zemin */
+.ke-ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 18%;
+    background: linear-gradient(180deg, var(--ke-grass) 0%, #558B2F 100%);
+    border-top: 3px solid #689F38;
+}
+.ke-ground::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 12px,
+        rgba(255, 255, 255, 0.15) 12px,
+        rgba(255, 255, 255, 0.15) 14px
+    );
+}
+
+/* Vinç */
+.ke-crane {
+    position: absolute;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 35%;
+    background: linear-gradient(180deg, #78909C, #546E7A);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+    will-change: transform, opacity;
+}
+.ke-crane-arm {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 6rem;
+    height: 4px;
+    background: #78909C;
+    transform-origin: left center;
+    transform: rotate(-15deg);
+}
+.ke-crane-rope {
+    position: absolute;
+    top: 100%;
+    left: 85%;
+    width: 2px;
+    height: 0;
+    background: #5D4037;
+    transform-origin: top;
+    will-change: height;
+}
+.ke-crane-hook {
+    position: absolute;
+    bottom: -8px;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    border: 2px solid #5D4037;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+}
+
+/* Ev yapısı */
+.ke-house-wrap {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    width: 9rem;
+    margin-bottom: 12%;
+    will-change: transform;
+}
+.ke-floor {
+    position: relative;
+    width: 100%;
+    flex-shrink: 0;
+    margin-top: -2px;
+    will-change: transform, opacity;
+}
+.ke-floor-body {
+    background: var(--ke-house-wall);
+    border: 2px solid var(--ke-house-wall-dark);
+    border-radius: 4px 4px 0 0;
+    height: 3.2rem;
+    position: relative;
+    box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+.ke-floor-body::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--ke-house-trim);
+}
+.ke-brick-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0%;
+    background: repeating-linear-gradient(
+        0deg,
+        var(--ke-brick) 0px,
+        var(--ke-brick) 8px,
+        rgba(180, 130, 80, 0.3) 8px,
+        rgba(180, 130, 80, 0.3) 10px
+    );
+    transition: height 0.3s ease;
+    will-change: height;
+}
+.ke-window {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.4rem;
+    height: 1.4rem;
+    background: #B3E5FC;
+    border: 2px solid var(--ke-house-trim);
+    border-radius: 2px;
+    transition: background 0.4s, box-shadow 0.4s;
+}
+.ke-window.lit {
+    background: #FFF9C4;
+    box-shadow: 0 0 12px rgba(255, 235, 59, 0.7);
+}
+.ke-window.left { left: 1rem; }
+.ke-window.right { right: 1rem; }
+.ke-door {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1.6rem;
+    height: 2.2rem;
+    background: #8D6E63;
+    border: 2px solid #5D4037;
+    border-radius: 3px 3px 0 0;
+}
+.ke-roof {
+    width: 0;
+    height: 0;
+    border-left: 4.5rem solid transparent;
+    border-right: 4.5rem solid transparent;
+    border-bottom: 2.2rem solid var(--ke-house-roof);
+    margin-bottom: -1px;
+    align-self: center;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    opacity: 0;
+    transform: scale(0.8);
+    will-change: transform, opacity;
+}
+.ke-roof.visible {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Bahçe çiçekleri */
+.ke-garden {
+    position: absolute;
+    bottom: 14%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 5;
+}
+.ke-flower {
+    font-size: 1.1rem;
+    opacity: 0;
+    transform: scale(0) translateY(10px);
+    will-change: transform, opacity;
+}
+
+/* Partiküller */
+.ke-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 30;
+}
+.ke-particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+.ke-sparkle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: #FFD54F;
+    border-radius: 50%;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+/* Efekt overlay */
+.ke-flash-error {
+    position: absolute;
+    inset: 0;
+    background: rgba(239, 68, 68, 0.15);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 25;
+}
+.ke-glow-success {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center 70%, rgba(255, 213, 79, 0.25), transparent 60%);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 15;
+}
+
+/* Geri sayım */
+#ke-countdown-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(249, 250, 251, 0.97);
+}
+#ke-countdown-overlay.hidden { display: none; }
+#ke-countdown-number {
+    font-family: Poppins, sans-serif;
+    font-size: clamp(4rem, 15vw, 9rem);
+    font-weight: 800;
+    color: #D97706;
+}
+
+.ke-exit-btn {
+    position: absolute;
+    top: 3.5rem;
+    right: 1rem;
+    z-index: 270;
+    width: 2.75rem;
+    height: 2.75rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s, background 0.2s;
+}
+.ke-exit-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    transform: scale(1.05);
+}
+
+/* Mobil */
+@media (max-width: 768px) {
+    .ke-split {
+        flex-direction: column;
+    }
+    .ke-build-panel {
+        flex: 0 0 38vh;
+        min-height: 38vh;
+        order: -1;
+        border-bottom: 1px solid rgba(217, 119, 6, 0.12);
+    }
+    .ke-typing-panel {
+        border-right: none;
+        flex: 1;
+    }
+    .ke-hud-stat { min-width: 2.8rem; }
+    .ke-hud-value { font-size: 0.8rem; }
+    .ke-hud-label { font-size: 0.5rem; }
+    #ke-text-display-card {
+        min-height: 120px;
+        max-height: 140px;
+    }
+    #ke-user-input { min-height: 100px; font-size: 16px; }
+    .ke-house-wrap { width: 7rem; }
+    .ke-floor { width: 100%; }
+    .ke-floor-body { height: 2.6rem; }
+    .ke-roof {
+        border-left-width: 3.5rem;
+        border-right-width: 3.5rem;
+        border-bottom-width: 1.8rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ke-cloud, .ke-bird, .ke-star, .ke-particle, .ke-sparkle {
+        animation: none !important;
+    }
+    .ke-build-panel { transition: none; }
+}

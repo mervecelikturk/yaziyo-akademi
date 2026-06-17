@@ -1,0 +1,364 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YAZİYO Yönetici Paneli - Admin Paneli.">
+    <title>Admin - YAZİYO</title>
+    <link rel="icon" type="image/png" href="../images/logo.png">
+
+    <!-- ========================================== -->
+    <!-- GECE/GÜNDÜZ MODU - FOUC Önleme -->
+    <script>
+        (function () {
+            // Siteye ilk girişte her zaman gündüz (light) modu zorunlu
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+    <!-- ========================================== -->
+
+    <!-- Google Fonts: Poppins & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-bg': '#0F172A',
+                        'dark-card': '#1E2937',
+                        'dark-text': '#F1F5F9',
+                        'dark-text-secondary': '#CBD5E1',
+                        'dark-border': '#334155',
+                        'light-bg': '#F8F4ED',
+                        'light-card': '#FFFFFF',
+                        'light-text': '#1E2937',
+                        'light-text-secondary': '#334155',
+                        'light-border': '#E6D9C2',
+                        'light-gold': '#D97706',
+                        'yaziyo-gold': 'rgb(var(--yaziyo-gold-rgb) / <alpha-value>)',
+                    },
+                    fontFamily: {
+                        'poppins': ['Poppins', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow-gold': '0 0 15px rgba(217, 119, 6, 0.3)',
+                    }
+                }
+            },
+            plugins: [
+                function ({ addVariant }) {
+                    addVariant('light', '.light &');
+                }
+            ]
+        }
+    </script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Özel CSS Dosyası -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body
+    class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- ============================================ -->
+    <!-- HEADER (Admin Sayfaları) -->
+    <!-- ============================================ -->
+    <header id="main-header"
+        class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2 group">
+                <img src="../images/logo.png" alt="YAZİYO Logo"
+                    class="h-5 sm:h-6 w-auto object-contain rounded-lg border-2 border-yaziyo-gold transition-transform duration-300 group-hover:scale-105">
+                <span
+                    class="font-poppins font-extrabold text-yaziyo-gold text-sm sm:text-base tracking-widest select-none">YAZİYO</span>
+            </a>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Tema Butonu -->
+                <button id="theme-toggle-btn"
+                    class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card
+                                text-yaziyo-gold transition-all duration-300 hover:scale-110 hover:rotate-12 hover:border-yaziyo-gold">
+                    <i class="fa-solid fa-sun text-base sm:text-lg theme-icon-sun"></i>
+                    <i class="fa-solid fa-moon text-base sm:text-lg theme-icon-moon"></i>
+                </button>
+
+                <!-- Admin Butonu -->
+                <a href="admin.html" class="relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm rounded-lg
+                          transition-all duration-300 hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>Admin</span>
+                </a>
+            </div>
+        </div>
+        <div class="w-full h-px bg-light-border dark:bg-dark-border"></div>
+
+        <!-- ============================================ -->
+        <!-- ADMIN NAVBAR -->
+        <!-- ============================================ -->
+        <nav id="main-navbar" class="bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-md transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+
+                <!-- Desktop Menü -->
+                <ul id="desktop-menu"
+                    class="hidden sm:flex items-center justify-center gap-x-1 xl:gap-x-2 py-2 text-xs xl:text-sm font-medium">
+                    <li><a href="admin.html" class="nav-link active" data-page="admin"><i class="fa-solid fa-gauge-high mr-1.5 text-[0.85em]"></i>Admin</a></li>
+                    <li><a href="kullanicilar.html" class="nav-link" data-page="kullanicilar"><i class="fa-solid fa-users mr-1.5 text-[0.85em]"></i>Kullanıcılar</a></li>
+                    <li><a href="icerikEkle.html" class="nav-link" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-1.5 text-[0.85em]"></i>İçerik Ekle</a></li>
+                    <li><a href="sinavEkle.html" class="nav-link" data-page="sinav-ekle"><i class="fa-solid fa-award mr-1.5 text-[0.85em]"></i>Sınav Ekle</a></li>
+                    <li><a href="adminHaberler.html" class="nav-link" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-1.5 text-[0.85em]"></i>Haberler</a></li>
+                    <li><a href="adminEgitimPaketleri.html" class="nav-link" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-1.5 text-[0.85em]"></i>Eğitim Paketleri</a></li>
+                    <li class="nav-dropdown">
+                        <button type="button" class="nav-link nav-dropdown-trigger" data-page="admin-mulakatlar"><i class="fa-solid fa-microphone-lines mr-1.5 text-[0.85em]"></i>Mülakatlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="adminSozluMulakat.html" class="nav-dropdown-item" data-page="admin-sozlu-mulakat">Sözlü Mülakat</a></li>
+                            <li><a href="adminMulakatSimulasyonu.html" class="nav-dropdown-item" data-page="admin-mulakat-simulasyonu">Mülakat Simülasyonu</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="mesajlar.html" class="nav-link" data-page="mesajlar"><i class="fa-solid fa-envelope mr-1.5 text-[0.85em]"></i>Mesajlar</a></li>
+                </ul>
+
+                <!-- Mobil Hamburger Butonu -->
+                <div class="sm:hidden flex items-center justify-between py-2">
+                    <span
+                        class="text-light-text-secondary dark:text-dark-text-secondary text-sm font-inter transition-colors duration-300">Admin Menü</span>
+                    <button id="hamburger-btn"
+                        class="text-light-text dark:text-dark-text p-2 rounded-lg hover:bg-light-card dark:hover:bg-dark-card transition-colors duration-300"
+                        aria-label="Menüyü aç/kapat">
+                        <i class="fa-solid fa-bars text-xl" id="hamburger-icon"></i>
+                    </button>
+                </div>
+
+                <!-- Mobil Menü -->
+                <div id="mobile-menu" class="sm:hidden hidden overflow-hidden transition-all duration-300">
+                    <ul class="flex flex-col gap-1 pb-4 text-sm">
+                        <li><a href="admin.html" class="mobile-nav-link active" data-page="admin"><i class="fa-solid fa-gauge-high mr-2"></i>Admin</a></li>
+                        <li><a href="kullanicilar.html" class="mobile-nav-link" data-page="kullanicilar"><i class="fa-solid fa-users mr-2"></i>Kullanıcılar</a></li>
+                        <li><a href="icerikEkle.html" class="mobile-nav-link" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-2"></i>İçerik Ekle</a></li>
+                        <li><a href="sinavEkle.html" class="mobile-nav-link" data-page="sinav-ekle"><i class="fa-solid fa-award mr-2"></i>Sınav Ekle</a></li>
+                        <li><a href="adminHaberler.html" class="mobile-nav-link" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-2"></i>Haberler</a></li>
+                        <li><a href="adminEgitimPaketleri.html" class="mobile-nav-link" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-2"></i>Eğitim Paketleri</a></li>
+                        <li><a href="adminSozluMulakat.html" class="mobile-nav-link" data-page="admin-sozlu-mulakat"><i class="fa-solid fa-microphone-lines mr-2"></i>Sözlü Mülakat</a></li>
+                        <li><a href="adminMulakatSimulasyonu.html" class="mobile-nav-link" data-page="admin-mulakat-simulasyonu"><i class="fa-solid fa-user-tie mr-2"></i>Mülakat Simülasyonu</a></li>
+                        <li><a href="mesajlar.html" class="mobile-nav-link" data-page="mesajlar"><i class="fa-solid fa-envelope mr-2"></i>Mesajlar</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ============================================ -->
+    <!-- ADMIN SAYFASI - HOŞGELDİNİZ VE İSTATİSTİKLER -->
+    <!-- ============================================ -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow flex flex-col gap-8">
+
+        <!-- Hoş Geldiniz Kartı -->
+        <div class="relative w-full rounded-2xl bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-6 sm:p-10 overflow-hidden shadow-sm group transition-all duration-300 hover:shadow-lg hover:border-orange-500/50">
+            <!-- Arka Plan Dekorasyon -->
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-gradient-to-br from-orange-400/20 to-orange-600/5 rounded-full blur-3xl pointer-events-none transition-transform duration-700 group-hover:scale-110"></div>
+            <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-gradient-to-tr from-orange-500/10 to-yellow-500/5 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div class="flex items-center gap-5 sm:gap-6">
+                    <!-- İkon Kutusu -->
+                    <div class="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl bg-gradient-to-br from-orange-100 to-orange-50 dark:from-dark-bg dark:to-dark-border border border-orange-200 dark:border-dark-border flex items-center justify-center shadow-inner relative overflow-hidden group-hover:border-orange-400 transition-colors duration-300">
+                        <i class="fa-solid fa-user-shield text-3xl sm:text-4xl text-transparent bg-clip-text bg-gradient-to-br from-orange-500 to-orange-600 drop-shadow-sm group-hover:scale-110 transition-transform duration-500"></i>
+                    </div>
+
+                    <!-- Metinler -->
+                    <div class="flex flex-col">
+                        <h1 class="text-2xl sm:text-3xl font-poppins font-extrabold text-light-text dark:text-dark-text tracking-tight mb-1">
+                            Yönetici Paneline <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-600">Hoş Geldiniz</span>
+                        </h1>
+                        <p class="text-sm sm:text-base font-inter text-light-text-secondary dark:text-dark-text-secondary leading-relaxed max-w-lg">
+                            Platform üzerindeki tüm ayarları, kullanıcıları ve içerikleri bu panelden güvenle yönetebilirsiniz.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Çıkış Yap Butonu -->
+                <button onclick="openLogoutModal()" class="shrink-0 w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 font-poppins font-bold text-sm rounded-xl border border-red-200 dark:border-red-500/20 transition-all duration-300 hover:bg-red-500 hover:text-white hover:border-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.3)] hover:-translate-y-1 active:translate-y-0 active:scale-95">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Çıkış Yap</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER (index.html ile uyumlu) -->
+    <footer id="main-footer"
+        class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="flex flex-col items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <img src="../images/logo.png" alt="YAZİYO Logo" class="h-5 w-auto rounded border-yaziyo-gold">
+                    <span class="font-poppins font-extrabold text-yaziyo-gold text-base tracking-widest">YAZİYO</span>
+                </div>
+                <!-- Sosyal Medya -->
+                <div class="flex gap-4">
+                    <a href="https://www.instagram.com/yaziyo_zabit.katipligi/" class="social-icon" target="_blank"
+                        rel="noopener noreferrer"><i class="fa-brands fa-instagram text-xl"></i></a>
+                    <a href="https://www.tiktok.com/@zabit.katipligi_yaziyo?_r=1&_t=ZS-95NG3JvVk9s" class="social-icon"
+                        target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-tiktok text-xl"></i></a>
+                </div>
+                <p class="text-light-text-secondary dark:text-dark-text-secondary text-xs uppercase tracking-tight">©
+                    2026 YAZİYO. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============================================ -->
+    <!-- BİLDİRİM MODALI -->
+    <!-- ============================================ -->
+    <div id="notification-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <!-- Backdrop (Dışarıya Tıklama Alanı) -->
+        <div id="notification-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+
+        <!-- Modal İçeriği -->
+        <div id="notification-content"
+            class="relative w-full max-w-sm mx-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl shadow-2xl p-6 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center">
+
+            <!-- Kapat Butonu -->
+            <button id="notification-close"
+                class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-bg dark:hover:bg-dark-bg hover:text-red-500 transition-all duration-300">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Modal İkonu -->
+            <div
+                class="w-16 h-16 rounded-full bg-yaziyo-gold/10 flex items-center justify-center text-yaziyo-gold text-3xl mb-5 shadow-glow-gold">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+
+            <!-- Modal Başlık ve Metni -->
+            <h3
+                class="text-xl font-poppins font-bold text-light-text dark:text-dark-text mb-2 transition-colors duration-300 text-center">
+                Bildirimler</h3>
+            <p id="notification-empty-msg"
+                class="text-light-text-secondary dark:text-dark-text-secondary font-inter text-center mb-6 transition-colors duration-300 text-sm">
+                Bildirimlerinizi görmek için giriş yapın.
+            </p>
+
+            <div class="w-full h-px bg-light-border dark:bg-dark-border mb-4 transition-colors duration-300"></div>
+
+            <p id="notification-footer-msg" class="text-xs text-yaziyo-gold font-inter font-medium tracking-wide text-center">
+                <a href="girisKayit.html" class="inline-flex items-center gap-1 text-yaziyo-gold hover:underline transition-all font-semibold"><i class="fa-solid fa-right-to-bracket"></i> Giriş yap / Kayıt ol</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- ÇIKIŞ YAP MODALI -->
+    <!-- ============================================ -->
+    <div id="logout-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div id="logout-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="logout-content"
+            class="relative w-full max-w-sm bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center">
+            <div
+                class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-5 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)] text-2xl">
+                <i class="fa-solid fa-right-from-bracket text-red-500"></i>
+            </div>
+            <h3 class="text-xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-2">Çıkış Yap</h3>
+            <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6 leading-relaxed">
+                Yönetici panelinden çıkış yapmak istediğinize emin misiniz?
+            </p>
+            <div class="flex items-center gap-3 w-full">
+                <button onclick="closeLogoutModal()"
+                    class="flex-1 py-2.5 rounded-xl border border-light-border dark:border-dark-border text-sm font-poppins font-bold hover:bg-light-bg dark:hover:bg-dark-bg transition-all">İptal</button>
+                <button onclick="performAdminLogout()"
+                    class="flex-1 py-2.5 rounded-xl bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)] font-poppins font-bold text-sm hover:scale-105 active:scale-95 transition-all">Evet, Çıkış Yap</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modallar için Scriptler -->
+    <script>
+        // Çıkış Yap Modalı Fonksiyonları
+        const logoutModal = document.getElementById('logout-modal');
+        const logoutBackdrop = document.getElementById('logout-backdrop');
+        const logoutContent = document.getElementById('logout-content');
+
+        function openLogoutModal() {
+            logoutModal.classList.remove('hidden');
+            logoutModal.classList.add('flex');
+
+            // Animasyon için kısa gecikme
+            setTimeout(() => {
+                logoutBackdrop.classList.remove('opacity-0');
+                logoutContent.classList.remove('opacity-0', 'scale-95');
+                logoutContent.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function closeLogoutModal() {
+            logoutBackdrop.classList.add('opacity-0');
+            logoutContent.classList.remove('opacity-100', 'scale-100');
+            logoutContent.classList.add('opacity-0', 'scale-95');
+
+            setTimeout(() => {
+                logoutModal.classList.remove('flex');
+                logoutModal.classList.add('hidden');
+            }, 300);
+        }
+
+        function performAdminLogout() {
+            // Animasyonlu buton efekti
+            const btn = logoutContent.querySelector('.bg-red-500');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Çıkılıyor...';
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+
+            // auth.js global nesnesini kullanarak çıkış yap (varsa)
+            if (window.performLogout) {
+                window.performLogout();
+            } else {
+                setTimeout(() => {
+                    for (let i = localStorage.length - 1; i >= 0; i--) {
+                        const key = localStorage.key(i);
+                        if (key && (key.includes('auth-token') || key.includes('supabase') || key.startsWith('sb-'))) {
+                            localStorage.removeItem(key);
+                        }
+                    }
+                    window.name = '';
+                    window.location.href = 'index.html';
+                }, 800);
+            }
+        }
+
+        // Dışarı tıklayınca modalı kapatma
+        logoutBackdrop.addEventListener('click', closeLogoutModal);
+    </script>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Özel JS Dosyası -->
+    <script src="../js/pageStatus.js"></script>
+
+    <script src="../js/main.js"></script>
+    <script type="module" src="../js/auth.js"></script>
+</body>
+
+</html>

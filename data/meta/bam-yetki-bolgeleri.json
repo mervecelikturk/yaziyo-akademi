@@ -1,0 +1,115 @@
+{
+  "kaynak": "HSK Genel Kurulu Kararları (2019/230, 2025/785 — Ankara ve Sakarya yargı çevresi güncellemesi)",
+  "guncelleme_tarihi": "2025-05-01",
+  "bam_merkezleri": [
+    {
+      "il": "Adana",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Adana", "Hatay", "Mersin", "Osmaniye"]
+    },
+    {
+      "il": "Ankara",
+      "kurum_adi": "",
+      "yetki_bolgesi": [
+        "Ankara",
+        "Bartın",
+        "Çankırı",
+        "Eskişehir",
+        "Karabük",
+        "Kastamonu",
+        "Kırıkkale",
+        "Kırşehir",
+        "Zonguldak"
+      ]
+    },
+    {
+      "il": "Antalya",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Antalya", "Burdur", "Denizli", "Isparta"]
+    },
+    {
+      "il": "Bursa",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Balıkesir", "Bilecik", "Bursa", "Çanakkale", "Kütahya", "Yalova"]
+    },
+    {
+      "il": "Diyarbakır",
+      "kurum_adi": "",
+      "yetki_bolgesi": [
+        "Batman",
+        "Bingöl",
+        "Diyarbakır",
+        "Elazığ",
+        "Mardin",
+        "Siirt",
+        "Şırnak"
+      ]
+    },
+    {
+      "il": "Erzurum",
+      "kurum_adi": "",
+      "yetki_bolgesi": [
+        "Ağrı",
+        "Ardahan",
+        "Bayburt",
+        "Erzincan",
+        "Erzurum",
+        "Iğdır",
+        "Kars",
+        "Tunceli"
+      ]
+    },
+    {
+      "il": "Gaziantep",
+      "kurum_adi": "",
+      "yetki_bolgesi": [
+        "Adıyaman",
+        "Gaziantep",
+        "Kahramanmaraş",
+        "Kilis",
+        "Malatya",
+        "Şanlıurfa"
+      ]
+    },
+    {
+      "il": "İstanbul",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Edirne", "İstanbul", "Kırklareli", "Tekirdağ"]
+    },
+    {
+      "il": "İzmir",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Aydın", "İzmir", "Manisa", "Muğla", "Uşak"]
+    },
+    {
+      "il": "Kayseri",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Kayseri", "Nevşehir", "Niğde", "Sivas", "Yozgat"]
+    },
+    {
+      "il": "Konya",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Afyonkarahisar", "Aksaray", "Karaman", "Konya"]
+    },
+    {
+      "il": "Sakarya",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Bolu", "Düzce", "Kocaeli", "Sakarya"]
+    },
+    {
+      "il": "Samsun",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Amasya", "Çorum", "Ordu", "Samsun", "Sinop", "Tokat"]
+    },
+    {
+      "il": "Trabzon",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Artvin", "Giresun", "Gümüşhane", "Rize", "Trabzon"]
+    },
+    {
+      "il": "Van",
+      "kurum_adi": "",
+      "yetki_bolgesi": ["Bitlis", "Hakkari", "Muş", "Van"]
+    }
+  ]
+}
