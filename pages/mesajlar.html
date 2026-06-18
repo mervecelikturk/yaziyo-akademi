@@ -326,6 +326,37 @@
         </div>
     </div>
 
+    <!-- MESAJ SİLME ONAY MODALI -->
+    <div id="delete-message-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-message-title">
+        <div id="delete-message-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="delete-message-content" class="relative w-full max-w-sm bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center">
+
+            <button type="button" data-close-delete-modal class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-light-bg dark:hover:bg-dark-bg text-light-text-secondary dark:text-dark-text-secondary transition-all" aria-label="Kapat">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-5 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)] text-2xl">
+                <i class="fa-solid fa-trash-can text-red-500"></i>
+            </div>
+
+            <h3 id="delete-message-title" class="text-xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-2">Mesajı Sil</h3>
+            <p id="delete-message-desc" class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-2 leading-relaxed">
+                Bu mesajı kalıcı olarak silmek istediğinize emin misiniz?
+            </p>
+            <p id="delete-message-preview" class="text-xs text-light-text-secondary dark:text-dark-text-secondary mb-4 line-clamp-2 italic"></p>
+            <p id="delete-message-error" class="hidden text-xs text-red-500 mb-4"></p>
+
+            <div class="flex items-center gap-3 w-full">
+                <button type="button" data-close-delete-modal class="flex-1 py-2.5 rounded-xl border border-light-border dark:border-dark-border text-sm font-poppins font-bold hover:bg-light-bg dark:hover:bg-dark-bg transition-all">
+                    İptal
+                </button>
+                <button type="button" id="delete-message-confirm-btn" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)] font-poppins font-bold text-sm hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none">
+                    <span class="delete-confirm-label">Evet, Sil</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- FOOTER (standart) -->
     <footer id="main-footer"
         class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border transition-colors duration-300">

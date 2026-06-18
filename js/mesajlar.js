@@ -14,6 +14,11 @@ const modalContent = () => document.getElementById('message-content');
 const replyModal = () => document.getElementById('reply-modal');
 const replyBackdrop = () => document.getElementById('reply-backdrop');
 const replyContent = () => document.getElementById('reply-content');
+const deleteModal = () => document.getElementById('delete-message-modal');
+const deleteBackdrop = () => document.getElementById('delete-message-backdrop');
+const deleteContent = () => document.getElementById('delete-message-content');
+
+let pendingDeleteId = null;
 
 function escapeHtml(str) {
     return String(str ?? '')
@@ -389,18 +394,94 @@ async function sendReply() {
     setTimeout(() => closeReplyModal(), 1500);
 }
 
-async function deleteMessage(id) {
-    if (!supabase) return;
-    if (!confirm('Bu mesajı silmek istediğinize emin misiniz?')) return;
+function setDeleteModalError(message = '') {
+    const errEl = document.getElementById('delete-message-error');
+    if (!errEl) return;
+    if (message) {
+        errEl.textContent = message;
+        errEl.classList.remove('hidden');
+    } else {
+        errEl.textContent = '';
+        errEl.classList.add('hidden');
+    }
+}
+
+export function openDeleteMessageModal(id) {
+    const msg = allMessages.find((m) => m.id === id);
+    if (!msg) return;
+
+    const m = deleteModal();
+    const backdrop = deleteBackdrop();
+    const content = deleteContent();
+    if (!m || !backdrop || !content) return;
+
+    pendingDeleteId = id;
+    setDeleteModalError();
+
+    const fullName = `${msg.ad || ''} ${msg.soyad || ''}`.trim() || 'İsimsiz';
+    const previewEl = document.getElementById('delete-message-preview');
+    if (previewEl) {
+        previewEl.textContent = `${fullName} · ${truncate(msg.mesaj, 120)}`;
+    }
+
+    const confirmBtn = document.getElementById('delete-message-confirm-btn');
+    const label = confirmBtn?.querySelector('.delete-confirm-label');
+    if (confirmBtn) confirmBtn.disabled = false;
+    if (label) label.textContent = 'Evet, Sil';
+
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+
+    requestAnimationFrame(() => {
+        backdrop.classList.remove('opacity-0');
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+    });
+}
+
+export function closeDeleteMessageModal() {
+    const m = deleteModal();
+    const backdrop = deleteBackdrop();
+    const content = deleteContent();
+    if (!m || !backdrop || !content) return;
+
+    backdrop.classList.add('opacity-0');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+
+    setTimeout(() => {
+        m.classList.remove('flex');
+        m.classList.add('hidden');
+        pendingDeleteId = null;
+        setDeleteModalError();
+    }, 300);
+}
+
+async function confirmDeleteMessage() {
+    if (!pendingDeleteId || !supabase) return;
+
+    const confirmBtn = document.getElementById('delete-message-confirm-btn');
+    const label = confirmBtn?.querySelector('.delete-confirm-label');
+    const id = pendingDeleteId;
+
+    setDeleteModalError();
+    if (confirmBtn) confirmBtn.disabled = true;
+    if (label) label.textContent = 'Siliniyor...';
 
     const { error } = await supabase.from('iletisim_mesajlari').delete().eq('id', id);
+
+    if (confirmBtn) confirmBtn.disabled = false;
+    if (label) label.textContent = 'Evet, Sil';
+
     if (error) {
         console.error('Mesaj silinemedi:', error);
-        alert('Mesaj silinemedi.');
+        setDeleteModalError('Mesaj silinemedi. Lütfen tekrar deneyin.');
         return;
     }
+
     allMessages = allMessages.filter((m) => m.id !== id);
     renderTable();
+    closeDeleteMessageModal();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -436,12 +517,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (msg) openReplyModal(msg);
         }
         if (deleteBtn) {
-            deleteMessage(deleteBtn.dataset.id);
+            openDeleteMessageModal(deleteBtn.dataset.id);
         }
     });
 
     modalBackdrop()?.addEventListener('click', closeMessageModal);
     replyBackdrop()?.addEventListener('click', closeReplyModal);
+    deleteBackdrop()?.addEventListener('click', closeDeleteMessageModal);
 
     document.querySelectorAll('[data-close-message-modal]').forEach((btn) => {
         btn.addEventListener('click', closeMessageModal);
@@ -451,6 +533,12 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', closeReplyModal);
     });
 
+    document.querySelectorAll('[data-close-delete-modal]').forEach((btn) => {
+        btn.addEventListener('click', closeDeleteMessageModal);
+    });
+
+    document.getElementById('delete-message-confirm-btn')?.addEventListener('click', confirmDeleteMessage);
+
     document.getElementById('reply-send-btn')?.addEventListener('click', sendReply);
 
     document.getElementById('reply-text')?.addEventListener('input', updateReplyCharCount);
@@ -458,3 +546,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.closeMessageModal = closeMessageModal;
 window.closeReplyModal = closeReplyModal;
+window.closeDeleteMessageModal = closeDeleteMessageModal;
