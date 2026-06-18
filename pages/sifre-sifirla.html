@@ -324,7 +324,14 @@
     <div id="auth-toast-container" class="auth-toast-container" aria-live="polite"></div>
 
     <script src="../js/lib/sitePaths.js"></script>
-    <script src="../js/main.js"></script>
+    <script>
+        document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
+            document.documentElement.classList.add('theme-transition');
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('yaziyo-theme', isDark ? 'dark' : 'light');
+            setTimeout(() => document.documentElement.classList.remove('theme-transition'), 350);
+        });
+    </script>
     <script type="module" src="../js/sifreSifirla.js"></script>
 </body>
 

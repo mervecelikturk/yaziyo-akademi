@@ -5,7 +5,7 @@
  * ?code= (PKCE) linkleri yalnızca sıfırlama isteğinin yapıldığı tarayıcıda çalışır.
  */
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/supabase.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/supabaseConfig.js';
 import { recoveryAuthStorage } from './lib/recoveryAuthStorage.js';
 import { isPasswordValid, PASSWORD_RULES, getPasswordStrength } from './passwordRules.js';
 import { formatAuthError } from './authVerification.js';
@@ -78,9 +78,15 @@ function getRecoveryTokenHash(query) {
     return query.get('token_hash') || query.get('token') || null;
 }
 
+function describeRecoveryLink(query) {
+    if (query.get('token_hash') || query.get('token')) return 'token_hash (doğru format)';
+    if (query.get('code')) return 'code (eski PKCE format — yeni mail gerekli)';
+    return 'parametre yok';
+}
+
 async function verifyRecoveryToken(client, tokenHash) {
     const { data, error } = await client.auth.verifyOtp({
-        token_hash: tokenHash,
+        token_hash: decodeURIComponent(tokenHash),
         type: 'recovery',
     });
     if (error) throw error;
@@ -265,7 +271,13 @@ async function initPage() {
     } catch (err) {
         showPanel('reset-error-wrap');
         const msg = document.getElementById('reset-error-message');
-        if (msg) msg.textContent = formatAuthError(err);
+        const linkType = describeRecoveryLink(new URLSearchParams(window.location.search));
+        const detail = formatAuthError(err);
+        if (msg) {
+            msg.textContent = linkType.includes('code')
+                ? `${detail} (Maildeki link hâlâ ?code= formatında. Supabase şablonunu kaydedip yeni mail isteyin.)`
+                : detail;
+        }
     }
 }
 
