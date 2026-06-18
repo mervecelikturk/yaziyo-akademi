@@ -193,7 +193,7 @@
         if (page.navLabel) {
             applyByNavLabel(page.navLabel, active, href);
         } else if (page.href) {
-            applyByHref(page.href, active);
+            applyByHref(href, active);
         }
         applyDirectLink(page.id, active, href);
     }

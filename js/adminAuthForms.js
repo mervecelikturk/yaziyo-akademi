@@ -8,7 +8,7 @@ import {
     formatAuthError,
     forceAuthCleanup,
 } from './authVerification.js';
-import { prepareAuthStorageForLogin, initRememberMeCheckbox } from './lib/authStorage.js';
+import { prepareAuthStorageForLogin } from './lib/authStorage.js';
 import {
     checkIsAdmin,
     setAdminSession,
@@ -83,8 +83,7 @@ export async function handleAdminLogin(e) {
         return;
     }
 
-    const remember = document.getElementById('admin-remember-me')?.checked === true;
-    prepareAuthStorageForLogin(remember);
+    prepareAuthStorageForLogin(false);
 
     try {
         if (submitBtn) {
@@ -123,8 +122,6 @@ export async function handleAdminLogin(e) {
 }
 
 async function initAdminLoginPage() {
-    initRememberMeCheckbox('admin-remember-me');
-
     if (hasAdminSession()) {
         const client = getClient();
         if (client) {

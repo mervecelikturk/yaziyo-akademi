@@ -4,7 +4,7 @@
  */
 
 /** Canlı site kökü (file:// veya bilinmeyen origin için yedek) */
-export const DEFAULT_SITE_URL = 'https://yaziyo.com';
+export const DEFAULT_SITE_URL = 'https://yaziyoakademi.com';
 
 export const AUTH_PAGES = {
     login: 'girisKayit.html',
@@ -58,6 +58,18 @@ export function getLoginPageUrl() {
 export function getPasswordResetRedirectUrl() {
     return resolveAuthPageUrl(AUTH_PAGES.resetPassword);
 }
+
+/**
+ * Supabase Dashboard → Authentication → URL Configuration → Redirect URLs
+ * Canlı ve geliştirme ortamları için tam URL listesi (sonuna / eklemeyin).
+ */
+export const SUPABASE_AUTH_REDIRECT_URLS = [
+    `${DEFAULT_SITE_URL}/pages/sifre-sifirla.html`,
+    'http://127.0.0.1:5500/pages/sifre-sifirla.html',
+    'http://localhost:5500/pages/sifre-sifirla.html',
+    'http://127.0.0.1:8080/pages/sifre-sifirla.html',
+    'http://localhost:8080/pages/sifre-sifirla.html',
+];
 
 /** Şifre sıfırlama maili yeniden gönderme bekleme süresi */
 export const RESET_EMAIL_COOLDOWN_SEC = 60;

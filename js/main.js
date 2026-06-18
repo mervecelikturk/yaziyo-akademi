@@ -7,6 +7,10 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    if (window.YaziyoAdminNavbar) {
+        window.YaziyoAdminNavbar.mount();
+    }
+
     if (window.YaziyoSiteNavbar) {
         window.YaziyoSiteNavbar.mount();
     }

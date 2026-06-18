@@ -5,10 +5,17 @@
 import { supabase } from './lib/supabase.js';
 import { isPasswordValid, PASSWORD_RULES, getPasswordStrength } from './passwordRules.js';
 import { formatAuthError } from './authVerification.js';
-import { setRememberMe } from './lib/authStorage.js';
+import { prepareAuthStorageForLogin } from './lib/authStorage.js';
+import { logPasswordResetComplete } from './lib/passwordResetApi.js';
+
+const { pageHref } = window.YaziyoPaths || { pageHref: (f) => f };
 
 function getClient() {
     return window.yaziyoSupabase || supabase;
+}
+
+function loginUrl(query = '') {
+    return pageHref('girisKayit.html') + query;
 }
 
 function showToast(message, type = 'info') {
@@ -25,13 +32,26 @@ function showToast(message, type = 'info') {
     setTimeout(() => toast.remove(), 5000);
 }
 
+function showPanel(name) {
+    ['reset-loading', 'reset-form-wrap', 'reset-error-wrap', 'reset-success-wrap'].forEach((id) => {
+        document.getElementById(id)?.classList.add('hidden');
+    });
+    document.getElementById(name)?.classList.remove('hidden');
+}
+
+function scrubRecoveryUrl() {
+    if (window.location.search || window.location.hash) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
 async function waitForRecoverySession(client) {
     const query = new URLSearchParams(window.location.search);
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
     if (query.get('error') || hash.get('error')) {
         throw new Error(
-            decodeURIComponent(query.get('error_description') || hash.get('error_description') || 'Geçersiz link')
+            decodeURIComponent(query.get('error_description') || hash.get('error_description') || 'Geçersiz link'),
         );
     }
 
@@ -39,6 +59,12 @@ async function waitForRecoverySession(client) {
     if (code) {
         const { error } = await client.auth.exchangeCodeForSession(code);
         if (error) throw error;
+        scrubRecoveryUrl();
+    }
+
+    const type = hash.get('type') || query.get('type');
+    if (type === 'recovery' && hash.get('access_token')) {
+        scrubRecoveryUrl();
     }
 
     const { data: { session } } = await client.auth.getSession();
@@ -51,7 +77,7 @@ async function waitForRecoverySession(client) {
                 done = true;
                 reject(new Error('Sıfırlama linkinin süresi dolmuş veya geçersiz.'));
             }
-        }, 12000);
+        }, 15000);
 
         const { data: { subscription } } = client.auth.onAuthStateChange((event, sess) => {
             if (done) return;
@@ -59,6 +85,7 @@ async function waitForRecoverySession(client) {
                 done = true;
                 clearTimeout(timeout);
                 subscription.unsubscribe();
+                scrubRecoveryUrl();
                 resolve(sess);
             }
         });
@@ -84,21 +111,29 @@ async function handleResetPasswordSubmit(e) {
     try {
         if (btn) {
             btn.disabled = true;
-            btn.textContent = 'KAYDEDİLİYOR...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> KAYDEDİLİYOR...';
         }
+
         const { error } = await client.auth.updateUser({ password: pw });
         if (error) throw error;
 
-        setRememberMe(true);
-        showToast('Şifreniz güncellendi. Giriş sayfasına yönlendiriliyorsunuz...', 'success');
-        setTimeout(() => {
-            window.location.href = 'girisKayit.html?reset=success';
-        }, 1500);
+        await logPasswordResetComplete(client);
+
+        showPanel('reset-success-wrap');
+
+        setTimeout(async () => {
+            try {
+                await client.auth.signOut({ scope: 'global' });
+            } catch {
+                /* ignore */
+            }
+            window.location.href = loginUrl('?reset=success');
+        }, 2200);
     } catch (err) {
         showToast(formatAuthError(err), 'error');
         if (btn) {
             btn.disabled = false;
-            btn.textContent = 'ŞİFREMİ GÜNCELLE';
+            btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> ŞİFREMİ GÜNCELLE';
         }
     }
 }
@@ -111,8 +146,7 @@ function initPasswordUi() {
 
     pwInput.addEventListener('input', () => {
         const pw = pwInput.value;
-        const rules = ['length', 'upper', 'lower', 'number'];
-        rules.forEach((rule) => {
+        ['length', 'upper', 'lower', 'number'].forEach((rule) => {
             const el = document.querySelector(`[data-reset-rule="${rule}"]`);
             if (!el) return;
             const icon = el.querySelector('i');
@@ -124,6 +158,9 @@ function initPasswordUi() {
             } else if (pw.length > 0) {
                 el.classList.add('text-red-500');
                 el.classList.remove('text-green-500');
+                icon?.classList.replace('fa-circle-check', 'fa-circle-xmark');
+            } else {
+                el.classList.remove('text-green-500', 'text-red-500');
                 icon?.classList.replace('fa-circle-check', 'fa-circle-xmark');
             }
         });
@@ -139,37 +176,6 @@ function initPasswordUi() {
     });
 }
 
-async function initPage() {
-    const loading = document.getElementById('reset-loading');
-    const formWrap = document.getElementById('reset-form-wrap');
-    const errorWrap = document.getElementById('reset-error-wrap');
-    const client = getClient();
-
-    document.getElementById('reset-password-form')?.addEventListener('submit', handleResetPasswordSubmit);
-    document.getElementById('toggle-reset-password')?.addEventListener('click', () => togglePw('reset-password', 'toggle-reset-password'));
-    document.getElementById('toggle-reset-password-confirm')?.addEventListener('click', () =>
-        togglePw('reset-password-confirm', 'toggle-reset-password-confirm')
-    );
-    initPasswordUi();
-
-    if (!client) {
-        loading?.classList.add('hidden');
-        errorWrap?.classList.remove('hidden');
-        return;
-    }
-
-    try {
-        await waitForRecoverySession(client);
-        loading?.classList.add('hidden');
-        formWrap?.classList.remove('hidden');
-    } catch (err) {
-        loading?.classList.add('hidden');
-        errorWrap?.classList.remove('hidden');
-        const msg = document.getElementById('reset-error-message');
-        if (msg) msg.textContent = formatAuthError(err);
-    }
-}
-
 function togglePw(inputId, btnId) {
     const input = document.getElementById(inputId);
     const icon = document.getElementById(btnId)?.querySelector('i');
@@ -178,6 +184,35 @@ function togglePw(inputId, btnId) {
     input.type = isPass ? 'text' : 'password';
     icon.classList.toggle('fa-eye', !isPass);
     icon.classList.toggle('fa-eye-slash', isPass);
+}
+
+async function initPage() {
+    prepareAuthStorageForLogin(false);
+
+    document.getElementById('reset-password-form')?.addEventListener('submit', handleResetPasswordSubmit);
+    document.getElementById('toggle-reset-password')?.addEventListener('click', () =>
+        togglePw('reset-password', 'toggle-reset-password'),
+    );
+    document.getElementById('toggle-reset-password-confirm')?.addEventListener('click', () =>
+        togglePw('reset-password-confirm', 'toggle-reset-password-confirm'),
+    );
+    initPasswordUi();
+
+    const client = getClient();
+    if (!client) {
+        showPanel('reset-error-wrap');
+        return;
+    }
+
+    try {
+        await waitForRecoverySession(client);
+        showPanel('reset-form-wrap');
+        document.getElementById('reset-password')?.focus();
+    } catch (err) {
+        showPanel('reset-error-wrap');
+        const msg = document.getElementById('reset-error-message');
+        if (msg) msg.textContent = formatAuthError(err);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initPage);
