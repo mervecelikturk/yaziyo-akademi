@@ -1,17 +1,46 @@
 /**
  * YAZİYO - Şifre sıfırlama (e-posta linki sonrası)
+ *
+ * E-posta linki token_hash içermeli (supabase/reset_password_email_template.html).
+ * ?code= (PKCE) linkleri yalnızca sıfırlama isteğinin yapıldığı tarayıcıda çalışır.
  */
 
-import { supabase } from './lib/supabase.js';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/supabase.js';
+import { recoveryAuthStorage } from './lib/recoveryAuthStorage.js';
 import { isPasswordValid, PASSWORD_RULES, getPasswordStrength } from './passwordRules.js';
 import { formatAuthError } from './authVerification.js';
-import { setRememberMe } from './lib/authStorage.js';
 import { logPasswordResetComplete } from './lib/passwordResetApi.js';
 
 const { pageHref } = window.YaziyoPaths || { pageHref: (f) => f };
 
+let recoveryClient = null;
+
+function buildRecoveryClient() {
+    if (typeof window === 'undefined' || !window.supabase?.createClient) {
+        return null;
+    }
+    const key = SUPABASE_ANON_KEY?.trim();
+    if (!key) return null;
+
+    return window.supabase.createClient(SUPABASE_URL, key, {
+        auth: {
+            flowType: 'pkce',
+            detectSessionInUrl: true,
+            autoRefreshToken: true,
+            persistSession: true,
+            storage: recoveryAuthStorage,
+        },
+        global: {
+            headers: { apikey: key },
+        },
+    });
+}
+
 function getClient() {
-    return window.yaziyoSupabase || supabase;
+    if (!recoveryClient) {
+        recoveryClient = buildRecoveryClient();
+    }
+    return recoveryClient;
 }
 
 function loginUrl(query = '') {
@@ -45,6 +74,19 @@ function scrubRecoveryUrl() {
     }
 }
 
+function getRecoveryTokenHash(query) {
+    return query.get('token_hash') || query.get('token') || null;
+}
+
+async function verifyRecoveryToken(client, tokenHash) {
+    const { data, error } = await client.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: 'recovery',
+    });
+    if (error) throw error;
+    return data?.session ?? null;
+}
+
 async function waitForRecoverySession(client) {
     const query = new URLSearchParams(window.location.search);
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
@@ -55,25 +97,20 @@ async function waitForRecoverySession(client) {
         );
     }
 
-    // token_hash — e-posta linki; farklı cihaz/tarayıcıda çalışır
-    const tokenHash = query.get('token_hash');
+    const tokenHash = getRecoveryTokenHash(query);
     if (tokenHash) {
-        const { error } = await client.auth.verifyOtp({
-            token_hash: tokenHash,
-            type: 'recovery',
-        });
-        if (error) throw error;
+        const session = await verifyRecoveryToken(client, tokenHash);
         scrubRecoveryUrl();
+        if (session) return session;
     }
 
-    // PKCE code — yalnızca eski mailler / aynı tarayıcı
     const code = query.get('code');
     if (code && !tokenHash) {
         const { error } = await client.auth.exchangeCodeForSession(code);
         if (error) {
             if (/pkce|code verifier/i.test(error.message || '')) {
                 throw new Error(
-                    'Bu link farklı bir cihaz veya tarayıcıda açıldı. Lütfen yeni bir sıfırlama linki isteyin.',
+                    'Bu sıfırlama linki eski formatta ve farklı cihazda açılamaz. Lütfen yeni bir sıfırlama linki isteyin; gelen maildeki linki telefonunuzun tarayıcısında (Chrome/Safari) açın.',
                 );
             }
             throw error;
@@ -81,9 +118,8 @@ async function waitForRecoverySession(client) {
         scrubRecoveryUrl();
     }
 
-    // Implicit (#access_token=...&type=recovery) — detectSessionInUrl işler
     if (hash.get('access_token') && hash.get('type') === 'recovery') {
-        await new Promise((resolve) => setTimeout(resolve, 150));
+        await new Promise((resolve) => setTimeout(resolve, 200));
         scrubRecoveryUrl();
     }
 
@@ -207,9 +243,6 @@ function togglePw(inputId, btnId) {
 }
 
 async function initPage() {
-    // Oturum depolamasını link doğrulanmadan temizleme — PKCE/implicit token'ları silinmesin
-    setRememberMe(false);
-
     document.getElementById('reset-password-form')?.addEventListener('submit', handleResetPasswordSubmit);
     document.getElementById('toggle-reset-password')?.addEventListener('click', () =>
         togglePw('reset-password', 'toggle-reset-password'),

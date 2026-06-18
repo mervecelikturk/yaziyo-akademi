@@ -66,6 +66,9 @@ export function getPasswordResetRedirectUrl() {
  * Canlı ve geliştirme ortamları için tam URL listesi (sonuna / eklemeyin).
  *
  * Site URL mutlaka: https://yaziyoakademi.com (localhost:3000 OLMAMALI)
+ *
+ * E-posta şablonu: supabase/reset_password_email_template.html
+ * (ConfirmationURL değil — token_hash linki kullanın)
  */
 export const SUPABASE_AUTH_REDIRECT_URLS = [
     `${DEFAULT_SITE_URL}/pages/sifre-sifirla.html`,
