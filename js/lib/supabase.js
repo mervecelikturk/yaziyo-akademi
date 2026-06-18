@@ -4,8 +4,9 @@ const SUPABASE_URL = 'https://eqyfnlapipnzojxhispd.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_QgTAB5ivUASyNL1aaWB0iQ_uzrfsa2t';
 
 /**
- * Supabase Client — PKCE, oturum kalıcılığı
- * Oturum token'ları yaziyoAuthStorage üzerinden localStorage veya sessionStorage'a yazılır (Beni Hatırla).
+ * Supabase Client — implicit akış (statik site / e-posta linkleri cihazlar arası)
+ * PKCE yalnızca linkin açıldığı tarayıcıda code verifier olduğunda çalışır;
+ * şifre sıfırlama maili telefonda açıldığında PKCE hata verir.
  */
 let supabase = null;
 
@@ -21,7 +22,7 @@ function buildSupabaseClient() {
     const key = SUPABASE_ANON_KEY.trim();
     return window.supabase.createClient(SUPABASE_URL, key, {
         auth: {
-            flowType: 'pkce',
+            flowType: 'implicit',
             detectSessionInUrl: true,
             autoRefreshToken: true,
             persistSession: true,

@@ -106,5 +106,8 @@ export function formatAuthError(error) {
     if (/password/i.test(msg) && /weak|short|least/i.test(msg)) {
         return 'Şifre güvenlik kurallarını karşılamıyor.';
     }
+    if (/pkce|code verifier/i.test(msg)) {
+        return 'Bu link farklı bir cihaz veya tarayıcıda açıldı. Lütfen yeni bir sıfırlama linki isteyin.';
+    }
     return msg;
 }

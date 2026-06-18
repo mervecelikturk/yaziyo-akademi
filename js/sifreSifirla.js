@@ -5,7 +5,7 @@
 import { supabase } from './lib/supabase.js';
 import { isPasswordValid, PASSWORD_RULES, getPasswordStrength } from './passwordRules.js';
 import { formatAuthError } from './authVerification.js';
-import { prepareAuthStorageForLogin } from './lib/authStorage.js';
+import { setRememberMe } from './lib/authStorage.js';
 import { logPasswordResetComplete } from './lib/passwordResetApi.js';
 
 const { pageHref } = window.YaziyoPaths || { pageHref: (f) => f };
@@ -55,15 +55,35 @@ async function waitForRecoverySession(client) {
         );
     }
 
-    const code = query.get('code');
-    if (code) {
-        const { error } = await client.auth.exchangeCodeForSession(code);
+    // token_hash — e-posta linki; farklı cihaz/tarayıcıda çalışır
+    const tokenHash = query.get('token_hash');
+    if (tokenHash) {
+        const { error } = await client.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'recovery',
+        });
         if (error) throw error;
         scrubRecoveryUrl();
     }
 
-    const type = hash.get('type') || query.get('type');
-    if (type === 'recovery' && hash.get('access_token')) {
+    // PKCE code — yalnızca eski mailler / aynı tarayıcı
+    const code = query.get('code');
+    if (code && !tokenHash) {
+        const { error } = await client.auth.exchangeCodeForSession(code);
+        if (error) {
+            if (/pkce|code verifier/i.test(error.message || '')) {
+                throw new Error(
+                    'Bu link farklı bir cihaz veya tarayıcıda açıldı. Lütfen yeni bir sıfırlama linki isteyin.',
+                );
+            }
+            throw error;
+        }
+        scrubRecoveryUrl();
+    }
+
+    // Implicit (#access_token=...&type=recovery) — detectSessionInUrl işler
+    if (hash.get('access_token') && hash.get('type') === 'recovery') {
+        await new Promise((resolve) => setTimeout(resolve, 150));
         scrubRecoveryUrl();
     }
 
@@ -187,7 +207,8 @@ function togglePw(inputId, btnId) {
 }
 
 async function initPage() {
-    prepareAuthStorageForLogin(false);
+    // Oturum depolamasını link doğrulanmadan temizleme — PKCE/implicit token'ları silinmesin
+    setRememberMe(false);
 
     document.getElementById('reset-password-form')?.addEventListener('submit', handleResetPasswordSubmit);
     document.getElementById('toggle-reset-password')?.addEventListener('click', () =>

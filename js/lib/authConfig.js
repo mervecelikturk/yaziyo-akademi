@@ -54,14 +54,18 @@ export function getLoginPageUrl() {
     return resolveAuthPageUrl(AUTH_PAGES.login);
 }
 
-/** Şifre sıfırlama mailindeki redirect */
+/**
+ * Şifre sıfırlama mailindeki redirect — her zaman canlı site (e-posta linki localhost'a gitmesin)
+ */
 export function getPasswordResetRedirectUrl() {
-    return resolveAuthPageUrl(AUTH_PAGES.resetPassword);
+    return `${DEFAULT_SITE_URL.replace(/\/$/, '')}/pages/${AUTH_PAGES.resetPassword}`;
 }
 
 /**
  * Supabase Dashboard → Authentication → URL Configuration → Redirect URLs
  * Canlı ve geliştirme ortamları için tam URL listesi (sonuna / eklemeyin).
+ *
+ * Site URL mutlaka: https://yaziyoakademi.com (localhost:3000 OLMAMALI)
  */
 export const SUPABASE_AUTH_REDIRECT_URLS = [
     `${DEFAULT_SITE_URL}/pages/sifre-sifirla.html`,
@@ -69,6 +73,8 @@ export const SUPABASE_AUTH_REDIRECT_URLS = [
     'http://localhost:5500/pages/sifre-sifirla.html',
     'http://127.0.0.1:8080/pages/sifre-sifirla.html',
     'http://localhost:8080/pages/sifre-sifirla.html',
+    'http://127.0.0.1:3000/pages/sifre-sifirla.html',
+    'http://localhost:3000/pages/sifre-sifirla.html',
 ];
 
 /** Şifre sıfırlama maili yeniden gönderme bekleme süresi */
