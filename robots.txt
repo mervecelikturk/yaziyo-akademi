@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+Disallow: /pages/admin
+Disallow: /pages/kullanicilar.html
+Disallow: /pages/icerikEkle.html
+Disallow: /pages/sinavEkle.html
+Disallow: /pages/mesajlar.html
+Disallow: /pages/profil.html
+Disallow: /pages/sifre-sifirla.html
+Disallow: /404.html
+Disallow: /supabase/
+
+Sitemap: https://yaziyoakademi.com/sitemap.xml
