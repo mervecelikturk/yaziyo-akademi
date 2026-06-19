@@ -508,6 +508,53 @@ html.theme-transition *::after {
 }
 
 /* ============================================ */
+/* MARKA ADI — navbar / footer / hero           */
+/* ============================================ */
+.yaziyo-brand-name {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    color: rgb(var(--yaziyo-gold-rgb));
+    letter-spacing: 0.04em;
+    line-height: 1.15;
+    font-size: clamp(0.5625rem, 2.35vw, 1rem);
+    user-select: none;
+}
+
+@media (min-width: 480px) {
+    .yaziyo-brand-name {
+        letter-spacing: 0.05em;
+    }
+}
+
+@media (min-width: 640px) {
+    .yaziyo-brand-name {
+        letter-spacing: 0.06em;
+    }
+}
+
+.yaziyo-brand-name--footer {
+    font-size: clamp(0.6875rem, 2.6vw, 1rem);
+    letter-spacing: 0.05em;
+}
+
+#main-header a#logo-link,
+.yaziyo-header-logo {
+    min-width: 0;
+}
+
+@media (max-width: 639px) {
+    #main-header a#logo-link,
+    .yaziyo-header-logo {
+        max-width: 58%;
+    }
+}
+
+.hero-title.yaziyo-brand-hero {
+    letter-spacing: 0.02em;
+    line-height: 1.08;
+}
+
+/* ============================================ */
 /* HEADER — responsive toolbar (siteNavbar.js)  */
 /* ============================================ */
 .yaziyo-header-actions {

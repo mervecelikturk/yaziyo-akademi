@@ -8,6 +8,31 @@ let searchQuery = '';
 let pendingDeleteUserId = null;
 
 const tbody = () => document.querySelector('#users-tbody') || document.querySelector('tbody');
+const TABLE_COLSPAN = 7;
+
+function formatUserCount(n) {
+    return (Number(n) || 0).toLocaleString('tr-TR');
+}
+
+function updateUserCountSummary() {
+    const el = document.getElementById('users-count-summary');
+    if (!el) return;
+
+    const total = allUsers.length;
+    const filtered = filterUsers(allUsers).length;
+
+    if (searchQuery.trim() && filtered !== total) {
+        el.textContent = `${formatUserCount(filtered)} / ${formatUserCount(total)} kullanıcı gösteriliyor`;
+        return;
+    }
+
+    if (total === 0) {
+        el.textContent = 'Toplam 0 kullanıcı';
+        return;
+    }
+
+    el.textContent = `Toplam ${formatUserCount(total)} kullanıcı`;
+}
 
 function escapeHtml(str) {
     return String(str ?? '')
@@ -44,9 +69,11 @@ function filterUsers(users) {
 function showLoading() {
     const el = tbody();
     if (!el) return;
+    const summary = document.getElementById('users-count-summary');
+    if (summary) summary.textContent = 'Yükleniyor…';
     el.innerHTML = `
         <tr>
-            <td colspan="6" class="px-6 py-24 text-center">
+            <td colspan="${TABLE_COLSPAN}" class="px-6 py-24 text-center">
                 <div class="flex flex-col items-center gap-4">
                     <i class="fa-solid fa-circle-notch fa-spin text-4xl text-yaziyo-gold"></i>
                     <p class="text-xs text-light-text-secondary dark:text-dark-text-secondary">Kullanıcı listesi yükleniyor...</p>
@@ -61,7 +88,7 @@ function showSetupRequired() {
     if (!el) return;
     el.innerHTML = `
         <tr>
-            <td colspan="6" class="px-6 py-12">
+            <td colspan="${TABLE_COLSPAN}" class="px-6 py-12">
                 <div class="max-w-2xl mx-auto bg-orange-500/5 border border-orange-500/20 rounded-2xl p-8 text-center">
                     <i class="fa-solid fa-database text-4xl text-orange-500 mb-4"></i>
                     <h3 class="text-xl font-poppins font-bold mb-2">Veritabanı Kurulumu Gerekli</h3>
@@ -79,6 +106,8 @@ function showSetupRequired() {
             </td>
         </tr>
     `;
+    const summary = document.getElementById('users-count-summary');
+    if (summary) summary.textContent = '—';
     loadSetupSql();
 }
 
@@ -96,9 +125,10 @@ async function loadSetupSql() {
 function showError(message) {
     const el = tbody();
     if (!el) return;
+    updateUserCountSummary();
     el.innerHTML = `
         <tr>
-            <td colspan="6" class="px-6 py-20 text-center text-red-500">
+            <td colspan="${TABLE_COLSPAN}" class="px-6 py-20 text-center text-red-500">
                 <i class="fa-solid fa-triangle-exclamation text-4xl mb-4"></i>
                 <p class="font-bold">Bir Hata Oluştu</p>
                 <p class="text-sm mt-2 opacity-80">${escapeHtml(message)}</p>
@@ -112,11 +142,12 @@ function renderTable() {
     if (!el) return;
 
     const users = filterUsers(allUsers);
+    updateUserCountSummary();
 
     if (users.length === 0) {
         el.innerHTML = `
             <tr>
-                <td colspan="6" class="px-6 py-20 text-center">
+                <td colspan="${TABLE_COLSPAN}" class="px-6 py-20 text-center">
                     <i class="fa-solid fa-user-slash text-5xl mb-4 text-light-text-secondary dark:text-dark-text-secondary opacity-20"></i>
                     <p class="text-light-text-secondary dark:text-dark-text-secondary font-medium">
                         ${searchQuery.trim() ? 'Aramanızla eşleşen kullanıcı bulunamadı.' : 'Henüz kayıtlı bir kullanıcı bulunmuyor.'}
@@ -127,7 +158,7 @@ function renderTable() {
         return;
     }
 
-    el.innerHTML = users.map((user) => {
+    el.innerHTML = users.map((user, index) => {
         const { firstName, lastName } = splitName(user.full_name);
         const email = user.email || '-';
         const createdAt = user.created_at
@@ -136,6 +167,7 @@ function renderTable() {
 
         return `
             <tr class="hover:bg-light-bg/30 dark:hover:bg-dark-bg/20 transition-colors duration-200 border-b border-light-border dark:border-dark-border last:border-0" data-user-id="${user.id}">
+                <td class="px-4 py-4 text-sm font-poppins font-bold text-yaziyo-gold text-center tabular-nums">${index + 1}</td>
                 <td class="px-6 py-4 text-sm font-medium">${escapeHtml(firstName)}</td>
                 <td class="px-6 py-4 text-sm font-medium">${escapeHtml(lastName)}</td>
                 <td class="px-6 py-4 text-sm text-light-text-secondary dark:text-dark-text-secondary">${escapeHtml(email)}</td>

@@ -167,18 +167,42 @@ document.addEventListener('DOMContentLoaded', () => {
     /* INTERSECTION OBSERVER (Görünüme Girme)      */
     /* ============================================ */
 
+    const ASYNC_STAT_CARDS = {
+        'aday-sayisi-gosterge': {
+            readyKey: 'adaySayisiReady',
+            readyEvent: 'yaziyo:aday-sayisi-ready',
+        },
+        'mulakat-soru-sayisi-gosterge': {
+            readyKey: 'mulakatSoruSayisiReady',
+            readyEvent: 'yaziyo:mulakat-soru-sayisi-ready',
+        },
+    };
+
+    function triggerStatAnimation(card) {
+        const numberEl = card.querySelector('.stat-number');
+        if (!numberEl || card.classList.contains('animated')) return;
+
+        const run = () => {
+            if (card.classList.contains('animated')) return;
+            card.classList.add('animated');
+            const target = parseInt(numberEl.getAttribute('data-target'), 10) || 0;
+            animateCounter(numberEl, target);
+        };
+
+        const asyncStat = ASYNC_STAT_CARDS[numberEl.id];
+        if (asyncStat && document.documentElement.dataset[asyncStat.readyKey] !== '1') {
+            document.addEventListener(asyncStat.readyEvent, run, { once: true });
+            return;
+        }
+
+        run();
+    }
+
     // İstatistik kartlarını izle - görünüme girince sayaç başlat
     const statsObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                const card = entry.target;
-                const numberEl = card.querySelector('.stat-number');
-
-                if (numberEl && !card.classList.contains('animated')) {
-                    card.classList.add('animated');
-                    const target = parseInt(numberEl.getAttribute('data-target'), 10);
-                    animateCounter(numberEl, target);
-                }
+                triggerStatAnimation(entry.target);
             }
         });
     }, {

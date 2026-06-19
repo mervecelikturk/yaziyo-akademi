@@ -134,12 +134,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
 
             <!-- Logo Alanı (Sol) -->
-            <a href="index.html" class="flex items-center gap-2 group" id="logo-link">
-                <img src="images/logo.png" alt="YAZİYO Logo"
+            <a href="index.html" class="flex items-center gap-2 group min-w-0 max-w-[58%] sm:max-w-none" id="logo-link">
+                <img src="images/logo.png" alt="YAZİYO AKADEMİ Logo"
                     class="h-5 sm:h-6 w-auto object-contain rounded-lg border-2 border-yaziyo-gold transition-transform duration-300 group-hover:scale-105"
                     id="header-logo">
                 <span
-                    class="font-poppins font-extrabold text-yaziyo-gold text-sm sm:text-base tracking-widest select-none">YAZİYO</span>
+                    class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
             </a>
 
             <!-- Sağ Taraf: Tema Değiştir + Giriş Yap -->
@@ -356,8 +356,8 @@
         <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
             <!-- Ana Başlık -->
             <h1
-                class="font-poppins font-bold text-yaziyo-gold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl leading-tight mb-4 drop-shadow-lg hero-title">
-                YAZİYO
+                class="font-poppins font-bold text-yaziyo-gold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl leading-tight mb-4 drop-shadow-lg hero-title yaziyo-brand-hero">
+                YAZİYO AKADEMİ
             </h1>
             <!-- Alt Başlık -->
             <p
@@ -413,7 +413,7 @@
             <div class="text-center mb-12">
                 <h2
                     class="font-poppins font-bold text-2xl sm:text-3xl text-light-text dark:text-dark-text transition-colors duration-300">
-                    Platformumuz <span class="text-yaziyo-gold">Rakamlarla</span>
+                    Platformumuz <span class="text-yaziyo-gold">Sayılarla</span>
                 </h2>
                 <div class="mt-3 mx-auto w-16 h-1 bg-yaziyo-gold rounded-full"></div>
             </div>
@@ -427,7 +427,7 @@
                     <div class="stat-icon-wrapper transition-colors duration-300">
                         <i class="fa-solid fa-users text-2xl text-yaziyo-gold"></i>
                     </div>
-                    <div class="stat-number" id="aday-sayisi-gosterge" data-target="800">0</div>
+                    <div class="stat-number" id="aday-sayisi-gosterge" data-target="0">0</div>
                     <div
                         class="stat-label text-light-text-secondary dark:text-dark-text-secondary transition-colors duration-300">
                         Aday Sayısı</div>
@@ -453,7 +453,7 @@
                     <div class="stat-icon-wrapper transition-colors duration-300">
                         <i class="fa-solid fa-clipboard-question text-2xl text-yaziyo-gold"></i>
                     </div>
-                    <div class="stat-number" data-target="360">0</div>
+                    <div class="stat-number" id="mulakat-soru-sayisi-gosterge" data-target="0">0</div>
                     <div
                         class="stat-label text-light-text-secondary dark:text-dark-text-secondary transition-colors duration-300">
                         Mülakat Soru Sayısı</div>
@@ -472,10 +472,10 @@
                 <!-- Logo ve Marka -->
                 <div class="flex flex-col items-center">
                     <div class="flex items-center gap-2 mb-0.5">
-                        <img src="images/logo.png" alt="YAZİYO Logo"
+                        <img src="images/logo.png" alt="YAZİYO AKADEMİ Logo"
                             class="h-4 w-auto object-contain rounded-lg border border-yaziyo-gold">
                         <span
-                            class="font-poppins font-extrabold text-yaziyo-gold text-base tracking-widest">YAZİYO</span>
+                            class="yaziyo-brand-name yaziyo-brand-name--footer">YAZİYO AKADEMİ</span>
                     </div>
                     <p
                         class="text-light-text-secondary dark:text-dark-text-secondary text-xs font-inter transition-colors duration-300">
@@ -515,7 +515,7 @@
                 <!-- Telif Hakkı -->
                 <p
                     class="text-light-text-secondary dark:text-dark-text-secondary text-[10px] sm:text-xs font-inter tracking-wide transition-colors duration-300">
-                    © 2026 YAZİYO. Tüm hakları saklıdır.
+                    © 2026 YAZİYO AKADEMİ. Tüm hakları saklıdır.
                 </p>
             </div>
         </div>
@@ -570,7 +570,7 @@
     <script src="js/lib/sitePaths.js"></script>
     <script src="js/pageStatus.js"></script>
     <script src="js/metinlerDB.js"></script>
-    <script src="js/indexStats.js"></script>
+    <script type="module" src="js/indexStats.js"></script>
     <script src="js/indexHeroQuote.js"></script>
     <script src="js/siteNavbar.js"></script>
     <script src="js/main.js"></script>

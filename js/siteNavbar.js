@@ -64,11 +64,11 @@
         const girisKayit = paths.pageHref('girisKayit.html');
         return `
         <div class="yaziyo-header-bar max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between gap-2">
-            <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group shrink-0 min-w-0" id="logo-link">
-                <img src="${logoSrc}" alt="YAZİYO Logo"
+            <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 max-w-[58%] sm:max-w-none" id="logo-link">
+                <img src="${logoSrc}" alt="YAZİYO AKADEMİ Logo"
                     class="h-5 sm:h-6 w-auto object-contain rounded-lg border-2 border-yaziyo-gold transition-transform duration-300 group-hover:scale-105 shrink-0"
                     id="header-logo">
-                <span class="font-poppins font-extrabold text-yaziyo-gold text-sm sm:text-base tracking-widest select-none truncate">YAZİYO</span>
+                <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
             </a>
             <div class="yaziyo-header-actions flex items-center justify-end min-w-0">
                 <div class="relative group yaziyo-header-icon-wrap">
