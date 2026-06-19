@@ -6,23 +6,32 @@ import { supabase } from './lib/supabase.js';
 import {
     getPasswordResetRedirectUrl,
     RESET_EMAIL_COOLDOWN_SEC,
+    isEmailConfirmed,
 } from './lib/authConfig.js';
 import {
     initRememberMeCheckbox,
     prepareAuthStorageForLogin,
     setStoredVerifiedUser,
     mirrorSessionToWindowName,
+    clearAllSupabaseAuthKeys,
 } from './lib/authStorage.js';
 import {
     signUp,
     signIn,
     formatAuthError,
+    resendSignupConfirmation,
+    verifySignupToken,
+    forceAuthCleanup,
+    signInWithGoogle,
 } from './authVerification.js';
 
 const { homeHref } = window.YaziyoPaths || { homeHref: () => '../index.html' };
 
 let resetEmailCooldownTimer = null;
 let resetEmailCooldownLeft = 0;
+let verifyEmailCooldownTimer = null;
+let verifyEmailCooldownLeft = 0;
+let pendingVerifyEmail = '';
 
 function getClient() {
     return window.yaziyoSupabase || supabase;
@@ -63,6 +72,7 @@ function escapeHtml(str) {
 
 function hideAllAuthPanels() {
     document.getElementById('forgot-password-panel')?.classList.add('hidden');
+    document.getElementById('verify-email-panel')?.classList.add('hidden');
     document.getElementById('register-form-container')?.classList.add('hidden');
 }
 
@@ -87,6 +97,134 @@ function showForgotPasswordPanel(prefillEmail = '') {
     if (input && prefillEmail) input.value = prefillEmail;
     document.getElementById('forgot-success-msg')?.classList.add('hidden');
     document.getElementById('forgot-form-fields')?.classList.remove('hidden');
+}
+
+function showVerifyEmailPanel(email) {
+    pendingVerifyEmail = (email || '').trim().toLowerCase();
+    hideAllAuthPanels();
+    const panel = document.getElementById('verify-email-panel');
+    const login = document.getElementById('login-form-container');
+    login?.classList.add('hidden');
+    panel?.classList.remove('hidden');
+    panel?.classList.add('block');
+    document.getElementById('auth-tabs')?.classList.add('hidden');
+
+    const display = document.getElementById('verify-sent-email');
+    if (display) display.textContent = pendingVerifyEmail || 'e-posta adresiniz';
+    updateVerifyEmailButton();
+}
+
+function updateVerifyEmailButton() {
+    const btn = document.getElementById('verify-resend-btn');
+    const label = document.getElementById('verify-resend-label');
+    if (!btn) return;
+    if (verifyEmailCooldownLeft > 0) {
+        btn.disabled = true;
+        if (label) label.textContent = `Tekrar gönder (${verifyEmailCooldownLeft}s)`;
+    } else {
+        btn.disabled = false;
+        if (label) label.textContent = 'Doğrulama e-postasını tekrar gönder';
+    }
+}
+
+function startVerifyEmailCooldown(sec = RESET_EMAIL_COOLDOWN_SEC) {
+    verifyEmailCooldownLeft = sec;
+    updateVerifyEmailButton();
+    if (verifyEmailCooldownTimer) clearInterval(verifyEmailCooldownTimer);
+    verifyEmailCooldownTimer = setInterval(() => {
+        verifyEmailCooldownLeft -= 1;
+        updateVerifyEmailButton();
+        if (verifyEmailCooldownLeft <= 0) {
+            clearInterval(verifyEmailCooldownTimer);
+            verifyEmailCooldownTimer = null;
+        }
+    }, 1000);
+}
+
+async function handleResendVerificationEmail() {
+    const client = getClient();
+    const email = pendingVerifyEmail || document.getElementById('login-email')?.value?.trim().toLowerCase();
+    const btn = document.getElementById('verify-resend-btn');
+
+    if (!email) {
+        showToast('E-posta adresi bulunamadı.', 'warning');
+        return;
+    }
+    if (btn?.disabled) return;
+
+    try {
+        if (btn) btn.disabled = true;
+        await resendSignupConfirmation(client, email);
+        showToast('Doğrulama e-postası tekrar gönderildi.', 'success');
+        startVerifyEmailCooldown();
+    } catch (err) {
+        showToast(formatAuthError(err), 'error');
+        updateVerifyEmailButton();
+    }
+}
+
+function scrubAuthUrl() {
+    if (window.location.search || window.location.hash) {
+        const clean = window.location.pathname.split('/').pop() || 'girisKayit.html';
+        window.history.replaceState({}, document.title, clean);
+    }
+}
+
+async function handleEmailConfirmationFromUrl() {
+    const client = getClient();
+    if (!client) return false;
+
+    const params = new URLSearchParams(window.location.search);
+    const tokenHash = params.get('token_hash') || params.get('token');
+    const type = params.get('type');
+
+    if (tokenHash && (type === 'signup' || type === 'email' || type === 'magiclink')) {
+        try {
+            const data = await verifySignupToken(client, tokenHash);
+            if (data?.session || data?.user) {
+                persistSession(data);
+                scrubAuthUrl();
+                showToast('E-postanız doğrulandı! Yönlendiriliyorsunuz...', 'success');
+                redirectToHome();
+                return true;
+            }
+        } catch (err) {
+            showToast(formatAuthError(err), 'error');
+            scrubAuthUrl();
+        }
+        return true;
+    }
+
+    if (params.get('verified') === '1') {
+        const { data: { session } } = await client.auth.getSession();
+        if (session?.user && isEmailConfirmed(session.user)) {
+            persistSession({ session, user: session.user });
+            scrubAuthUrl();
+            showToast('E-postanız doğrulandı! Yönlendiriliyorsunuz...', 'success');
+            redirectToHome();
+            return true;
+        }
+    }
+
+    if (window.location.hash.includes('access_token') || params.has('code')) {
+        await new Promise((resolve) => window.setTimeout(resolve, 400));
+        const { data: { session } } = await client.auth.getSession();
+        if (session?.user && isEmailConfirmed(session.user)) {
+            persistSession({ session, user: session.user });
+            scrubAuthUrl();
+            const isOAuthReturn = params.get('oauth') === '1';
+            showToast(
+                isOAuthReturn
+                    ? 'Google ile giriş başarılı! Yönlendiriliyorsunuz...'
+                    : 'E-postanız doğrulandı! Yönlendiriliyorsunuz...',
+                'success',
+            );
+            redirectToHome();
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function updateResetEmailButton() {
@@ -197,7 +335,12 @@ export async function handleLogin(e) {
             redirectToHome();
         }
     } catch (err) {
-        showToast(formatAuthError(err), 'error');
+        const message = formatAuthError(err);
+        showToast(message, 'error');
+        if (err?.code === 'email_not_confirmed' || /doğrulanmadı|email not confirmed/i.test(`${message} ${err?.message || ''}`)) {
+            await forceAuthCleanup(client);
+            showVerifyEmailPanel(email);
+        }
     } finally {
         if (submitBtn) {
             submitBtn.disabled = false;
@@ -247,9 +390,17 @@ export async function handleRegister(e) {
             fullName: `${name} ${surname}`.trim(),
         });
 
-        persistSession(data);
-        showToast('Kayıt başarılı! Yönlendiriliyorsunuz...', 'success');
-        redirectToHome();
+        if (data?.session && data?.user && isEmailConfirmed(data.user)) {
+            persistSession(data);
+            showToast('Kayıt başarılı! Yönlendiriliyorsunuz...', 'success');
+            redirectToHome();
+            return;
+        }
+
+        await forceAuthCleanup(client);
+        clearAllSupabaseAuthKeys();
+        showVerifyEmailPanel(email);
+        showToast('Kayıt alındı. Devam etmek için e-postanızdaki doğrulama bağlantısına tıklayın.', 'success');
     } catch (err) {
         showToast(formatAuthError(err), 'error');
     } finally {
@@ -257,6 +408,32 @@ export async function handleRegister(e) {
             btn.disabled = false;
             btn.textContent = 'KAYIT OL';
         }
+    }
+}
+
+async function handleGoogleSignIn() {
+    const client = getClient();
+    if (!client) {
+        showToast('Sistem henüz hazır değil. Sayfayı yenileyin.', 'error');
+        return;
+    }
+
+    const registerVisible = !document.getElementById('register-form-container')?.classList.contains('hidden');
+    if (registerVisible && document.getElementById('terms-accept')?.checked !== true) {
+        showToast('Google ile devam etmek için sözleşmeyi kabul etmelisiniz.', 'warning');
+        return;
+    }
+
+    const remember = document.getElementById('remember-me')?.checked === true;
+    prepareAuthStorageForLogin(remember);
+
+    const btn = document.getElementById('google-sign-in-btn');
+    try {
+        if (btn) btn.disabled = true;
+        await signInWithGoogle(client);
+    } catch (err) {
+        showToast(formatAuthError(err), 'error');
+        if (btn) btn.disabled = false;
     }
 }
 
@@ -316,17 +493,21 @@ function initAuthFormsPage() {
     initRememberMeCheckbox();
     initTermsModal();
 
-    const params = new URLSearchParams(window.location.search);
+    handleEmailConfirmationFromUrl().then((handled) => {
+        if (handled) return;
 
-    if (params.get('reset') === 'success') {
-        showToast('Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.', 'success');
-        window.history.replaceState({}, '', 'girisKayit.html');
-    }
+        const params = new URLSearchParams(window.location.search);
 
-    if (params.get('forgot') === '1') {
-        const loginEmail = document.getElementById('login-email')?.value;
-        showForgotPasswordPanel(loginEmail || '');
-    }
+        if (params.get('reset') === 'success') {
+            showToast('Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.', 'success');
+            window.history.replaceState({}, '', 'girisKayit.html');
+        }
+
+        if (params.get('forgot') === '1') {
+            const loginEmail = document.getElementById('login-email')?.value;
+            showForgotPasswordPanel(loginEmail || '');
+        }
+    });
 
     document.getElementById('forgot-password-link')?.addEventListener('click', (ev) => {
         ev.preventDefault();
@@ -339,6 +520,14 @@ function initAuthFormsPage() {
         ev.preventDefault();
         showLoginFormOnly();
     });
+
+    document.getElementById('verify-resend-btn')?.addEventListener('click', handleResendVerificationEmail);
+    document.getElementById('back-from-verify-btn')?.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        showLoginFormOnly();
+    });
+
+    document.getElementById('google-sign-in-btn')?.addEventListener('click', handleGoogleSignIn);
 }
 
 document.addEventListener('DOMContentLoaded', initAuthFormsPage);

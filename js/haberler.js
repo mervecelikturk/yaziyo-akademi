@@ -77,8 +77,6 @@ function renderFeatured(item) {
                     <p class="text-light-text-secondary dark:text-dark-text-secondary text-sm leading-relaxed mb-6">${escapeHtml(item.excerpt)}</p>
                     <div class="flex flex-wrap items-center gap-4 text-xs text-light-text-secondary dark:text-dark-text-secondary mb-6">
                         <span><i class="fa-regular fa-calendar text-yaziyo-gold mr-1"></i>${escapeHtml(item.date)}</span>
-                        <span><i class="fa-regular fa-eye text-yaziyo-gold mr-1"></i>${item.views.toLocaleString('tr-TR')} görüntülenme</span>
-                        <span><i class="fa-solid fa-user-shield text-yaziyo-gold mr-1"></i>${escapeHtml(item.author)}</span>
                     </div>
                     <button type="button" class="haber-btn-primary" data-read="${item.id}">
                         Devamını Oku <i class="fa-solid fa-arrow-right ml-2 text-sm"></i>
@@ -102,8 +100,6 @@ function renderNewsCard(item) {
                 <p class="font-inter text-sm text-light-text-secondary dark:text-dark-text-secondary line-clamp-3 mb-4 flex-grow">${escapeHtml(item.excerpt)}</p>
                 <div class="flex flex-wrap gap-3 text-[11px] text-light-text-secondary dark:text-dark-text-secondary border-t border-light-border dark:border-dark-border pt-4 mb-4">
                     <span><i class="fa-regular fa-calendar text-yaziyo-gold mr-1"></i>${escapeHtml(item.date)}</span>
-                    <span><i class="fa-regular fa-eye text-yaziyo-gold mr-1"></i>${item.views.toLocaleString('tr-TR')}</span>
-                    <span><i class="fa-solid fa-user-shield text-yaziyo-gold mr-1"></i>${escapeHtml(item.author)}</span>
                 </div>
                 <button type="button" class="haber-btn-outline w-full justify-center" data-read="${item.id}">Devamını Oku</button>
             </div>
@@ -245,9 +241,7 @@ function openHaberModal(item) {
 
     titleEl.textContent = item.title;
     metaEl.innerHTML = `
-        <span><i class="fa-regular fa-calendar text-yaziyo-gold mr-1"></i>${escapeHtml(item.date)}</span>
-        <span><i class="fa-regular fa-eye text-yaziyo-gold mr-1"></i>${item.views.toLocaleString('tr-TR')} görüntülenme</span>
-        <span><i class="fa-solid fa-user-shield text-yaziyo-gold mr-1"></i>${escapeHtml(item.author)}</span>`;
+        <span><i class="fa-regular fa-calendar text-yaziyo-gold mr-1"></i>${escapeHtml(item.date)}</span>`;
 
     const bodyText = (item.content || '').trim() || item.excerpt || '';
     bodyEl.textContent = bodyText;

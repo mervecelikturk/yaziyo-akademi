@@ -523,9 +523,6 @@
                         </form>
                     </div>
 
-                    <!-- GOOGLE İLE GİRİ�? BUTONU İLERİDE AKTİF EDİLECEK -->
-
-
                     <div id="forgot-password-panel" class="hidden">
                         <div class="text-center py-2">
                             <div class="verify-panel-icon">
@@ -568,14 +565,39 @@
                         </div>
                     </div>
 
+                    <div id="verify-email-panel" class="hidden">
+                        <div class="text-center py-2">
+                            <div class="verify-panel-icon">
+                                <i class="fa-solid fa-envelope-circle-check"></i>
+                            </div>
+                            <h2 class="font-poppins font-bold text-lg mb-2">E-postanızı doğrulayın</h2>
+                            <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-4">
+                                Hesabınızı aktifleştirmek için size bir doğrulama bağlantısı gönderdik.
+                            </p>
+                            <p class="text-xs text-light-text-secondary dark:text-dark-text-secondary mb-5">
+                                <span id="verify-sent-email" class="verify-email-display"></span> adresini kontrol edin.
+                                Spam / gereksiz klasörüne de bakmayı unutmayın.
+                            </p>
+                            <button type="button" id="verify-resend-btn"
+                                class="w-full py-3.5 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-xl hover:scale-[1.02] active:scale-95 transition-all">
+                                <i class="fa-solid fa-paper-plane mr-2"></i>
+                                <span id="verify-resend-label">Doğrulama e-postasını tekrar gönder</span>
+                            </button>
+                            <button type="button" id="back-from-verify-btn"
+                                class="w-full py-3 mt-3 text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold transition-colors">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Giriş formuna dön
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="mt-8">
                         <div class="relative flex items-center justify-center mb-6">
                             <div class="w-full h-px bg-light-border/50 dark:bg-dark-border/50"></div>
                             <span
                                 class="absolute px-4 bg-light-card dark:bg-dark-card text-[11px] font-bold text-light-text-secondary/50 dark:text-dark-text-secondary/50 uppercase tracking-widest">veya</span>
                         </div>
-                        <button disabled
-                            class="w-full flex items-center justify-center gap-3 py-3 border border-light-border dark:border-dark-border bg-stone-100/30 dark:bg-slate-800/30 text-light-text-secondary dark:text-dark-text-secondary rounded-xl opacity-60 cursor-not-allowed grayscale transition-all duration-300">
+                        <button type="button" id="google-sign-in-btn"
+                            class="w-full flex items-center justify-center gap-3 py-3 border border-light-border dark:border-dark-border bg-white dark:bg-slate-800/80 text-light-text dark:text-dark-text rounded-xl hover:border-yaziyo-gold/40 hover:shadow-md transition-all duration-300">
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google"
                                 class="w-5 h-5">
                             <span class="font-inter font-semibold text-sm">Google ile Giriş Yap</span>

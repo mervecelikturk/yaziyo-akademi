@@ -613,7 +613,7 @@ export function openGenelSiralamaModal(siralamaData) {
         tbody.innerHTML = liste.map((row) => `
             <tr class="border-b border-light-border/50 dark:border-dark-border/50">
                 <td class="py-3 pr-4 font-bold text-yaziyo-gold">#${row.sira}</td>
-                <td class="py-3 pr-4">${escapeHtmlStat(row.ad)}</td>
+                <td class="py-3 pr-4">${escapeHtmlStat(maskRankingDisplayName(row.ad))}</td>
                 <td class="py-3 text-right font-semibold">${formatStatNumber(row.toplam_kelime)}</td>
             </tr>
         `).join('');
@@ -645,6 +645,27 @@ function escapeHtmlStat(text) {
     const div = document.createElement('div');
     div.textContent = text ?? '';
     return div.innerHTML;
+}
+
+/**
+ * Sıralama listesinde soyadı gizler: Merve Çeliktürk → Merve Ç*******k
+ */
+export function maskRankingDisplayName(fullName) {
+    const trimmed = String(fullName ?? '').trim();
+    if (!trimmed) return '—';
+
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0];
+
+    const firstName = parts[0];
+    const maskedSurname = parts.slice(1).map(maskRankingSurnamePart).join(' ');
+    return `${firstName} ${maskedSurname}`;
+}
+
+function maskRankingSurnamePart(name) {
+    const chars = [...String(name ?? '')];
+    if (chars.length <= 2) return chars.join('');
+    return chars[0] + '*'.repeat(chars.length - 2) + chars[chars.length - 1];
 }
 
 /** Hata türü etiketleri — gerçek kelime değildir */

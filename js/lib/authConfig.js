@@ -12,6 +12,28 @@ export const AUTH_PAGES = {
     resetPassword: 'sifre-sifirla.html',
 };
 
+/** Kullanıcı e-postası Supabase tarafından onaylanmış mı */
+export function isEmailConfirmed(user) {
+    if (!user) return false;
+    if (user.email_confirmed_at || user.confirmed_at) return true;
+    const provider = user.app_metadata?.provider;
+    return provider === 'google' || provider === 'github';
+}
+
+/**
+ * Google OAuth dönüş adresi
+ */
+export function getOAuthRedirectUrl() {
+    return `${getLoginPageUrl()}?oauth=1`;
+}
+
+/**
+ * Kayıt sonrası e-posta doğrulama linkinin yönleneceği adres
+ */
+export function getEmailConfirmRedirectUrl() {
+    return resolveAuthPageUrl(AUTH_PAGES.login);
+}
+
 /**
  * Çalışma anındaki site kökü (https://... veya localhost)
  */
@@ -72,12 +94,20 @@ export function getPasswordResetRedirectUrl() {
  */
 export const SUPABASE_AUTH_REDIRECT_URLS = [
     `${DEFAULT_SITE_URL}/pages/sifre-sifirla.html`,
+    `${DEFAULT_SITE_URL}/pages/girisKayit.html`,
+    `${DEFAULT_SITE_URL}/pages/girisKayit.html?oauth=1`,
     'http://127.0.0.1:5500/pages/sifre-sifirla.html',
+    'http://127.0.0.1:5500/pages/girisKayit.html',
     'http://localhost:5500/pages/sifre-sifirla.html',
+    'http://localhost:5500/pages/girisKayit.html',
     'http://127.0.0.1:8080/pages/sifre-sifirla.html',
+    'http://127.0.0.1:8080/pages/girisKayit.html',
     'http://localhost:8080/pages/sifre-sifirla.html',
+    'http://localhost:8080/pages/girisKayit.html',
     'http://127.0.0.1:3000/pages/sifre-sifirla.html',
+    'http://127.0.0.1:3000/pages/girisKayit.html',
     'http://localhost:3000/pages/sifre-sifirla.html',
+    'http://localhost:3000/pages/girisKayit.html',
 ];
 
 /** Şifre sıfırlama maili yeniden gönderme bekleme süresi */

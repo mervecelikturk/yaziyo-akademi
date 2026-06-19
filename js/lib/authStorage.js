@@ -7,6 +7,7 @@
  * Beni Hatırla AÇIK  → localStorage  → tarayıcı kapatılıp açılsa da oturum devam eder
  * Beni Hatırla KAPALI → sessionStorage → sekme/tarayıcı tamamen kapanınca oturum silinir
  */
+import { isEmailConfirmed } from './authConfig.js';
 
 /** Kullanıcının "Beni Hatırla" tercihi (yalnızca 'true' / 'false' string) */
 export const REMEMBER_ME_KEY = 'yaziyo-remember-me';
@@ -87,9 +88,13 @@ export function prepareAuthStorageForLogin(remember) {
     }
 }
 
-/** Kullanıcı özetini aktif depoya yazar (şifre yok, yalnızca id / e-posta / metadata) */
+/** Kullanıcı özetini aktif depoya yazar (yalnızca e-postası onaylı kullanıcılar) */
 export function setStoredVerifiedUser(user) {
     if (!user) return;
+
+    const confirmed = isEmailConfirmed(user);
+    if (!confirmed) return;
+
     const payload = {
         id: user.id,
         email: user.email,
@@ -97,6 +102,7 @@ export function setStoredVerifiedUser(user) {
         email_confirmed_at: user.email_confirmed_at || user.confirmed_at || null,
         confirmed_at: user.confirmed_at || user.email_confirmed_at || null,
         user_metadata: user.user_metadata || {},
+        app_metadata: user.app_metadata || {},
         saved_at: new Date().toISOString(),
     };
     const store = getActiveStore();
@@ -112,6 +118,9 @@ export function getStoredVerifiedUser() {
     try {
         const user = JSON.parse(raw);
         if (!user?.id || !user?.email) {
+            return null;
+        }
+        if (!isEmailConfirmed(user)) {
             return null;
         }
         return user;
