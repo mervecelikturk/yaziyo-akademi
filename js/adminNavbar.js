@@ -63,7 +63,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
             <a href="${home}" class="flex items-center gap-2 group min-w-0 max-w-[58%] sm:max-w-none">
                 <img src="${logoSrc}" alt="YAZİYO AKADEMİ Logo"
-                    class="h-5 sm:h-6 w-auto object-contain rounded-lg border-2 border-yaziyo-gold transition-transform duration-300 group-hover:scale-105 shrink-0">
+                    class="yaziyo-nav-logo h-5 sm:h-6 w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 shrink-0">
                 <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
             </a>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">

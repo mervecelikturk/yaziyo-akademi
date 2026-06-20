@@ -542,6 +542,11 @@ html.theme-transition *::after {
     min-width: 0;
 }
 
+#header-logo,
+.yaziyo-nav-logo {
+    border: 1px solid rgb(var(--yaziyo-gold-rgb));
+}
+
 @media (max-width: 639px) {
     #main-header a#logo-link,
     .yaziyo-header-logo {
