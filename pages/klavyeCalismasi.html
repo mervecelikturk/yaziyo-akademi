@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -191,10 +191,44 @@
             transform: scale(1.05);
         }
 
+        /* Geri sayım (3-2-1 / BAŞLA!) */
+        #countdown-overlay {
+            overflow: hidden;
+            padding: 0 1rem;
+        }
+
+        #countdown-number {
+            font-family: Poppins, sans-serif;
+            font-weight: 800;
+            font-size: clamp(5rem, 28vw, 9.375rem);
+            line-height: 1;
+            text-align: center;
+            max-width: 100%;
+            word-break: keep-all;
+        }
+
+        #countdown-number.is-start {
+            font-size: clamp(2.25rem, 11vw, 4.5rem);
+            letter-spacing: -0.02em;
+        }
+
+        .countdown-text {
+            animation: pulse-countdown 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse-countdown {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.85; }
+        }
+
         /* Mobil Optimizasyon */
         @media (max-width: 640px) {
             input, select, textarea {
                 font-size: 16px !important;
+            }
+
+            #countdown-number.is-start {
+                font-size: clamp(1.75rem, 9.5vw, 3rem);
             }
         }
     </style>
@@ -566,7 +600,7 @@
         <!-- 1. Geri Sayım Ekranı (3..2..1) -->
         <div id="countdown-overlay"
             class="absolute inset-0 bg-[#F9FAFB] z-[210] flex items-center justify-center transition-opacity duration-300">
-            <div id="countdown-number" class="text-[150px] font-poppins font-extrabold text-yaziyo-gold countdown-text">
+            <div id="countdown-number" class="text-yaziyo-gold countdown-text">
                 3
             </div>
         </div>
@@ -912,6 +946,12 @@
                             class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
                             aria-label="TikTok" target="_blank" rel="noopener noreferrer">
                             <i class="fa-brands fa-tiktok text-lg"></i>
+                        </a>
+                        <a href="https://x.com/yaziyoakademi?s=21"
+                            id="social-x"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
+                            aria-label="X" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-x-twitter text-lg"></i>
                         </a>
                     </div>
                 </div>

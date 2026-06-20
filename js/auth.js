@@ -3,6 +3,7 @@
  */
 
 import { getSupabaseClient } from './lib/supabase.js';
+import { isEmailConfirmed } from './lib/authConfig.js';
 import {
     getCurrentUser,
     ensureSession,
@@ -286,7 +287,7 @@ if (supabaseClient) {
     supabaseClient.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
             const user = session?.user || null;
-            if (user) {
+            if (user && isEmailConfirmed(user)) {
                 setStoredVerifiedUser(user);
                 mirrorSessionToWindowName(session);
                 document.documentElement.classList.add('is-logged-in');
@@ -299,6 +300,10 @@ if (supabaseClient) {
                         })
                         .catch(() => {});
                 }
+            } else if (user && !isEmailConfirmed(user)) {
+                document.documentElement.classList.remove('is-logged-in');
+                updateUIElements(null);
+                setTimeout(() => { forceAuthCleanup(getSupabaseClient()); }, 0);
             } else if (!document.documentElement.classList.contains('profile-auth-ready')) {
                 document.documentElement.classList.remove('is-logged-in');
                 updateUIElements(null);

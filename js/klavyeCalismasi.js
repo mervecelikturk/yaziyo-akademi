@@ -65,6 +65,16 @@ function parseWordsFromInput(input) {
     return trimmed.split(/\s+/).filter(w => w.length > 0);
 }
 
+/** Boşluğa basılana kadar yazılan kısmi kelimede aynı kelime indeksinde kalır */
+function getActiveWordIndexFromInput(input, wordCount = Infinity) {
+    if (!input || !input.trim()) return 0;
+    const words = parseWordsFromInput(input);
+    if (!words.length) return 0;
+    const idx = input.endsWith(' ') ? words.length : words.length - 1;
+    const max = Math.max(0, wordCount - 1);
+    return Math.min(idx, max);
+}
+
 const ERROR_LABELS = {
     EXTRA_STROKE: 'Fazla Vuruş',
     MISSING_STROKE: 'Eksik Vuruş',
@@ -814,21 +824,36 @@ document.addEventListener('DOMContentLoaded', () => {
     let wrongKeys = 0;
     let originalWordsForSession = [];
 
-    // Audio Context
+    // Audio Context (mobilde kullanıcı dokunuşu sırasında etkinleştirilmeli)
     let audioCtx = null;
+
+    async function ensureAudioCtx() {
+        if (!audioCtx) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (Ctx) audioCtx = new Ctx();
+        }
+        if (audioCtx?.state === 'suspended') {
+            try {
+                await audioCtx.resume();
+            } catch (_) {}
+        }
+        return audioCtx;
+    }
+
     function playBeep(freq, duration) {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start();
-        oscillator.stop(audioCtx.currentTime + duration / 1000);
+        ensureAudioCtx().then((ctx) => {
+            if (!ctx || ctx.state !== 'running') return;
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+            gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
+            oscillator.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            oscillator.start();
+            oscillator.stop(ctx.currentTime + duration / 1000);
+        }).catch(() => {});
     }
 
     let bgAudio = new Audio();
@@ -946,7 +971,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /** BAŞLA BUTONU TIKLANDIĞINDA */
-    startBtn.addEventListener('click', () => {
+    startBtn.addEventListener('click', async () => {
+        if (!audioCtx) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (Ctx) audioCtx = new Ctx();
+        }
+        if (audioCtx?.state === 'suspended') {
+            audioCtx.resume();
+        }
+        await ensureAudioCtx();
+
         const category = categorySelect.value;
         const group = groupSelect.value;
         const textIndex = textSelect.value;
@@ -1031,21 +1065,20 @@ document.addEventListener('DOMContentLoaded', () => {
             countdownOverlay.classList.add('opacity-100');
         }
 
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-
         let count = 3;
         countdownNumber.textContent = count;
+        countdownNumber.classList.remove('is-start');
         playBeep(440, 150);
 
         const countInterval = setInterval(() => {
             count--;
             if (count > 0) {
                 countdownNumber.textContent = count;
+                countdownNumber.classList.remove('is-start');
                 playBeep(440, 150);
             } else if (count === 0) {
                 countdownNumber.textContent = "BAŞLA!";
-                countdownNumber.classList.add('text-green-500');
+                countdownNumber.classList.add('is-start', 'text-green-500');
                 countdownNumber.classList.remove('text-yaziyo-gold');
                 playBeep(880, 400);
             } else {
@@ -1059,7 +1092,7 @@ document.addEventListener('DOMContentLoaded', () => {
         countdownOverlay.classList.replace('opacity-100', 'opacity-0');
         setTimeout(() => countdownOverlay.classList.add('hidden'), 300);
         countdownNumber.classList.add('text-yaziyo-gold');
-        countdownNumber.classList.remove('text-green-500');
+        countdownNumber.classList.remove('text-green-500', 'is-start');
 
         const workspaceContent = document.getElementById('workspace-content');
         if (workspaceContent) workspaceContent.classList.remove('hidden');
@@ -1136,10 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const typedText = userInput.value;
         const isImlasiz = isImlasizMode();
-        const completedWords = parseWordsFromInput(typedText);
-        const activeWordIdx = typedText.length > 0 && !typedText.endsWith(' ')
-            ? completedWords.length
-            : completedWords.length;
+        const activeWordIdx = getActiveWordIndexFromInput(typedText, wordsArray.length);
 
         const liveAlignment = evaluateExamText(wordsArray, typedText, isImlasiz, {});
         correctWords = liveAlignment.correct;

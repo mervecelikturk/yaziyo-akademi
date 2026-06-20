@@ -170,6 +170,15 @@ function scrubAuthUrl() {
     }
 }
 
+/** E-posta doğrulandıktan sonra oturum açmadan giriş formunu göster */
+async function completeEmailVerification(client) {
+    await forceAuthCleanup(client);
+    clearAllSupabaseAuthKeys();
+    scrubAuthUrl();
+    showLoginFormOnly();
+    showToast('E-postanız doğrulandı! Artık giriş yapabilirsiniz.', 'success');
+}
+
 async function handleEmailConfirmationFromUrl() {
     const client = getClient();
     if (!client) return false;
@@ -181,11 +190,8 @@ async function handleEmailConfirmationFromUrl() {
     if (tokenHash && (type === 'signup' || type === 'email' || type === 'magiclink')) {
         try {
             const data = await verifySignupToken(client, tokenHash);
-            if (data?.session || data?.user) {
-                persistSession(data);
-                scrubAuthUrl();
-                showToast('E-postanız doğrulandı! Yönlendiriliyorsunuz...', 'success');
-                redirectToHome();
+            if (data?.user && isEmailConfirmed(data.user)) {
+                await completeEmailVerification(client);
                 return true;
             }
         } catch (err) {
@@ -196,30 +202,23 @@ async function handleEmailConfirmationFromUrl() {
     }
 
     if (params.get('verified') === '1') {
-        const { data: { session } } = await client.auth.getSession();
-        if (session?.user && isEmailConfirmed(session.user)) {
-            persistSession({ session, user: session.user });
-            scrubAuthUrl();
-            showToast('E-postanız doğrulandı! Yönlendiriliyorsunuz...', 'success');
-            redirectToHome();
-            return true;
-        }
+        await completeEmailVerification(client);
+        return true;
     }
 
     if (window.location.hash.includes('access_token') || params.has('code')) {
         await new Promise((resolve) => window.setTimeout(resolve, 400));
         const { data: { session } } = await client.auth.getSession();
         if (session?.user && isEmailConfirmed(session.user)) {
-            persistSession({ session, user: session.user });
-            scrubAuthUrl();
             const isOAuthReturn = params.get('oauth') === '1';
-            showToast(
-                isOAuthReturn
-                    ? 'Google ile giriş başarılı! Yönlendiriliyorsunuz...'
-                    : 'E-postanız doğrulandı! Yönlendiriliyorsunuz...',
-                'success',
-            );
-            redirectToHome();
+            if (isOAuthReturn) {
+                persistSession({ session, user: session.user });
+                scrubAuthUrl();
+                showToast('Google ile giriş başarılı! Yönlendiriliyorsunuz...', 'success');
+                redirectToHome();
+                return true;
+            }
+            await completeEmailVerification(client);
             return true;
         }
     }

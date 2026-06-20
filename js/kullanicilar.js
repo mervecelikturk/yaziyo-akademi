@@ -408,10 +408,14 @@ async function createUser(e) {
         const { data: { session } } = await supabase.auth.getSession();
         prevSession = session;
 
+        const { getEmailConfirmRedirectUrl } = await import('./lib/authConfig.js');
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
-            options: { data: { full_name: `${ad} ${soyad}` } },
+            options: {
+                data: { full_name: `${ad} ${soyad}` },
+                emailRedirectTo: getEmailConfirmRedirectUrl(),
+            },
         });
 
         if (error) throw error;

@@ -37,6 +37,15 @@
         return trimmed.split(/\s+/).filter(w => w.length > 0);
     }
 
+    function getActiveWordIndexFromInput(input, wordCount = Infinity) {
+        if (!input || !input.trim()) return 0;
+        const words = parseWordsFromInput(input);
+        if (!words.length) return 0;
+        const idx = input.endsWith(' ') ? words.length : words.length - 1;
+        const max = Math.max(0, wordCount - 1);
+        return Math.min(idx, max);
+    }
+
     function hasExtraDoubleSpace(input) {
         return /\s{2,}/.test(input);
     }
@@ -466,6 +475,7 @@
         CATEGORIES,
         normalizeForComparison,
         parseWordsFromInput,
+        getActiveWordIndexFromInput,
         isIncompleteLastWord,
         evaluateExamText,
         calculateKeyStatsFromAlignment

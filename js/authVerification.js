@@ -89,7 +89,9 @@ export async function signUp(client, { email, password, fullName }) {
         throw new Error('Bu e-posta zaten kayıtlı. Giriş yapın.');
     }
 
-    if (data?.user && isEmailConfirmed(data.user) && data.session) {
+    if (data?.user && !isEmailConfirmed(data.user)) {
+        await forceAuthCleanup(client);
+    } else if (data?.user && isEmailConfirmed(data.user) && data.session) {
         setStoredVerifiedUser(data.user);
     }
 

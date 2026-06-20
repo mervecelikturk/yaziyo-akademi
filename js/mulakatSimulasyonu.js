@@ -219,9 +219,10 @@ function prepareExamWords(text) {
 
 function highlightActiveWord() {
     if (!TypingCore || !els.examText || !state.originalWords.length) return;
-    const live = TypingCore.evaluateExamText(state.originalWords, state.typed, true, {});
-    let activeIdx = live.steps.filter((s) => s.type === 'match').length;
-    if (activeIdx >= state.originalWords.length) activeIdx = state.originalWords.length - 1;
+    const activeIdx = TypingCore.getActiveWordIndexFromInput(
+        state.typed,
+        state.originalWords.length
+    );
 
     els.examText.querySelectorAll('[id^="word-"]').forEach((el, i) => {
         el.classList.toggle('word-active', i === activeIdx);
