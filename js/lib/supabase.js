@@ -1,10 +1,12 @@
 import { yaziyoAuthStorage } from './authStorage.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './supabaseConfig.js';
+import { ensureSupabaseCdnLoaded } from './supabaseLoader.js';
 
 /**
  * Supabase Client — giriş/kayıt sayfaları (implicit akış)
  */
 let supabase = null;
+let initPromise = null;
 
 function isPasswordRecoveryPage() {
     return typeof window !== 'undefined'
@@ -37,43 +39,45 @@ function buildSupabaseClient() {
     });
 }
 
+function assignGlobalClient(client) {
+    supabase = client;
+    if (typeof window !== 'undefined' && client) {
+        window.yaziyoSupabase = client;
+    }
+    return client;
+}
+
+export function initSupabaseClient() {
+    if (isPasswordRecoveryPage()) {
+        return Promise.resolve(null);
+    }
+    if (supabase) {
+        return Promise.resolve(supabase);
+    }
+    if (!initPromise) {
+        initPromise = ensureSupabaseCdnLoaded()
+            .then(() => assignGlobalClient(buildSupabaseClient()))
+            .catch((error) => {
+                console.error('❌ Supabase CDN yüklenemedi:', error);
+                initPromise = null;
+                return null;
+            });
+    }
+    return initPromise;
+}
+
 export function getSupabaseClient() {
     if (isPasswordRecoveryPage()) {
         return null;
     }
     if (!supabase) {
-        supabase = buildSupabaseClient();
-        if (typeof window !== 'undefined') {
-            window.yaziyoSupabase = supabase;
-        }
+        assignGlobalClient(buildSupabaseClient());
     }
     return supabase;
 }
 
 if (!isPasswordRecoveryPage()) {
-    try {
-        supabase = buildSupabaseClient();
-        if (supabase) {
-            console.log('✅ Supabase client başarıyla oluşturuldu.');
-        } else {
-            console.error('❌ Supabase CDN bulunamadı veya yüklenmedi!');
-        }
-    } catch (error) {
-        console.error('❌ Supabase client oluşturulurken hata:', error);
-    }
-}
-
-if (typeof window !== 'undefined' && !isPasswordRecoveryPage()) {
-    window.yaziyoSupabase = supabase;
-    window.addEventListener('DOMContentLoaded', () => {
-        if (!supabase) {
-            supabase = buildSupabaseClient();
-            window.yaziyoSupabase = supabase;
-            if (supabase) {
-                console.log('✅ Supabase client (gecikmeli) oluşturuldu.');
-            }
-        }
-    });
+    await initSupabaseClient();
 }
 
 export { supabase, SUPABASE_URL, SUPABASE_ANON_KEY };

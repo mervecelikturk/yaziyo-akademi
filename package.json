@@ -1,0 +1,13 @@
+{
+  "name": "yaziyo-akademi",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./css/tailwind.input.css -o ./css/tailwind.css --minify",
+    "update:text-count": "node scripts/update-text-count.js"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17"
+  }
+}

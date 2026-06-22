@@ -2,7 +2,7 @@
  * YAZİYO - Yönetici giriş formu
  */
 
-import { supabase } from './lib/supabase.js';
+import { getSupabaseClient, initSupabaseClient } from './lib/supabase.js';
 import {
     signIn,
     formatAuthError,
@@ -16,8 +16,13 @@ import {
     clearAdminSession,
 } from './lib/adminAuth.js';
 
-function getClient() {
-    return window.yaziyoSupabase || supabase;
+async function getClient() {
+    await initSupabaseClient();
+    return getSupabaseClient();
+}
+
+function showAdminLoginForm() {
+    document.documentElement.classList.remove('admin-login-check');
 }
 
 function showToast(message, type = 'info') {
@@ -54,17 +59,42 @@ function escapeHtml(str) {
 }
 
 function getRedirectTarget() {
-    const params = new URLSearchParams(window.location.search);
-    const next = params.get('redirect');
-    if (next && /^admin[a-zA-Z]*\.html$/.test(next)) return next;
-    return 'admin.html';
+    return window.YaziyoAdminPaths?.resolveAdminRedirectTarget?.('admin.html') || 'admin.html';
+}
+
+function shouldSkipAutoRedirect() {
+    return /[?&](yeniden|cikis)=1/.test(window.location.search);
+}
+
+async function verifyExistingAdminSession(client) {
+    const { data: { session } } = await client.auth.getSession();
+    let user = session?.user || null;
+
+    if (!user) {
+        const { data: { user: fetchedUser } } = await client.auth.getUser();
+        user = fetchedUser || null;
+    }
+
+    if (!user) return false;
+    return checkIsAdmin(client, user);
+}
+
+function redirectToAdminPanel() {
+    window.location.replace(getRedirectTarget());
 }
 
 export async function handleAdminLogin(e) {
     e.preventDefault();
-    const client = getClient();
+
+    let client;
+    try {
+        client = await getClient();
+    } catch {
+        client = null;
+    }
+
     if (!client) {
-        showToast('Sistem henüz hazır değil. Sayfayı yenileyin.', 'error');
+        showToast('Bağlantı kurulamadı. İnternet bağlantınızı kontrol edip sayfayı yenileyin.', 'error');
         return;
     }
 
@@ -83,7 +113,7 @@ export async function handleAdminLogin(e) {
         return;
     }
 
-    prepareAuthStorageForLogin(false);
+    prepareAuthStorageForLogin(true);
 
     try {
         if (submitBtn) {
@@ -108,8 +138,8 @@ export async function handleAdminLogin(e) {
         showToast('Giriş başarılı. Panele yönlendiriliyorsunuz...', 'success');
 
         setTimeout(() => {
-            window.location.href = getRedirectTarget();
-        }, 600);
+            redirectToAdminPanel();
+        }, 400);
     } catch (err) {
         showToast(formatAuthError(err), 'error');
     } finally {
@@ -121,19 +151,7 @@ export async function handleAdminLogin(e) {
     }
 }
 
-async function initAdminLoginPage() {
-    if (hasAdminSession()) {
-        const client = getClient();
-        if (client) {
-            const { data: { user } } = await client.auth.getUser();
-            if (user && (await checkIsAdmin(client, user))) {
-                window.location.href = getRedirectTarget();
-                return;
-            }
-        }
-        clearAdminSession();
-    }
-
+function bindLoginFormEvents() {
     document.getElementById('toggle-admin-password')?.addEventListener('click', (ev) => {
         const input = document.getElementById('admin-login-password');
         const icon = ev.currentTarget.querySelector('i');
@@ -150,5 +168,31 @@ async function initAdminLoginPage() {
     document.getElementById('admin-login-form')?.addEventListener('submit', handleAdminLogin);
 }
 
-document.addEventListener('DOMContentLoaded', initAdminLoginPage);
+async function initAdminLoginPage() {
+    const skipAutoRedirect = shouldSkipAutoRedirect();
+
+    if (!hasAdminSession() || skipAutoRedirect) {
+        showAdminLoginForm();
+        bindLoginFormEvents();
+        return;
+    }
+
+    try {
+        await initSupabaseClient();
+        const client = getSupabaseClient();
+
+        if (client && (await verifyExistingAdminSession(client))) {
+            redirectToAdminPanel();
+            return;
+        }
+    } catch (err) {
+        console.warn('Yönetici oturumu doğrulanamadı:', err);
+    }
+
+    clearAdminSession();
+    showAdminLoginForm();
+    bindLoginFormEvents();
+}
+
+initAdminLoginPage();
 window.handleAdminLogin = handleAdminLogin;

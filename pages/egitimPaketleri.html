@@ -41,32 +41,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS (build) -->
+    <link rel="stylesheet" href="../css/tailwind.css">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        'dark-bg': '#0F172A', 'dark-card': '#1E2937', 'dark-text': '#F1F5F9',
-                        'dark-text-secondary': '#CBD5E1', 'dark-border': '#334155',
-                        'light-bg': '#F8F4ED', 'light-card': '#FFFFFF', 'light-text': '#1E2937',
-                        'light-text-secondary': '#334155', 'light-border': '#E6D9C2',
-                        'yaziyo-gold': 'rgb(var(--yaziyo-gold-rgb) / <alpha-value>)',
-                        'yaziyo-bg': 'rgb(var(--yaziyo-bg-rgb) / <alpha-value>)',
-                        'yaziyo-card': 'rgb(var(--yaziyo-card-rgb) / <alpha-value>)',
-                        'yaziyo-border': 'rgb(var(--yaziyo-border-rgb) / <alpha-value>)',
-                    },
-                    fontFamily: { 'poppins': ['Poppins', 'sans-serif'], 'inter': ['Inter', 'sans-serif'] },
-                    boxShadow: { 'glow-gold': '0 0 15px rgba(217, 119, 6, 0.3)' }
-                }
-            },
-            plugins: [function ({ addVariant }) { addVariant('light', '.light &'); }]
-        }
-    </script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <!-- Font Awesome (solid + regular + brands) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
     <link rel="stylesheet" href="../css/style.css">
 </head>
 
@@ -303,11 +285,11 @@
                             class="font-inter text-xs hover:text-yaziyo-gold transition-colors duration-300">destek@yaziyoakademi.com</a>
                     </div>
                     <div class="flex items-center gap-4">
-                        <a href="https://www.instagram.com/yaziyo_zabit.katipligi/" id="social-instagram"
+                        <a href="https://www.instagram.com/yaziyoakademi?igsh=MXRlbnl3Y2Y5d3FuZw==" id="social-instagram"
                             class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
                             <i class="fa-brands fa-instagram text-lg"></i>
                         </a>
-                        <a href="https://www.tiktok.com/@zabit.katipligi_yaziyo?_r=1&_t=ZS-95NG3JvVk9s" id="social-tiktok"
+                        <a href="https://www.tiktok.com/@yaziyo.akademi?_r=1&_t=ZS-97OMpAkPoub" id="social-tiktok"
                             class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors" aria-label="TikTok" target="_blank" rel="noopener noreferrer">
                             <i class="fa-brands fa-tiktok text-lg"></i>
                         </a>
@@ -340,8 +322,6 @@
             </p>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/lib/sitePaths.js"></script>
     <script src="../js/pageStatus.js"></script>
     <script src="../js/siteNavbar.js"></script>

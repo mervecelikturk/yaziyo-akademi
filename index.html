@@ -68,60 +68,13 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
         rel="stylesheet">
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // GECE/GÜNDÜZ MODU - Tailwind CSS renkleri
-        tailwind.config = {
-            darkMode: 'class', // 'dark' class'ı ile kontrol
-            theme: {
-                extend: {
-                    colors: {
-                        // Mevcut Tema (Gece Modu) - Hiç Değişmeyecek
-                        'dark-bg': '#0F172A',
-                        'dark-card': '#1E2937',
-                        'dark-text': '#F1F5F9',
-                        'dark-text-secondary': '#CBD5E1',
-                        'dark-border': '#334155',
-
-                        // Yeni Eklenecek Tema (Gündüz Modu - Sıcak Kütüphane Paleti)
-                        'light-bg': '#F8F4ED',
-                        'light-card': '#FFFFFF',
-                        'light-text': '#1E2937',
-                        'light-text-secondary': '#334155',
-                        'light-border': '#E6D9C2',
-                        'light-gold': '#D97706',
-                        'light-green': '#15803D',
-
-                        // Accent Renkleri (Her İki Modda Dinamik Tailwind Değişkenleri)
-                        'yaziyo-gold': 'rgb(var(--yaziyo-gold-rgb) / <alpha-value>)',
-                        'yaziyo-green': 'rgb(var(--yaziyo-green-rgb) / <alpha-value>)',
-
-                        // Geriye dönük uyumluluk için geçici CSS değişkenleri bağlaması (Site kırılmasın diye)
-                        'yaziyo-bg': 'rgb(var(--yaziyo-bg-rgb) / <alpha-value>)',
-                        'yaziyo-card': 'rgb(var(--yaziyo-card-rgb) / <alpha-value>)',
-                        'yaziyo-text': 'rgb(var(--yaziyo-text-rgb) / <alpha-value>)',
-                        'yaziyo-text-secondary': 'rgb(var(--yaziyo-text-secondary-rgb) / <alpha-value>)',
-                        'yaziyo-border': 'rgb(var(--yaziyo-border-rgb) / <alpha-value>)',
-                    },
-                    fontFamily: {
-                        'poppins': ['Poppins', 'sans-serif'],
-                        'inter': ['Inter', 'sans-serif'],
-                    },
-                }
-            },
-            plugins: [
-                function ({ addVariant }) {
-                    // 'light:' prefix'ini Tailwind'e ekle
-                    addVariant('light', '.light &');
-                }
-            ]
-        }
-    </script>
-
-    <!-- Font Awesome (Sosyal Medya İkonları) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind CSS (build) -->
+    <link rel="stylesheet" href="css/tailwind.css">
+    <!-- Font Awesome (solid + regular + brands) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
 
     <!-- Özel CSS Dosyası -->
     <link rel="stylesheet" href="css/style.css">
@@ -138,9 +91,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
 
             <!-- Logo Alanı (Sol) -->
-            <a href="index.html" class="flex items-center gap-2 group min-w-0 max-w-[58%] sm:max-w-none" id="logo-link">
+            <a href="index.html" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 sm:max-w-none" id="logo-link">
                 <img src="images/logo.png" alt="YAZİYO AKADEMİ Logo"
-                    class="yaziyo-nav-logo h-5 sm:h-6 w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    class="yaziyo-nav-logo w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
                     id="header-logo">
                 <span
                     class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
@@ -341,13 +294,13 @@
 
         <!-- Hero Slider Görselleri -->
         <div class="absolute inset-0" id="hero-slider">
-            <img src="images/3.png" alt="Hero 3"
+            <img src="images/3.jpg" alt="Hero 3"
                 class="hero-slide absolute inset-0 w-full h-full object-cover opacity-100 transition-opacity duration-1000"
                 data-slide="0">
-            <img src="images/2.png" alt="Hero 2"
+            <img src="images/2.jpg" alt="Hero 2"
                 class="hero-slide absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000"
                 data-slide="1">
-            <img src="images/4.png" alt="Hero 4"
+            <img src="images/4.jpg" alt="Hero 4"
                 class="hero-slide absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000"
                 data-slide="2">
         </div>
@@ -498,12 +451,12 @@
 
                     <!-- Sosyal Medya İkonları -->
                     <div class="flex items-center gap-4">
-                        <a href="https://www.instagram.com/yaziyo_zabit.katipligi/" id="social-instagram"
+                        <a href="https://www.instagram.com/yaziyoakademi?igsh=MXRlbnl3Y2Y5d3FuZw==" id="social-instagram"
                             class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
                             aria-label="Instagram" target="_blank" rel="noopener noreferrer">
                             <i class="fa-brands fa-instagram text-lg"></i>
                         </a>
-                        <a href="https://www.tiktok.com/@zabit.katipligi_yaziyo?_r=1&_t=ZS-95NG3JvVk9s"
+                        <a href="https://www.tiktok.com/@yaziyo.akademi?_r=1&_t=ZS-97OMpAkPoub"
                             id="social-tiktok"
                             class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
                             aria-label="TikTok" target="_blank" rel="noopener noreferrer">
@@ -574,16 +527,15 @@
         </div>
     </div>
 
-    <!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Özel JS Dosyaları -->
-    <script src="js/lib/sitePaths.js"></script>
-    <script src="js/pageStatus.js"></script>
-    <script src="js/metinlerDB.js"></script>
+    <script defer src="js/lib/sitePaths.js"></script>
+    <script defer src="js/pageStatus.js"></script>
+    <script defer src="js/textCount.js"></script>
     <script type="module" src="js/indexStats.js"></script>
-    <script src="js/indexHeroQuote.js"></script>
-    <script src="js/siteNavbar.js"></script>
-    <script src="js/main.js"></script>
+    <script defer src="js/indexHeroQuote.js"></script>
+    <script defer src="js/siteNavbar.js"></script>
+    <script defer src="js/main.js"></script>
+    <script defer src="js/indexPage.js"></script>
     <script type="module" src="js/auth.js"></script>
 
 

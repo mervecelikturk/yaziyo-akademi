@@ -4,6 +4,7 @@
  */
 
 import { supabase } from './lib/supabase.js';
+import { requireAdminAccess } from './lib/adminAuth.js';
 
 const els = {};
 let exams = [];
@@ -377,7 +378,9 @@ function bindEvents() {
     document.getElementById('delete-confirm').addEventListener('click', confirmDelete);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAdminAccess())) return;
+
     cacheEls();
     bindEvents();
     resetForm();

@@ -57,6 +57,102 @@
         return active === key ? ' open' : '';
     }
 
+    function linkBasename(href) {
+        if (!href || href.startsWith('javascript')) return '';
+        return href.split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+    }
+
+    function resolveActiveFromHref(href) {
+        return FILE_TO_ACTIVE[linkBasename(href)] || '';
+    }
+
+    function resolveActiveFromLink(link) {
+        if (!link) return '';
+        if (link.dataset.page) return link.dataset.page;
+        return resolveActiveFromHref(link.dataset.originalHref || link.getAttribute('href') || '');
+    }
+
+    /** Tüm active/open sınıflarını temizle — tek seçim garantisi */
+    function applyNavActive(activeKey) {
+        const navbar = document.getElementById('main-navbar');
+        if (!navbar) return;
+
+        navbar.querySelectorAll(
+            '.nav-link.active, .mobile-nav-link.active, .nav-dropdown-trigger.active, .mobile-dropdown-trigger.active',
+        ).forEach((el) => el.classList.remove('active'));
+
+        navbar.querySelectorAll(
+            '.mobile-dropdown.open, .mobile-dropdown-menu.open, .mobile-dropdown-trigger.open',
+        ).forEach((el) => el.classList.remove('open'));
+
+        if (!activeKey) return;
+
+        navbar.querySelectorAll(`[data-page="${activeKey}"]`).forEach((el) => {
+            el.classList.add('active');
+        });
+
+        navbar.querySelectorAll(`.mobile-dropdown-trigger[data-page="${activeKey}"]`).forEach((trigger) => {
+            trigger.classList.add('open');
+            trigger.closest('.mobile-dropdown')?.classList.add('open');
+            const menu = trigger.nextElementSibling;
+            if (menu?.classList.contains('mobile-dropdown-menu')) {
+                menu.classList.add('open');
+            }
+        });
+    }
+
+    function patchStaticNavActive() {
+        if (isAdminNavbar()) return;
+        applyNavActive(resolveActiveNav());
+    }
+
+    function syncNavActive() {
+        applyNavActive(resolveActiveNav());
+    }
+
+    function closeMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
+        if (!mobileMenu) return;
+        mobileMenu.classList.remove('open');
+        mobileMenu.classList.add('hidden');
+        hamburgerIcon?.classList.remove('fa-xmark');
+        hamburgerIcon?.classList.add('fa-bars');
+    }
+
+    function handleNavClick(e) {
+        const link = e.target.closest(
+            '#main-navbar a.nav-link, #main-navbar a.mobile-nav-link, #main-navbar a.nav-dropdown-item',
+        );
+        if (!link || link.classList.contains('disabled')) return;
+
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('javascript')) return;
+
+        const activeKey = resolveActiveFromLink(link);
+        const navbar = document.getElementById('main-navbar');
+        if (activeKey) {
+            applyNavActive(activeKey);
+        } else if (navbar) {
+            navbar.querySelectorAll('.mobile-nav-link.active, .nav-link.active').forEach((el) => {
+                el.classList.remove('active');
+            });
+        }
+
+        link.blur();
+
+        if (link.closest('#mobile-menu')) {
+            closeMobileMenu();
+        }
+    }
+
+    let navClickBound = false;
+    function bindNavClickHandler() {
+        if (navClickBound) return;
+        navClickBound = true;
+        document.addEventListener('click', handleNavClick, true);
+    }
+
     function buildHeaderInner(active) {
         const paths = getPaths();
         const home = paths.homeHref();
@@ -64,22 +160,22 @@
         const girisKayit = paths.pageHref('girisKayit.html');
         return `
         <div class="yaziyo-header-bar max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between gap-2">
-            <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 max-w-[58%] sm:max-w-none" id="logo-link">
+            <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 sm:max-w-none" id="logo-link">
                 <img src="${logoSrc}" alt="YAZİYO AKADEMİ Logo"
-                    class="yaziyo-nav-logo h-5 sm:h-6 w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 shrink-0"
+                    class="yaziyo-nav-logo w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 shrink-0"
                     id="header-logo">
                 <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
             </a>
             <div class="yaziyo-header-actions flex items-center justify-end min-w-0">
                 <div class="relative group yaziyo-header-icon-wrap">
-                    <button id="theme-toggle-btn" type="button" class="yaziyo-header-icon-btn flex items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold transition-all duration-300 hover:scale-110 hover:rotate-12 hover:border-yaziyo-gold hover:shadow-glow-gold active:scale-95" aria-label="Tema Değiştir">
+                    <button id="theme-toggle-btn" type="button" class="yaziyo-header-icon-btn flex items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold" aria-label="Tema Değiştir">
                         <i class="fa-solid fa-sun theme-icon-sun"></i>
                         <i class="fa-solid fa-moon theme-icon-moon"></i>
                     </button>
                     <span class="yaziyo-header-tooltip">Tema Değiştir</span>
                 </div>
                 <div class="relative group yaziyo-header-icon-wrap">
-                    <button id="notification-btn" type="button" class="yaziyo-header-icon-btn flex relative items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-secondary dark:text-dark-text-secondary transition-all duration-300 hover:scale-110 hover:text-yaziyo-gold hover:border-yaziyo-gold hover:shadow-glow-gold active:scale-95" aria-label="Bildirimler">
+                    <button id="notification-btn" type="button" class="yaziyo-header-icon-btn flex relative items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-secondary dark:text-dark-text-secondary" aria-label="Bildirimler">
                         <i class="fa-solid fa-bell"></i>
                         <span class="absolute top-1.5 right-1.5 w-[7px] h-[7px] sm:top-2 sm:right-2 sm:w-[8px] sm:h-[8px] bg-red-500 rounded-full border border-light-card dark:border-dark-card shadow-[0_0_8px_rgba(239,68,68,0.6)] hidden"></span>
                     </button>
@@ -136,8 +232,8 @@
                     <li><a href="${paths.pageHref('iletisim.html')}" class="nav-link${ac(active, 'iletisim')}" data-page="iletisim">İletişim</a></li>
                 </ul>
                 <div class="lg:hidden flex items-center justify-between py-2">
-                    <span class="text-light-text-secondary dark:text-dark-text-secondary text-sm font-inter transition-colors duration-300">Menü</span>
-                    <button id="hamburger-btn" type="button" class="text-light-text dark:text-dark-text p-2 rounded-lg hover:bg-light-card dark:hover:bg-dark-card transition-colors duration-300" aria-label="Menüyü aç/kapat">
+                    <span class="yaziyo-mobile-menu-label text-sm font-inter">Menü</span>
+                    <button id="hamburger-btn" type="button" class="yaziyo-hamburger-btn p-2 rounded-lg transition-colors duration-300" aria-label="Menüyü aç/kapat">
                         <i class="fa-solid fa-bars text-xl" id="hamburger-icon"></i>
                     </button>
                 </div>
@@ -189,6 +285,8 @@
         const active = resolveActiveNav();
         header.innerHTML = buildHeaderInner(active);
         header.dataset.yaziyoSharedHeaderMounted = '1';
+        applyNavActive(active);
+        bindNavClickHandler();
         return true;
     }
 
@@ -196,6 +294,7 @@
         const mounted = mountSharedHeader();
         if (mounted && global.YaziyoPageStatus) {
             global.YaziyoPageStatus.applyToNavbar();
+            applyNavActive(resolveActiveNav());
         }
         return mounted;
     }
@@ -204,7 +303,17 @@
         mount: mountSharedHeader,
         boot,
         resolveActiveNav,
+        applyNavActive,
+        syncNavActive,
+        closeMobileMenu,
     };
+
+    patchStaticNavActive();
+    bindNavClickHandler();
+
+    global.addEventListener('pageshow', (e) => {
+        if (e.persisted) syncNavActive();
+    });
 
     if (document.getElementById('main-header')) {
         boot();

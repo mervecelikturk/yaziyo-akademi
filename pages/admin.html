@@ -51,47 +51,13 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
         rel="stylesheet">
-
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        'dark-bg': '#0F172A',
-                        'dark-card': '#1E2937',
-                        'dark-text': '#F1F5F9',
-                        'dark-text-secondary': '#CBD5E1',
-                        'dark-border': '#334155',
-                        'light-bg': '#F8F4ED',
-                        'light-card': '#FFFFFF',
-                        'light-text': '#1E2937',
-                        'light-text-secondary': '#334155',
-                        'light-border': '#E6D9C2',
-                        'light-gold': '#D97706',
-                        'yaziyo-gold': 'rgb(var(--yaziyo-gold-rgb) / <alpha-value>)',
-                    },
-                    fontFamily: {
-                        'poppins': ['Poppins', 'sans-serif'],
-                        'inter': ['Inter', 'sans-serif'],
-                    },
-                    boxShadow: {
-                        'glow-gold': '0 0 15px rgba(217, 119, 6, 0.3)',
-                    }
-                }
-            },
-            plugins: [
-                function ({ addVariant }) {
-                    addVariant('light', '.light &');
-                }
-            ]
-        }
-    </script>
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind CSS (build) -->
+    <link rel="stylesheet" href="../css/tailwind.css">
+    <!-- Font Awesome (solid + regular + brands) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
 
     <!-- Özel CSS Dosyası -->
     <link rel="stylesheet" href="../css/style.css">
@@ -236,9 +202,9 @@
                 </div>
                 <!-- Sosyal Medya -->
                 <div class="flex gap-4">
-                    <a href="https://www.instagram.com/yaziyo_zabit.katipligi/" class="social-icon" target="_blank"
+                    <a href="https://www.instagram.com/yaziyoakademi?igsh=MXRlbnl3Y2Y5d3FuZw==" class="social-icon" target="_blank"
                         rel="noopener noreferrer"><i class="fa-brands fa-instagram text-xl"></i></a>
-                    <a href="https://www.tiktok.com/@zabit.katipligi_yaziyo?_r=1&_t=ZS-95NG3JvVk9s" class="social-icon"
+                    <a href="https://www.tiktok.com/@yaziyo.akademi?_r=1&_t=ZS-97OMpAkPoub" class="social-icon"
                         target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-tiktok text-xl"></i></a>
                     <a href="https://x.com/yaziyoakademi?s=21" class="social-icon" target="_blank"
                         rel="noopener noreferrer" aria-label="X"><i class="fa-brands fa-x-twitter text-xl"></i></a>
@@ -309,7 +275,7 @@
             <div class="flex items-center gap-3 w-full">
                 <button onclick="closeLogoutModal()"
                     class="flex-1 py-2.5 rounded-xl border border-light-border dark:border-dark-border text-sm font-poppins font-bold hover:bg-light-bg dark:hover:bg-dark-bg transition-all">İptal</button>
-                <button onclick="performAdminLogout()"
+                <button onclick="confirmAdminLogout()"
                     class="flex-1 py-2.5 rounded-xl bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)] font-poppins font-bold text-sm hover:scale-105 active:scale-95 transition-all">Evet, Çıkış Yap</button>
             </div>
         </div>
@@ -345,42 +311,33 @@
             }, 300);
         }
 
-        function performAdminLogout() {
-            // Animasyonlu buton efekti
+        function confirmAdminLogout() {
             const btn = logoutContent.querySelector('.bg-red-500');
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Çıkılıyor...';
             btn.classList.add('opacity-80', 'cursor-not-allowed');
 
-            // auth.js global nesnesini kullanarak çıkış yap (varsa)
-            if (window.performLogout) {
-                window.performLogout();
-            } else {
-                setTimeout(() => {
-                    for (let i = localStorage.length - 1; i >= 0; i--) {
-                        const key = localStorage.key(i);
-                        if (key && (key.includes('auth-token') || key.includes('supabase') || key.startsWith('sb-'))) {
-                            localStorage.removeItem(key);
-                        }
-                    }
-                    window.name = '';
-                    window.location.href = '../index.html';
-                }, 800);
+            if (typeof window.performAdminLogout === 'function') {
+                window.performAdminLogout();
+                return;
             }
+
+            setTimeout(() => {
+                window.location.replace('adminGiris.html?cikis=1');
+            }, 800);
         }
 
         // Dışarı tıklayınca modalı kapatma
         logoutBackdrop.addEventListener('click', closeLogoutModal);
     </script>
-
-    <!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Özel JS Dosyası -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/lib/sitePaths.js"></script>
+    <script src="../js/lib/adminPaths.js"></script>
     <script src="../js/pageStatus.js"></script>
 
     <script src="../js/adminNavbar.js"></script>
     <script src="../js/main.js"></script>
-    <script type="module" src="../js/auth.js"></script>
+    <script type="module" src="../js/adminAuthBoot.js"></script>
 </body>
 
 </html>

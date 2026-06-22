@@ -5,6 +5,7 @@
  * ?code= (PKCE) linkleri yalnızca sıfırlama isteğinin yapıldığı tarayıcıda çalışır.
  */
 
+import { ensureSupabaseCdnLoaded } from './lib/supabaseLoader.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './lib/supabaseConfig.js';
 import { recoveryAuthStorage } from './lib/recoveryAuthStorage.js';
 import { isPasswordValid, PASSWORD_RULES, getPasswordStrength } from './passwordRules.js';
@@ -249,6 +250,8 @@ function togglePw(inputId, btnId) {
 }
 
 async function initPage() {
+    await ensureSupabaseCdnLoaded();
+
     document.getElementById('reset-password-form')?.addEventListener('submit', handleResetPasswordSubmit);
     document.getElementById('toggle-reset-password')?.addEventListener('click', () =>
         togglePw('reset-password', 'toggle-reset-password'),

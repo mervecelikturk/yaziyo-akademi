@@ -54,6 +54,100 @@
         return MULAKAT_PAGES.includes(active) ? ' active' : '';
     }
 
+    function linkBasename(href) {
+        if (!href || href.startsWith('javascript')) return '';
+        return href.split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+    }
+
+    function resolveActiveFromHref(href) {
+        return FILE_TO_ACTIVE[linkBasename(href)] || '';
+    }
+
+    function resolveActiveFromLink(link) {
+        if (!link) return '';
+        if (link.dataset.page) return link.dataset.page;
+        return resolveActiveFromHref(link.dataset.originalHref || link.getAttribute('href') || '');
+    }
+
+    function applyNavActive(activeKey) {
+        const navbar = document.getElementById('main-navbar');
+        if (!navbar) return;
+
+        navbar.querySelectorAll(
+            '.nav-link.active, .mobile-nav-link.active, .nav-dropdown-trigger.active, .mobile-dropdown-trigger.active',
+        ).forEach((el) => el.classList.remove('active'));
+
+        navbar.querySelectorAll(
+            '.mobile-dropdown.open, .mobile-dropdown-menu.open, .mobile-dropdown-trigger.open',
+        ).forEach((el) => el.classList.remove('open'));
+
+        if (!activeKey) return;
+
+        navbar.querySelectorAll(`[data-page="${activeKey}"]`).forEach((el) => {
+            el.classList.add('active');
+        });
+
+        if (MULAKAT_PAGES.includes(activeKey)) {
+            navbar.querySelectorAll('[data-page="admin-mulakatlar"]').forEach((el) => {
+                el.classList.add('active');
+                if (el.classList.contains('mobile-dropdown-trigger')) {
+                    el.classList.add('open');
+                    el.closest('.mobile-dropdown')?.classList.add('open');
+                    el.nextElementSibling?.classList.add('open');
+                }
+            });
+        }
+    }
+
+    function patchStaticNavActive() {
+        if (!isAdminPage()) return;
+        applyNavActive(resolveActiveNav());
+    }
+
+    function syncNavActive() {
+        if (!isAdminPage()) return;
+        applyNavActive(resolveActiveNav());
+    }
+
+    function closeMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        const hamburgerIcon = document.getElementById('hamburger-icon');
+        if (!mobileMenu) return;
+        mobileMenu.classList.remove('open');
+        mobileMenu.classList.add('hidden');
+        hamburgerIcon?.classList.remove('fa-xmark');
+        hamburgerIcon?.classList.add('fa-bars');
+    }
+
+    function handleNavClick(e) {
+        if (!isAdminPage()) return;
+        const link = e.target.closest(
+            '#main-navbar a.nav-link, #main-navbar a.mobile-nav-link, #main-navbar a.nav-dropdown-item',
+        );
+        if (!link || link.classList.contains('disabled')) return;
+
+        const href = link.getAttribute('href');
+        if (!href || href.startsWith('javascript')) return;
+
+        const activeKey = resolveActiveFromLink(link);
+        if (activeKey) {
+            applyNavActive(activeKey);
+        }
+
+        link.blur();
+
+        if (link.closest('#mobile-menu')) {
+            closeMobileMenu();
+        }
+    }
+
+    let navClickBound = false;
+    function bindNavClickHandler() {
+        if (navClickBound) return;
+        navClickBound = true;
+        document.addEventListener('click', handleNavClick, true);
+    }
+
     function buildAdminHeader(active) {
         const paths = getPaths();
         const home = paths.homeHref();
@@ -61,17 +155,17 @@
 
         return `
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
-            <a href="${home}" class="flex items-center gap-2 group min-w-0 max-w-[58%] sm:max-w-none">
+            <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 sm:max-w-none">
                 <img src="${logoSrc}" alt="YAZİYO AKADEMİ Logo"
-                    class="yaziyo-nav-logo h-5 sm:h-6 w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 shrink-0">
+                    class="yaziyo-nav-logo w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 shrink-0">
                 <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
             </a>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                 <button id="theme-toggle-btn" type="button"
-                    class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold transition-all duration-300 hover:scale-110 hover:rotate-12 hover:border-yaziyo-gold"
+                    class="yaziyo-header-icon-btn flex items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold"
                     aria-label="Tema Değiştir">
-                    <i class="fa-solid fa-sun text-base sm:text-lg theme-icon-sun"></i>
-                    <i class="fa-solid fa-moon text-base sm:text-lg theme-icon-moon"></i>
+                    <i class="fa-solid fa-sun theme-icon-sun"></i>
+                    <i class="fa-solid fa-moon theme-icon-moon"></i>
                 </button>
                 <a href="admin.html"
                     class="relative inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-xs sm:text-sm rounded-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-95 shrink-0">
@@ -101,9 +195,9 @@
                     <li><a href="mesajlar.html" class="nav-link${ac(active, 'mesajlar')}" data-page="mesajlar"><i class="fa-solid fa-envelope mr-1 text-[0.85em]"></i>Mesajlar</a></li>
                 </ul>
                 <div class="lg:hidden flex items-center justify-between py-2">
-                    <span class="text-light-text-secondary dark:text-dark-text-secondary text-sm font-inter">Admin Menü</span>
+                    <span class="yaziyo-mobile-menu-label text-sm font-inter">Admin Menü</span>
                     <button id="hamburger-btn" type="button"
-                        class="text-light-text dark:text-dark-text p-2 rounded-lg hover:bg-light-card dark:hover:bg-dark-card transition-colors duration-300"
+                        class="yaziyo-hamburger-btn p-2 rounded-lg transition-colors duration-300"
                         aria-label="Menüyü aç/kapat">
                         <i class="fa-solid fa-bars text-xl" id="hamburger-icon"></i>
                     </button>
@@ -139,6 +233,8 @@
         header.innerHTML = buildAdminHeader(active);
         header.dataset.yaziyoAdminHeaderMounted = '1';
         header.classList.add('w-full', 'bg-light-bg/95', 'dark:bg-dark-bg/95', 'backdrop-blur-md', 'sticky', 'top-0', 'z-50', 'transition-colors', 'duration-300');
+        applyNavActive(active);
+        bindNavClickHandler();
         return true;
     }
 
@@ -150,7 +246,17 @@
         mount: mountAdminHeader,
         boot,
         resolveActiveNav,
+        applyNavActive,
+        syncNavActive,
+        closeMobileMenu,
     };
+
+    patchStaticNavActive();
+    bindNavClickHandler();
+
+    global.addEventListener('pageshow', (e) => {
+        if (e.persisted) syncNavActive();
+    });
 
     if (document.getElementById('main-header') && isAdminPage()) {
         boot();

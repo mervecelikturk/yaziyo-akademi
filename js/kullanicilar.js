@@ -2,6 +2,7 @@
  * YAZİYO - Admin kullanıcı yönetimi
  */
 import { supabase } from './lib/supabase.js';
+import { requireAdminAccess } from './lib/adminAuth.js';
 
 let allUsers = [];
 let searchQuery = '';
@@ -459,7 +460,9 @@ async function createUser(e) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAdminAccess())) return;
+
     fetchUsers();
 
     document.getElementById('refresh-users-btn')?.addEventListener('click', () => {

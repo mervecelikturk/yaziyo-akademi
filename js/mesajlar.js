@@ -2,6 +2,7 @@
  * YAZİYO - Admin mesajlar (iletişim formu)
  */
 import { supabase } from './lib/supabase.js';
+import { requireAdminAccess } from './lib/adminAuth.js';
 
 let allMessages = [];
 let showUnreadOnly = false;
@@ -484,7 +485,9 @@ async function confirmDeleteMessage() {
     closeDeleteMessageModal();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAdminAccess())) return;
+
     fetchMessages();
 
     const refreshBtn = document.getElementById('refresh-messages-btn');

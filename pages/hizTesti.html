@@ -70,114 +70,13 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
 
         rel="stylesheet">
-
-
-
-    <!-- Tailwind CSS CDN -->
-
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <script>
-
-        // GECE/GÜNDÜZ MODU - Tailwind CSS renkleri
-
-        tailwind.config = {
-
-            darkMode: 'class', // 'dark' class'ı ile kontrol
-
-            theme: {
-
-                extend: {
-
-                    colors: {
-
-                        // Mevcut Tema (Gece Modu) - Hiç Değişmeyecek
-
-                        'dark-bg': '#0F172A',
-
-                        'dark-card': '#1E2937',
-
-                        'dark-text': '#F1F5F9',
-
-                        'dark-text-secondary': '#CBD5E1',
-
-                        'dark-border': '#334155',
-
-
-
-                        // Yeni Eklenecek Tema (Gündüz Modu - Sıcak Kütüphane Paleti)
-
-                        'light-bg': '#F8F4ED',
-
-                        'light-card': '#FFFFFF',
-
-                        'light-text': '#1E2937',
-
-                        'light-text-secondary': '#334155',
-
-                        'light-border': '#E6D9C2',
-
-                        'light-gold': '#D97706',
-
-                        'light-green': '#15803D',
-
-
-
-                        // Accent Renkleri (Her İki Modda Dinamik Tailwind Değişkenleri)
-
-                        'yaziyo-gold': 'rgb(var(--yaziyo-gold-rgb) / <alpha-value>)',
-
-                        'yaziyo-green': 'rgb(var(--yaziyo-green-rgb) / <alpha-value>)',
-
-
-
-                        // Geriye dönük uyumluluk için geçici CSS değişkenleri bağlaması (Tüm sayfalarda otomatik tema değişimi için)
-
-                        'yaziyo-bg': 'rgb(var(--yaziyo-bg-rgb) / <alpha-value>)',
-
-                        'yaziyo-card': 'rgb(var(--yaziyo-card-rgb) / <alpha-value>)',
-
-                        'yaziyo-text': 'rgb(var(--yaziyo-text-rgb) / <alpha-value>)',
-
-                        'yaziyo-text-secondary': 'rgb(var(--yaziyo-text-secondary-rgb) / <alpha-value>)',
-
-                        'yaziyo-border': 'rgb(var(--yaziyo-border-rgb) / <alpha-value>)',
-
-                    },
-
-                    fontFamily: {
-
-                        'poppins': ['Poppins', 'sans-serif'],
-
-                        'inter': ['Inter', 'sans-serif'],
-
-                    },
-
-                }
-
-            },
-
-            plugins: [
-
-                function ({ addVariant }) {
-
-                    // 'light:' prefix'ini Tailwind'e ekle
-
-                    addVariant('light', '.light &');
-
-                }
-
-            ]
-
-        }
-
-    </script>
-
-
-
-    <!-- Font Awesome (İkonlar) -->
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Tailwind CSS (build) -->
+    <link rel="stylesheet" href="../css/tailwind.css">
+    <!-- Font Awesome (solid + regular + brands) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
 
 
 
@@ -194,7 +93,7 @@
     <!-- ============================================ -->
 
     <style>
-        /* GİRİ�? ALANLARI TASARIMI */
+        /* GİRİŞ ALANLARI TASARIMI */
         input[type="text"],
         input[type="number"],
         input[type="password"],
@@ -296,7 +195,7 @@
 
 
 
-        /* �?u anda yazılması gereken karakter - altı çizili */
+        /* Şu anda yazılması gereken karakter - altı çizili */
 
         #text-display .char.current {
 
@@ -380,7 +279,7 @@
 
         /* ============================================ */
 
-        /* KULLANICI GİRİ�? ALANI                       */
+        /* KULLANICI GİRİŞ ALANI                       */
 
         /* ============================================ */
 
@@ -492,7 +391,7 @@
 
         /* ============================================ */
 
-        /* YANLI�?LAR LİSTESİ                           */
+        /* YANLIŞLAR LİSTESİ                           */
 
         /* ============================================ */
 
@@ -1366,7 +1265,7 @@
 
                         class="text-sm font-inter text-yellow-600 dark:text-yellow-500 mb-1 font-bold uppercase tracking-widest">
 
-                        �?ampiyon</div>
+                        Şampiyon</div>
 
                     <div class="font-poppins font-extrabold text-2xl text-yaziyo-text mb-2">Zeynep Ç.</div>
 
@@ -1976,11 +1875,11 @@
 
                     <!-- Sosyal Medya İkonları -->
                     <div class="flex items-center gap-4">
-                        <a href="https://www.instagram.com/yaziyo_zabit.katipligi/" id="social-instagram"
+                        <a href="https://www.instagram.com/yaziyoakademi?igsh=MXRlbnl3Y2Y5d3FuZw==" id="social-instagram"
                             class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
                             <i class="fa-brands fa-instagram text-lg"></i>
                         </a>
-                        <a href="https://www.tiktok.com/@zabit.katipligi_yaziyo?_r=1&_t=ZS-95NG3JvVk9s" id="social-tiktok"
+                        <a href="https://www.tiktok.com/@yaziyo.akademi?_r=1&_t=ZS-97OMpAkPoub" id="social-tiktok"
                             class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors" aria-label="TikTok" target="_blank" rel="noopener noreferrer">
                             <i class="fa-brands fa-tiktok text-lg"></i>
                         </a>
@@ -2075,11 +1974,6 @@
         </div>
 
     </div>
-
-
-
-    <!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="../js/auth.js"></script>
     <script src="../js/hizTesti.js"></script>
     <script type="module" src="../js/hizSiralama.js"></script>

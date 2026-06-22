@@ -53,6 +53,63 @@ html.dark {
     --yaziyo-inverse-text-hex: #0F172A;
 }
 
+/* ============================================ */
+/* FORM KONTROLLERİ — focus flash önleme         */
+/* box-shadow none→gold animasyonu beyaz halka   */
+/* yapar; outline + Tailwind ring devre dışı     */
+/* ============================================ */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+select,
+textarea {
+    outline: none;
+    outline-offset: 0;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
+    transition-property: border-color, background-color;
+    transition-duration: 0.2s;
+    transition-timing-function: ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):focus,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]):focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+    outline: none !important;
+    outline-offset: 0 !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-shadow: 0 0 #0000 !important;
+    --tw-ring-offset-width: 0px !important;
+    box-shadow: 0 0 0 4px rgba(var(--yaziyo-gold-rgb), 0.15) !important;
+    transition-property: border-color, background-color !important;
+}
+
+.form-input,
+.admin-form-input,
+.admin-form-select,
+.admin-form-textarea,
+.input-focus-ring {
+    box-shadow: 0 0 0 0 transparent;
+    transition-property: border-color, background-color !important;
+    transition-duration: 0.2s !important;
+    transition-timing-function: ease !important;
+}
+
+.input-focus-ring:focus,
+.input-focus-ring:focus-visible {
+    border-color: rgb(var(--yaziyo-gold-rgb)) !important;
+    background-color: rgb(var(--yaziyo-card-rgb)) !important;
+    box-shadow: 0 0 0 4px rgba(var(--yaziyo-gold-rgb), 0.15) !important;
+    transform: translateY(-1px);
+}
+
+.form-input:focus,
+.form-input:focus-visible {
+    box-shadow: 0 0 0 4px rgba(var(--yaziyo-gold-rgb), 0.15),
+        0 10px 15px -3px rgba(0, 0, 0, 0.05) !important;
+}
+
 /* Tema Geçiş Animasyonu (0.3s yumuşak geçiş) */
 html.theme-transition,
 html.theme-transition *,
@@ -60,6 +117,12 @@ html.theme-transition *::before,
 html.theme-transition *::after {
     transition: background-color 0.3s ease, color 0.3s ease,
                 border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+html.theme-transition input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]):not([type="color"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+html.theme-transition select,
+html.theme-transition textarea {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
 }
 
 /* Scrollbar Özelleştirmesi */
@@ -137,24 +200,67 @@ html.theme-transition *::after {
     font-family: 'Inter', sans-serif;
     font-size: 0.9375rem;
     font-weight: 500;
-    color: rgb(var(--yaziyo-text-secondary-rgb));
+    color: rgb(var(--yaziyo-text-rgb));
     border-radius: 0.5rem;
-    transition: all 0.3s ease;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, padding-left 0.2s ease;
     text-decoration: none;
     border-left: 3px solid transparent;
 }
 
-.mobile-nav-link:hover {
-    color: var(--yaziyo-gold-hex);
-    background: rgba(var(--yaziyo-gold-rgb), 0.08);
-    border-left-color: var(--yaziyo-gold-hex);
-    padding-left: 1.25rem;
+@media (hover: hover) and (pointer: fine) {
+    .mobile-nav-link:hover {
+        color: var(--yaziyo-gold-hex);
+        background: rgba(var(--yaziyo-gold-rgb), 0.08);
+        border-left-color: var(--yaziyo-gold-hex);
+        padding-left: 1.25rem;
+    }
 }
 
 .mobile-nav-link.active {
     color: var(--yaziyo-gold-hex);
-    background: rgba(var(--yaziyo-gold-rgb), 0.1);
+    background: rgba(var(--yaziyo-gold-rgb), 0.12);
     border-left-color: var(--yaziyo-gold-hex);
+    font-weight: 600;
+}
+
+/* Dokunmatik cihazlarda yapışkan :hover ve geçiş animasyonu çift seçim gibi görünmesin */
+@media (max-width: 1023px) {
+    .mobile-nav-link {
+        transition: none;
+    }
+}
+
+@media (hover: none) {
+    .mobile-nav-link:not(.active):hover {
+        color: rgb(var(--yaziyo-text-rgb));
+        background: transparent;
+        border-left-color: transparent;
+        padding-left: 1rem;
+    }
+}
+
+.mobile-dropdown-trigger.active:not(.open) {
+    color: var(--yaziyo-gold-hex);
+    background: rgba(var(--yaziyo-gold-rgb), 0.12);
+    border-left-color: var(--yaziyo-gold-hex);
+    font-weight: 600;
+}
+
+.yaziyo-mobile-menu-label {
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+}
+
+.yaziyo-hamburger-btn {
+    color: rgb(var(--yaziyo-text-rgb));
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .yaziyo-hamburger-btn:hover {
+        background: rgb(var(--yaziyo-card-rgb));
+    }
 }
 
 /* Devre Dışı Linkler (Disabled Links) */
@@ -171,8 +277,10 @@ html.theme-transition *::after {
 }
 
 .mobile-nav-link.disabled:hover {
-    padding-left: 1rem !important; /* Standart padding'i koru, yana kaymasın */
+    padding-left: 1rem !important;
     border-left-color: transparent !important;
+    background: transparent !important;
+    color: rgb(var(--yaziyo-text-secondary-rgb)) !important;
 }
 
 /* ============================================ */
@@ -545,12 +653,36 @@ html.theme-transition *::after {
 #header-logo,
 .yaziyo-nav-logo {
     border: 1px solid rgb(var(--yaziyo-gold-rgb));
+    width: auto;
+    object-fit: contain;
 }
 
+/* Mobil: navbar'da yalnızca marka adı, logo yok */
 @media (max-width: 639px) {
+    #header-logo,
+    .yaziyo-nav-logo {
+        display: none !important;
+    }
+
     #main-header a#logo-link,
     .yaziyo-header-logo {
-        max-width: 58%;
+        max-width: none;
+    }
+}
+
+/* Masaüstü: logo hafif daha büyük (önceki h-5/h-6 yerine) */
+@media (min-width: 640px) {
+    #header-logo,
+    .yaziyo-nav-logo {
+        display: block;
+        height: 1.625rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    #header-logo,
+    .yaziyo-nav-logo {
+        height: 1.75rem;
     }
 }
 
@@ -576,6 +708,25 @@ html.theme-transition *::after {
     width: 2rem;
     height: 2rem;
     font-size: 0.875rem;
+    transition: transform 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.yaziyo-header-icon-btn:hover,
+#theme-toggle-btn:hover,
+#notification-btn:hover {
+    transform: scale(1.1) !important;
+    border-color: var(--yaziyo-gold-hex);
+    box-shadow: 0 0 15px rgba(var(--yaziyo-gold-rgb), 0.3);
+}
+
+.yaziyo-header-icon-btn:active,
+#theme-toggle-btn:active,
+#notification-btn:active {
+    transform: scale(0.95) !important;
+}
+
+#notification-btn:hover {
+    color: var(--yaziyo-gold-hex);
 }
 
 @media (min-width: 640px) {
@@ -1850,7 +2001,8 @@ html.dark .yr-glass {
     font-family: 'Inter', sans-serif;
     outline: none;
     resize: none;
-    transition: border-color var(--yr-anim-fast) ease, box-shadow var(--yr-anim-fast) ease;
+    box-shadow: 0 0 0 0 transparent;
+    transition: border-color var(--yr-anim-fast) ease;
 }
 .yr-input:focus {
     border-color: rgb(var(--yaziyo-gold-rgb));
@@ -2110,7 +2262,7 @@ html.dark .yr-glass {
     font-size: 0.875rem;
     text-align: center;
     color: rgb(var(--yaziyo-text-rgb));
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 .yr-pass-input:focus {
     outline: none;

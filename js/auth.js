@@ -2,7 +2,7 @@
  * YAZİYO - Kimlik Doğrulama Sistemi
  */
 
-import { getSupabaseClient } from './lib/supabase.js';
+import { getSupabaseClient, initSupabaseClient } from './lib/supabase.js';
 import { isEmailConfirmed } from './lib/authConfig.js';
 import {
     getCurrentUser,
@@ -16,6 +16,13 @@ import {
     mirrorSessionToWindowName,
     clearAllSupabaseAuthKeys,
 } from './lib/authStorage.js';
+
+const isAdminPanelPage = () =>
+    window.YaziyoAdminPaths?.isAdminPanelPage?.() === true;
+
+if (isAdminPanelPage()) {
+    window.yaziyoAuth = { checkAuth: () => {}, getSupabaseClient: () => null };
+} else {
 
 const { homeHref, pageHref } = window.YaziyoPaths || {
     homeHref: () => '../index.html',
@@ -88,6 +95,8 @@ async function checkAuth() {
     const cachedUser = getStoredVerifiedUser();
 
     try {
+        await initSupabaseClient();
+
         if (cachedUser) {
             hasSession = true;
             userData = cachedUser;
@@ -334,3 +343,5 @@ setTimeout(() => {
 }, 3000);
 
 window.yaziyoAuth = { checkAuth, getSupabaseClient };
+
+}

@@ -2,7 +2,11 @@
 /* YAZİYO - İçerik Ekle (Sayfa Durumu) Admin   */
 /* ============================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
+import { requireAdminAccess } from './lib/adminAuth.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!(await requireAdminAccess())) return;
+
     const tbody = document.getElementById('page-status-tbody');
     if (!tbody || !window.YaziyoPageStatus) return;
 

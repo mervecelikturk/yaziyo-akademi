@@ -2,11 +2,9 @@
  * YAZİYO - Yönetici oturumu ve yetki kontrolü
  */
 
-import { supabase } from './supabase.js';
+import { getSupabaseClient, initSupabaseClient } from './supabase.js';
 import { ensureSession } from '../authVerification.js';
 import {
-    setRememberMe,
-    isRememberMeEnabled,
     setStoredVerifiedUser,
 } from './authStorage.js';
 
@@ -14,17 +12,16 @@ export const ADMIN_SESSION_KEY = 'yaziyo-admin-verified';
 export const ADMIN_USER_KEY = 'yaziyo-admin-user';
 
 export function setAdminSession(user) {
-    const store = isRememberMeEnabled() ? localStorage : sessionStorage;
-    const other = store === localStorage ? sessionStorage : localStorage;
     const payload = {
         id: user.id,
         email: user.email,
         verified_at: new Date().toISOString(),
     };
-    other.removeItem(ADMIN_SESSION_KEY);
-    other.removeItem(ADMIN_USER_KEY);
-    store.setItem(ADMIN_SESSION_KEY, 'true');
-    store.setItem(ADMIN_USER_KEY, JSON.stringify(payload));
+    // Yönetici bayrağı localStorage'da — yenilemede kaybolmasın
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    sessionStorage.removeItem(ADMIN_USER_KEY);
+    localStorage.setItem(ADMIN_SESSION_KEY, 'true');
+    localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(payload));
 }
 
 export function clearAdminSession() {
@@ -49,6 +46,24 @@ export function getAdminSessionUser() {
     } catch {
         return null;
     }
+}
+
+function getAdminLoginUrl() {
+    return window.YaziyoAdminPaths?.getAdminLoginRedirectUrl?.()
+        || 'adminGiris.html';
+}
+
+async function resolveAdminSession(client, retries = 2) {
+    let result = await ensureSession(client);
+    let attempt = 0;
+
+    while (!result.ok && attempt < retries) {
+        attempt += 1;
+        await new Promise((resolve) => window.setTimeout(resolve, 150 * attempt));
+        result = await ensureSession(client);
+    }
+
+    return result;
 }
 
 /**
@@ -77,33 +92,39 @@ export async function checkIsAdmin(client, user) {
 }
 
 /** Çıkış: Supabase oturumu + yönetici bayrağı */
-export async function performAdminLogout(client = supabase) {
+export async function performAdminLogout(client = getSupabaseClient()) {
     clearAdminSession();
     const { forceAuthCleanup } = await import('../authVerification.js');
     await forceAuthCleanup(client);
 }
 
 /** Admin paneli sayfaları için oturum + yetki doğrulama */
-export async function requireAdminAccess(redirectTo = 'adminGiris.html') {
-    const client = supabase;
-    if (!client) return false;
+export async function requireAdminAccess(redirectTo) {
+    await initSupabaseClient();
+    const client = getSupabaseClient();
+    const loginUrl = redirectTo || getAdminLoginUrl();
 
-    if (!hasAdminSession()) {
-        window.location.href = redirectTo;
+    if (!client) {
+        window.location.replace(loginUrl);
         return false;
     }
 
-    const result = await ensureSession(client);
+    if (!hasAdminSession()) {
+        window.location.replace(loginUrl);
+        return false;
+    }
+
+    const result = await resolveAdminSession(client);
     if (!result.ok || !result.user) {
         clearAdminSession();
-        window.location.href = redirectTo;
+        window.location.replace(loginUrl);
         return false;
     }
 
     const isAdmin = await checkIsAdmin(client, result.user);
     if (!isAdmin) {
         clearAdminSession();
-        window.location.href = redirectTo;
+        window.location.replace(loginUrl);
         return false;
     }
 
