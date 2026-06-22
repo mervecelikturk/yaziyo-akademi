@@ -772,10 +772,15 @@
     }
 
     function renderDuelText() {
-        $('kd-text-content').innerHTML = state.words
+        const content = $('kd-text-content');
+        content.innerHTML = state.words
             .map((w, i) => `<span class="kd-word" data-w="${i}">${escapeHtml(w)}</span>`)
             .join(' ');
-        $('kd-text-card').scrollTop = 0;
+        window.YaziyoTypingScroll?.resetTypingPanels({
+            referenceEl: content,
+            userInputEl: $('kd-input'),
+            referenceMoveMode: 'transform',
+        });
         highlightWord(0);
     }
 
@@ -881,7 +886,22 @@
             state.committedCount = committed.length;
         }
         highlightWord(state.committedCount);
+        syncTypingScroll();
         broadcastProgress();
+    }
+
+    function syncTypingScroll() {
+        const scrollLib = window.YaziyoTypingScroll;
+        if (!scrollLib || !state.words?.length) return;
+        const input = $('kd-input');
+        scrollLib.syncTypingPanels({
+            referenceEl: $('kd-text-content'),
+            referenceContainer: $('kd-text-card'),
+            referenceFullText: state.words.join(' '),
+            userInputEl: input,
+            typedLen: input.value.length,
+            referenceMoveMode: 'transform',
+        });
     }
 
     function evaluateWord(index, typed) {
@@ -922,18 +942,6 @@
         const cur = qs(`[data-w="${index}"]`);
         if (cur) {
             cur.classList.add('kd-word-active');
-            scrollTextTo(cur);
-        }
-    }
-
-    function scrollTextTo(el) {
-        const card = $('kd-text-card');
-        if (!el || !card) return;
-        const cardRect = card.getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
-        const pad = 12;
-        if (elRect.bottom > cardRect.bottom - pad) {
-            card.scrollTop += elRect.bottom - cardRect.bottom + pad;
         }
     }
 

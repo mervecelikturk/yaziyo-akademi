@@ -949,25 +949,28 @@ document.addEventListener('DOMContentLoaded', () => {
             domHtml += '<span id="word-' + idx + '" class="inline-block transition-all duration-200">' + w + '</span> ';
         });
         textContentDiv.innerHTML = domHtml;
-        textContentDiv.style.transform = "translateY(0px)"; // Reset scroll
+        window.YaziyoTypingScroll?.resetTypingPanels({
+            referenceEl: textContentDiv,
+            userInputEl: userInput,
+            referenceMoveMode: 'transform',
+        });
     }
 
-    function scrollActiveWordToCenter(index) {
-        let activeEl = document.getElementById('word-' + index);
-        if (!activeEl) return;
-        
-        const container = document.getElementById('text-display-card');
-        const containerRect = container.getBoundingClientRect();
-        const elementRect = activeEl.getBoundingClientRect();
+    function getDisplayText() {
+        return (currentActiveText || '').trim().replace(/\s+/g, ' ');
+    }
 
-        // Eğer kelime alt sınıra yaklaştıysa (yaklaşık son satır)
-        if (elementRect.bottom > containerRect.bottom - 50) {
-            const currentTransform = textContentDiv.style.transform ? 
-                parseInt(textContentDiv.style.transform.replace('translateY(', '').replace('px)', '')) || 0 : 0;
-            
-            // Satır yüksekliği kadar yukarı kaydır (yaklaşık 30px)
-            textContentDiv.style.transform = `translateY(${currentTransform - 35}px)`;
-        }
+    function syncTypingScroll() {
+        const scrollLib = window.YaziyoTypingScroll;
+        if (!scrollLib) return;
+        scrollLib.syncTypingPanels({
+            referenceEl: textContentDiv,
+            referenceContainer: document.getElementById('text-display-card'),
+            referenceFullText: getDisplayText(),
+            userInputEl: userInput,
+            typedLen: userInput.value.length,
+            referenceMoveMode: 'transform',
+        });
     }
 
     /** BAŞLA BUTONU TIKLANDIĞINDA */
@@ -1019,8 +1022,6 @@ document.addEventListener('DOMContentLoaded', () => {
         totalKeys = 0;
         correctKeys = 0;
         wrongKeys = 0;
-        textContentDiv.parentElement.scrollTo({ top: 0, behavior: 'instant' });
-
         userInput.value = "";
         userInput.readOnly = true;
         timeRemaining = timeVal;
@@ -1151,7 +1152,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentMode === 'practice') {
                 activeSpan.classList.add('bg-yellow-200/50', 'rounded', 'px-1');
             }
-            scrollActiveWordToCenter(index);
         }
     }
 
@@ -1190,6 +1190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateLiveStats();
         highlightActiveWord(activeWordIdx);
+        syncTypingScroll();
     });
 
     /** Tuş istatistikleri kelime hizalamasına göre yeniden hesaplanır */
@@ -1204,6 +1205,12 @@ document.addEventListener('DOMContentLoaded', () => {
         totalKeys = stats.totalKeys;
         correctKeys = stats.correctKeys;
         wrongKeys = stats.wrongKeys;
+    });
+
+    /** Sınav modu: referans metin + yazım alanı kaydırma (renklendirme yok) */
+    userInput.addEventListener('input', () => {
+        if (!isTestRunning || currentMode === 'practice' || currentMode === 'app') return;
+        syncTypingScroll();
     });
 
     /** SÜREYİ GİZLE/GÖSTER (Çalışma Modu) */

@@ -92,6 +92,8 @@
             line-height: 2.2rem;
             letter-spacing: 0.3px;
             user-select: none;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top;
         }
         .exam-char { color: rgb(var(--yaziyo-text-secondary-rgb) / 0.7); border-radius: 2px; }
         .exam-char.correct { color: rgb(var(--yaziyo-green-rgb)); }
@@ -364,7 +366,7 @@
                     </div>
                 </div>
 
-                <div id="exam-text" class="bg-yaziyo-bg/40 border border-yaziyo-border rounded-xl p-5 mb-4 max-h-60 overflow-y-auto text-yaziyo-text"></div>
+                <div id="exam-text" class="bg-yaziyo-bg/40 border border-yaziyo-border rounded-xl p-5 mb-4 max-h-60 overflow-hidden text-yaziyo-text"></div>
 
                 <textarea id="exam-input" rows="3" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"
                     placeholder="Metni buraya yazmaya başla..."
@@ -536,6 +538,7 @@
     <script src="../js/siteNavbar.js"></script>
     <script src="../js/main.js"></script>
     <script type="module" src="../js/auth.js"></script>
+    <script src="../js/lib/typingTextScroll.js"></script>
     <script type="module" src="../js/klavyeSinavi.js"></script>
 </body>
 

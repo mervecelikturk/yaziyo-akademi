@@ -214,7 +214,28 @@ function prepareExamWords(text) {
     els.examText.innerHTML = words.map((w, i) =>
         `<span id="word-${i}" class="inline-block transition-all duration-200">${escapeHtml(w)}</span> `
     ).join('');
-    els.examText.style.transform = 'translateY(0px)';
+    window.YaziyoTypingScroll?.resetTypingPanels({
+        referenceEl: els.examText,
+        userInputEl: els.examInput,
+        referenceMoveMode: 'transform',
+    });
+}
+
+function getKeyboardDisplayText() {
+    return (state.selected?.keyboardText || '').trim().replace(/\s+/g, ' ');
+}
+
+function syncTypingScroll() {
+    const scrollLib = window.YaziyoTypingScroll;
+    if (!scrollLib || !els.examText || !els.textDisplayCard) return;
+    scrollLib.syncTypingPanels({
+        referenceEl: els.examText,
+        referenceContainer: els.textDisplayCard,
+        referenceFullText: getKeyboardDisplayText(),
+        userInputEl: els.examInput,
+        typedLen: state.typed.length,
+        referenceMoveMode: 'transform',
+    });
 }
 
 function highlightActiveWord() {
@@ -227,19 +248,6 @@ function highlightActiveWord() {
     els.examText.querySelectorAll('[id^="word-"]').forEach((el, i) => {
         el.classList.toggle('word-active', i === activeIdx);
     });
-
-    const activeEl = document.getElementById(`word-${activeIdx}`);
-    const container = els.textDisplayCard;
-    if (activeEl && container) {
-        const cr = container.getBoundingClientRect();
-        const er = activeEl.getBoundingClientRect();
-        if (er.bottom > cr.bottom - 50) {
-            const cur = els.examText.style.transform
-                ? parseInt(els.examText.style.transform.replace(/[^\d-]/g, ''), 10) || 0
-                : 0;
-            els.examText.style.transform = `translateY(${cur - 35}px)`;
-        }
-    }
 }
 
 function updateKeyboardStats() {
@@ -383,9 +391,6 @@ function startKeyboardPhase() {
     if (els.examInput) {
         els.examInput.value = '';
         els.examInput.readOnly = true;
-    }
-    if (els.examText?.parentElement) {
-        els.examText.parentElement.scrollTo({ top: 0, behavior: 'instant' });
     }
     updateKeyboardStats();
     openExamWorkspace();
@@ -644,6 +649,7 @@ function bindEvents() {
     els.examInput?.addEventListener('input', (e) => {
         state.typed = e.target.value;
         updateKeyboardStats();
+        syncTypingScroll();
     });
     els.examInput?.addEventListener('paste', (e) => e.preventDefault());
     els.examInput?.addEventListener('drop', (e) => e.preventDefault());

@@ -806,6 +806,7 @@
     <!-- ÖZEL METİN ÇALIŞMASI - Sayfa JS            -->
     <!-- ============================================ -->
     <script src="../js/lib/klavyeTypingCore.js"></script>
+    <script src="../js/lib/typingTextScroll.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
 
@@ -932,52 +933,26 @@
         /* alanına yazar. Kaydırma JS kontrolünde.     */
         /* ============================================ */
         function prepareTextDOM(rawText) {
-            // Fazla boşlukları temizle
             let processed = rawText.trim().replace(/[ \t]+/g, ' ');
             textContentDiv.textContent = processed;
-            textContentDiv.style.top = '0px';
+            window.YaziyoTypingScroll?.resetTypingPanels({
+                referenceEl: textContentDiv,
+                userInputEl: userInput,
+                referenceMoveMode: 'top',
+            });
         }
 
-        /* ============================================ */
-        /* METİN KAYDIR                               */
-        /* Kullanıcı yazarken orijinal metni yukarı   */
-        /* kaydırarak senkronize eder.                */
-        /* "Çalışılan" karakter pozisyonuna göre       */
-        /* ilgili satırı görünür tutar.               */
-        /* ============================================ */
         function scrollTextToMatch() {
-            // Yazılan karakter sayısına göre orijinal metindeki pozisyonu hesapla
-            const typedLen  = userInput.value.length;
-            const origText  = currentActiveText;
-            if (typedLen === 0) {
-                textContentDiv.style.top = '0px';
-                return;
-            }
-
-            // Geçici span oluşturarak yazılan kısmın yüksekliğini ölç
-            const temp = document.createElement('span');
-            temp.style.cssText = `
-                position: absolute; visibility: hidden; white-space: pre-wrap;
-                word-wrap: break-word; font-family: 'Inter', monospace;
-                font-size: 1.5rem; line-height: 2.0;
-                width: ${textContentDiv.offsetWidth}px;
-            `;
-            temp.textContent = origText.substring(0, Math.min(typedLen, origText.length));
-            document.body.appendChild(temp);
-            const typedHeight = temp.offsetHeight;
-            document.body.removeChild(temp);
-
-            // Satır yüksekliği
-            const lineH = parseFloat(getComputedStyle(textContentDiv).fontSize) * 2.0;
-            // Görüntülenen alan yüksekliği
-            const containerH = textContentDiv.parentElement.offsetHeight;
-
-            // Yarı noktayı geçince kaydır
-            let newTop = 0;
-            if (typedHeight > containerH / 2) {
-                newTop = -(typedHeight - containerH / 2);
-            }
-            textContentDiv.style.top = newTop + 'px';
+            const scrollLib = window.YaziyoTypingScroll;
+            if (!scrollLib || !currentActiveText) return;
+            scrollLib.syncTypingPanels({
+                referenceEl: textContentDiv,
+                referenceContainer: textContentDiv.parentElement,
+                referenceFullText: currentActiveText.trim().replace(/[ \t]+/g, ' '),
+                userInputEl: userInput,
+                typedLen: userInput.value.length,
+                referenceMoveMode: 'top',
+            });
         }
 
         /* ============================================ */

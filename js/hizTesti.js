@@ -255,6 +255,8 @@
              */
             function renderText() {
                 textDisplay.innerHTML = '';
+                const inner = document.createElement('div');
+                inner.id = 'text-display-inner';
 
                 for (let i = 0; i < fullText.length; i++) {
                     const charSpan = document.createElement('span');
@@ -268,32 +270,30 @@
                         charSpan.classList.add('pending');
                     }
 
-                    textDisplay.appendChild(charSpan);
+                    inner.appendChild(charSpan);
                 }
+
+                textDisplay.appendChild(inner);
+                window.YaziyoTypingScroll?.resetTypingPanels({
+                    referenceEl: inner,
+                    userInputEl: userInput,
+                    referenceMoveMode: 'transform',
+                });
             }
 
-            /**
-             * Metin alanını kaydırarak mevcut karakteri görünür tutar.
-             * Üç satır görünsün, yazıldıkça yukarı kaysın.
-             */
             function scrollTextDisplay() {
-                const currentChar = textDisplay.querySelector('.char.current');
-                if (!currentChar) return;
+                const inner = document.getElementById('text-display-inner');
+                const scrollLib = window.YaziyoTypingScroll;
+                if (!scrollLib || !fullText || !inner) return;
 
-                const displayRect = textDisplay.getBoundingClientRect();
-                const charRect = currentChar.getBoundingClientRect();
-
-                // Satır yüksekliğini hesapla
-                const lineHeight = parseFloat(getComputedStyle(textDisplay).lineHeight);
-                // Mevcut karakterin display içindeki göreceli konumu
-                const relativeTop = charRect.top - displayRect.top + textDisplay.scrollTop;
-
-                // İlk satır yüksekliğinden sonra kaydırmaya başla
-                const targetScroll = Math.max(0, relativeTop - lineHeight);
-
-                textDisplay.scrollTo({
-                    top: targetScroll,
-                    behavior: 'smooth'
+                const typedLen = wordStartIndex + (userInput.value?.length || 0);
+                scrollLib.syncTypingPanels({
+                    referenceEl: inner,
+                    referenceContainer: textDisplay,
+                    referenceFullText: fullText,
+                    userInputEl: userInput,
+                    typedLen,
+                    referenceMoveMode: 'transform',
                 });
             }
 

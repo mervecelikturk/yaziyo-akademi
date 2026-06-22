@@ -438,9 +438,23 @@ function renderHighlight(typed) {
     }
     display.innerHTML = frag.join('');
 
-    // imleci görünür tut
-    const cur = display.querySelector('.exam-char.current');
-    if (cur) cur.scrollIntoView({ block: 'nearest' });
+    if (!typed.length) {
+        window.YaziyoTypingScroll?.resetTypingPanels({
+            referenceEl: display,
+            userInputEl: $('exam-input'),
+            referenceMoveMode: 'transform',
+        });
+        return;
+    }
+
+    window.YaziyoTypingScroll?.syncTypingPanels({
+        referenceEl: display,
+        referenceContainer: display,
+        referenceFullText: target,
+        userInputEl: $('exam-input'),
+        typedLen: typed.length,
+        referenceMoveMode: 'transform',
+    });
 }
 
 function computeMetrics(target, typed, elapsedSec) {

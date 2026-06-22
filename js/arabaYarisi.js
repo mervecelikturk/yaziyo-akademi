@@ -811,8 +811,11 @@
         c.innerHTML = state.words
             .map((w, i) => `<span class="yr-word" data-w="${i}">${escapeHtml(w)}</span>`)
             .join(' ');
-        c.style.transform = '';
-        $('yr-text-card').scrollTop = 0;
+        window.YaziyoTypingScroll?.resetTypingPanels({
+            referenceEl: c,
+            userInputEl: $('yr-input'),
+            referenceMoveMode: 'transform',
+        });
         highlightWord(0);
     }
 
@@ -930,6 +933,21 @@
         }
         // Aktif kelime vurgusu
         highlightWord(state.committedCount);
+        syncTypingScroll();
+    }
+
+    function syncTypingScroll() {
+        const scrollLib = window.YaziyoTypingScroll;
+        if (!scrollLib || !state.words?.length) return;
+        const input = $('yr-input');
+        scrollLib.syncTypingPanels({
+            referenceEl: $('yr-text-content'),
+            referenceContainer: $('yr-text-card'),
+            referenceFullText: state.words.join(' '),
+            userInputEl: input,
+            typedLen: input.value.length,
+            referenceMoveMode: 'transform',
+        });
     }
 
     function evaluateWord(index, typed) {
@@ -970,18 +988,6 @@
         const cur = qs(`[data-w="${index}"]`);
         if (cur) {
             cur.classList.add('yr-word-active');
-            scrollTextTo(cur);
-        }
-    }
-
-    function scrollTextTo(el) {
-        const card = $('yr-text-card');
-        if (!el || !card) return;
-        const cardRect = card.getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
-        const pad = 12;
-        if (elRect.bottom > cardRect.bottom - pad) {
-            card.scrollTop += elRect.bottom - cardRect.bottom + pad;
         }
     }
 

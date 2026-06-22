@@ -616,13 +616,31 @@
     /* ---------------- Typing session ---------------- */
     function prepareWordsDOM(rawText) {
         const processed = rawText.trim().replace(/\s+/g, ' ');
+        state.displayText = processed;
         state.wordsArray = processed.split(' ').filter(w => w.length > 0);
         let html = '';
         state.wordsArray.forEach((w, idx) => {
             html += `<span id="word-${idx}" class="inline-block transition-all duration-200">${w}</span> `;
         });
         els.textContent.innerHTML = html;
-        els.textContent.style.transform = 'translateY(0px)';
+        window.YaziyoTypingScroll?.resetTypingPanels({
+            referenceEl: els.textContent,
+            userInputEl: els.userInput,
+            referenceMoveMode: 'transform',
+        });
+    }
+
+    function syncTypingScroll() {
+        const scrollLib = window.YaziyoTypingScroll;
+        if (!scrollLib || !state.displayText) return;
+        scrollLib.syncTypingPanels({
+            referenceEl: els.textContent,
+            referenceContainer: $('ke-text-display-card'),
+            referenceFullText: state.displayText,
+            userInputEl: els.userInput,
+            typedLen: els.userInput?.value.length || 0,
+            referenceMoveMode: 'transform',
+        });
     }
 
     function updateHud() {
@@ -666,7 +684,10 @@
             state.wrongWords = live.wrong;
             state.prevCorrect = live.correct;
             state.prevWrong = live.wrong;
-            onCorrectWord(newCorrect).then(applyStats);
+            onCorrectWord(newCorrect).then(() => {
+                applyStats();
+                syncTypingScroll();
+            });
             return;
         }
 
@@ -681,6 +702,7 @@
         state.prevCorrect = live.correct;
         state.prevWrong = live.wrong;
         applyStats();
+        syncTypingScroll();
     }
 
     function handleTick() {
