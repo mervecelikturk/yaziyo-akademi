@@ -431,9 +431,13 @@ export async function handleRegister(e) {
     }
 }
 
-async function handleGoogleSignIn() {
-    const registerVisible = !document.getElementById('register-form-container')?.classList.contains('hidden');
-    if (registerVisible && document.getElementById('terms-accept')?.checked !== true) {
+async function handleGoogleSignIn(event) {
+    event?.preventDefault?.();
+
+    const btn = document.getElementById('google-sign-in-btn');
+    if (btn?.disabled) return;
+
+    if (isRegisterTabActive() && document.getElementById('terms-accept')?.checked !== true) {
         showToast('Google ile devam etmek için sözleşmeyi kabul etmelisiniz.', 'warning');
         return;
     }
@@ -441,15 +445,37 @@ async function handleGoogleSignIn() {
     const remember = document.getElementById('remember-me')?.checked === true;
     prepareAuthStorageForLogin(remember);
 
-    const btn = document.getElementById('google-sign-in-btn');
+    const label = btn?.querySelector('span');
+    const originalLabel = label?.textContent || 'Google ile Giriş Yap';
+
     try {
-        if (btn) btn.disabled = true;
+        if (btn) {
+            btn.disabled = true;
+            btn.setAttribute('aria-busy', 'true');
+        }
+        if (label) label.textContent = 'Google\'a yönlendiriliyor...';
+
         const client = await ensureAuthClient();
         await signInWithGoogle(client);
     } catch (err) {
         showToast(formatAuthError(err), 'error');
-        if (btn) btn.disabled = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.removeAttribute('aria-busy');
+        }
+        if (label) label.textContent = originalLabel;
     }
+}
+
+function isRegisterTabActive() {
+    return document.getElementById('tab-register')?.classList.contains('text-yaziyo-gold') === true;
+}
+
+function bindGoogleSignInButton() {
+    const btn = document.getElementById('google-sign-in-btn');
+    if (!btn || btn.dataset.yaziyoGoogleBound === '1') return;
+    btn.dataset.yaziyoGoogleBound = '1';
+    btn.addEventListener('click', handleGoogleSignIn);
 }
 
 let _closeTermsModal = null;
@@ -505,6 +531,7 @@ function initTermsModal() {
 }
 
 function initAuthFormsPage() {
+    bindGoogleSignInButton();
     initRememberMeCheckbox();
     initTermsModal();
 
@@ -541,11 +568,22 @@ function initAuthFormsPage() {
         ev.preventDefault();
         showLoginFormOnly();
     });
-
-    document.getElementById('google-sign-in-btn')?.addEventListener('click', handleGoogleSignIn);
 }
 
-document.addEventListener('DOMContentLoaded', initAuthFormsPage);
+function bootAuthFormsPage() {
+    if (bootAuthFormsPage.done) return;
+    bootAuthFormsPage.done = true;
+    initAuthFormsPage();
+}
 
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootAuthFormsPage);
+} else {
+    bootAuthFormsPage();
+}
+
+bindGoogleSignInButton();
+
+window.handleGoogleSignIn = handleGoogleSignIn;
 window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;

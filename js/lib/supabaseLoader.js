@@ -12,13 +12,18 @@ export function ensureSupabaseCdnLoaded() {
     if (loadPromise) return loadPromise;
 
     loadPromise = new Promise((resolve, reject) => {
-        const existing = document.querySelector('script[data-yaziyo-supabase-cdn]');
+        const existing = document.querySelector(
+            'script[data-yaziyo-supabase-cdn], script[src*="@supabase/supabase-js"]',
+        );
         if (existing) {
             if (window.supabase?.createClient) {
                 resolve();
                 return;
             }
-            existing.addEventListener('load', () => resolve(), { once: true });
+            existing.addEventListener('load', () => {
+                if (window.supabase?.createClient) resolve();
+                else reject(new Error('Supabase CDN yüklendi ancak istemci oluşturulamadı'));
+            }, { once: true });
             existing.addEventListener('error', () => reject(new Error('Supabase CDN yüklenemedi')), { once: true });
             return;
         }
