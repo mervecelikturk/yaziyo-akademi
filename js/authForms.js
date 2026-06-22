@@ -2,7 +2,7 @@
  * YAZİYO - Giriş / Kayıt formu
  */
 
-import { supabase } from './lib/supabase.js';
+import { supabase, initSupabaseClient } from './lib/supabase.js';
 import {
     getPasswordResetRedirectUrl,
     RESET_EMAIL_COOLDOWN_SEC,
@@ -35,6 +35,15 @@ let pendingVerifyEmail = '';
 
 function getClient() {
     return window.yaziyoSupabase || supabase;
+}
+
+async function ensureAuthClient() {
+    await initSupabaseClient();
+    const client = getClient();
+    if (!client) {
+        throw new Error('Sistem bağlantısı kurulamadı.');
+    }
+    return client;
 }
 
 function showToast(message, type = 'info') {
@@ -180,8 +189,12 @@ async function completeEmailVerification(client) {
 }
 
 async function handleEmailConfirmationFromUrl() {
-    const client = getClient();
-    if (!client) return false;
+    let client;
+    try {
+        client = await ensureAuthClient();
+    } catch {
+        return false;
+    }
 
     const params = new URLSearchParams(window.location.search);
     const tokenHash = params.get('token_hash') || params.get('token');
@@ -207,8 +220,16 @@ async function handleEmailConfirmationFromUrl() {
     }
 
     if (window.location.hash.includes('access_token') || params.has('code')) {
-        await new Promise((resolve) => window.setTimeout(resolve, 400));
-        const { data: { session } } = await client.auth.getSession();
+        let session = null;
+        for (let attempt = 0; attempt < 15; attempt += 1) {
+            const { data: { session: current } } = await client.auth.getSession();
+            if (current?.user) {
+                session = current;
+                break;
+            }
+            await new Promise((resolve) => window.setTimeout(resolve, 200));
+        }
+
         if (session?.user && isEmailConfirmed(session.user)) {
             const isOAuthReturn = params.get('oauth') === '1';
             if (isOAuthReturn) {
@@ -411,12 +432,6 @@ export async function handleRegister(e) {
 }
 
 async function handleGoogleSignIn() {
-    const client = getClient();
-    if (!client) {
-        showToast('Sistem henüz hazır değil. Sayfayı yenileyin.', 'error');
-        return;
-    }
-
     const registerVisible = !document.getElementById('register-form-container')?.classList.contains('hidden');
     if (registerVisible && document.getElementById('terms-accept')?.checked !== true) {
         showToast('Google ile devam etmek için sözleşmeyi kabul etmelisiniz.', 'warning');
@@ -429,6 +444,7 @@ async function handleGoogleSignIn() {
     const btn = document.getElementById('google-sign-in-btn');
     try {
         if (btn) btn.disabled = true;
+        const client = await ensureAuthClient();
         await signInWithGoogle(client);
     } catch (err) {
         showToast(formatAuthError(err), 'error');

@@ -150,7 +150,7 @@
 
     function buildAdminHeader(active) {
         const paths = getPaths();
-        const home = paths.homeHref();
+        const home = 'admin.html';
         const logoSrc = paths.assetHref('images/logo.png');
 
         return `

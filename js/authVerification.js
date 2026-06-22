@@ -133,6 +133,13 @@ export async function signInWithGoogle(client) {
     });
 
     if (error) throw error;
+
+    if (data?.url) {
+        window.location.assign(data.url);
+    } else {
+        throw new Error('Google giriş sayfasına yönlendirilemedi.');
+    }
+
     return data;
 }
 

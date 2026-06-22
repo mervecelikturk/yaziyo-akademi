@@ -25,7 +25,7 @@ function buildSupabaseClient() {
     const key = SUPABASE_ANON_KEY.trim();
     return window.supabase.createClient(SUPABASE_URL, key, {
         auth: {
-            flowType: 'implicit',
+            flowType: 'pkce',
             detectSessionInUrl: true,
             autoRefreshToken: true,
             persistSession: true,

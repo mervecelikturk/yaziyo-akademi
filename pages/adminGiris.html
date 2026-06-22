@@ -92,8 +92,7 @@
 
         /* Oturum doğrulanırken giriş formu flaşı olmasın */
         html.admin-login-check body > header,
-        html.admin-login-check body > main,
-        html.admin-login-check body > footer {
+        html.admin-login-check body > main {
             visibility: hidden !important;
         }
         html.admin-login-check #admin-login-check-overlay {
@@ -122,7 +121,7 @@
     <!-- Üst bar -->
     <header class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 border-b border-light-border dark:border-dark-border">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between">
-            <a href="../index.html" class="flex items-center gap-2 group">
+            <a href="admin.html" class="flex items-center gap-2 group">
                 <img src="../images/logo.png" alt="YAZİYO AKADEMİ Logo"
                     class="h-5 sm:h-6 w-auto yaziyo-nav-logo object-contain rounded-lg transition-transform duration-300 group-hover:scale-105">
                 <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
@@ -292,14 +291,7 @@
             </div>
         </div>
     </main>
-
-    <footer class="py-4 border-t border-light-border dark:border-dark-border">
-        <p class="text-center text-[10px] text-light-text-secondary dark:text-dark-text-secondary font-inter">
-            © 2026 YAZİYO AKADEMİ · Yönetici Paneli · Güvenli oturum
-        </p>
-    </footer>
-
-    <div id="auth-toast-container" class="auth-toast-container" aria-live="polite"></div>
+<div id="auth-toast-container" class="auth-toast-container" aria-live="polite"></div>
 
     <script src="../js/lib/sitePaths.js"></script>
     <script src="../js/lib/adminPaths.js"></script>
