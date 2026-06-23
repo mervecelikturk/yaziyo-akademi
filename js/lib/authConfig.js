@@ -7,9 +7,9 @@
 export const DEFAULT_SITE_URL = 'https://yaziyoakademi.com';
 
 export const AUTH_PAGES = {
-    login: 'girisKayit.html',
-    adminLogin: 'adminGiris.html',
-    resetPassword: 'sifre-sifirla.html',
+    login: 'giris-kayit',
+    adminLogin: 'admin-paneli',
+    resetPassword: 'sifre-sifirla',
 };
 
 /** Kullanıcı e-postası Supabase tarafından onaylanmış mı */
@@ -53,9 +53,9 @@ export function getSiteOrigin() {
 /**
  * pages/ altındaki bir auth sayfasının tam URL'si
  */
-export function resolveAuthPageUrl(pageFile) {
+export function resolveAuthPageUrl(pageSlug) {
     if (typeof window === 'undefined') {
-        return `${DEFAULT_SITE_URL.replace(/\/$/, '')}/pages/${pageFile}`;
+        return `${DEFAULT_SITE_URL.replace(/\/$/, '')}/pages/${pageSlug}/`;
     }
     const origin = getSiteOrigin();
     const { pathname } = window.location;
@@ -63,13 +63,13 @@ export function resolveAuthPageUrl(pageFile) {
     const idx = pathname.indexOf(pagesMarker);
     if (idx >= 0) {
         const base = pathname.slice(0, idx + pagesMarker.length);
-        return `${origin}${base}${pageFile}`;
+        return `${origin}${base}${pageSlug}/`;
     }
     const dir = pathname.endsWith('/')
         ? pathname
         : pathname.replace(/\/[^/]*$/, '/');
     const basePath = dir.includes('/pages') ? dir : `${dir}pages/`;
-    return `${origin}${basePath}${pageFile}`;
+    return `${origin}${basePath}${pageSlug}/`;
 }
 
 export function getLoginPageUrl() {
@@ -80,7 +80,7 @@ export function getLoginPageUrl() {
  * Şifre sıfırlama mailindeki redirect — her zaman canlı site (e-posta linki localhost'a gitmesin)
  */
 export function getPasswordResetRedirectUrl() {
-    return `${DEFAULT_SITE_URL.replace(/\/$/, '')}/pages/${AUTH_PAGES.resetPassword}`;
+    return `${DEFAULT_SITE_URL.replace(/\/$/, '')}/pages/${AUTH_PAGES.resetPassword}/`;
 }
 
 /**
@@ -93,34 +93,34 @@ export function getPasswordResetRedirectUrl() {
  * (ConfirmationURL değil — token_hash linki kullanın)
  */
 export const SUPABASE_AUTH_REDIRECT_URLS = [
-    `${DEFAULT_SITE_URL}/pages/sifre-sifirla.html`,
-    `${DEFAULT_SITE_URL}/pages/girisKayit.html`,
-    `${DEFAULT_SITE_URL}/pages/girisKayit.html?verified=1`,
-    `${DEFAULT_SITE_URL}/pages/girisKayit.html?oauth=1`,
-    'http://127.0.0.1:5500/pages/sifre-sifirla.html',
-    'http://127.0.0.1:5500/pages/girisKayit.html',
-    'http://127.0.0.1:5500/pages/girisKayit.html?verified=1',
-    'http://127.0.0.1:5500/pages/girisKayit.html?oauth=1',
-    'http://localhost:5500/pages/sifre-sifirla.html',
-    'http://localhost:5500/pages/girisKayit.html',
-    'http://localhost:5500/pages/girisKayit.html?verified=1',
-    'http://localhost:5500/pages/girisKayit.html?oauth=1',
-    'http://127.0.0.1:8080/pages/sifre-sifirla.html',
-    'http://127.0.0.1:8080/pages/girisKayit.html',
-    'http://127.0.0.1:8080/pages/girisKayit.html?verified=1',
-    'http://127.0.0.1:8080/pages/girisKayit.html?oauth=1',
-    'http://localhost:8080/pages/sifre-sifirla.html',
-    'http://localhost:8080/pages/girisKayit.html',
-    'http://localhost:8080/pages/girisKayit.html?verified=1',
-    'http://localhost:8080/pages/girisKayit.html?oauth=1',
-    'http://127.0.0.1:3000/pages/sifre-sifirla.html',
-    'http://127.0.0.1:3000/pages/girisKayit.html',
-    'http://127.0.0.1:3000/pages/girisKayit.html?verified=1',
-    'http://127.0.0.1:3000/pages/girisKayit.html?oauth=1',
-    'http://localhost:3000/pages/sifre-sifirla.html',
-    'http://localhost:3000/pages/girisKayit.html',
-    'http://localhost:3000/pages/girisKayit.html?verified=1',
-    'http://localhost:3000/pages/girisKayit.html?oauth=1',
+    `${DEFAULT_SITE_URL}/pages/sifre-sifirla/`,
+    `${DEFAULT_SITE_URL}/pages/giris-kayit/`,
+    `${DEFAULT_SITE_URL}/pages/giris-kayit/?verified=1`,
+    `${DEFAULT_SITE_URL}/pages/giris-kayit/?oauth=1`,
+    'http://127.0.0.1:5500/pages/sifre-sifirla/',
+    'http://127.0.0.1:5500/pages/giris-kayit/',
+    'http://127.0.0.1:5500/pages/giris-kayit/?verified=1',
+    'http://127.0.0.1:5500/pages/giris-kayit/?oauth=1',
+    'http://localhost:5500/pages/sifre-sifirla/',
+    'http://localhost:5500/pages/giris-kayit/',
+    'http://localhost:5500/pages/giris-kayit/?verified=1',
+    'http://localhost:5500/pages/giris-kayit/?oauth=1',
+    'http://127.0.0.1:8080/pages/sifre-sifirla/',
+    'http://127.0.0.1:8080/pages/giris-kayit/',
+    'http://127.0.0.1:8080/pages/giris-kayit/?verified=1',
+    'http://127.0.0.1:8080/pages/giris-kayit/?oauth=1',
+    'http://localhost:8080/pages/sifre-sifirla/',
+    'http://localhost:8080/pages/giris-kayit/',
+    'http://localhost:8080/pages/giris-kayit/?verified=1',
+    'http://localhost:8080/pages/giris-kayit/?oauth=1',
+    'http://127.0.0.1:3000/pages/sifre-sifirla/',
+    'http://127.0.0.1:3000/pages/giris-kayit/',
+    'http://127.0.0.1:3000/pages/giris-kayit/?verified=1',
+    'http://127.0.0.1:3000/pages/giris-kayit/?oauth=1',
+    'http://localhost:3000/pages/sifre-sifirla/',
+    'http://localhost:3000/pages/giris-kayit/',
+    'http://localhost:3000/pages/giris-kayit/?verified=1',
+    'http://localhost:3000/pages/giris-kayit/?oauth=1',
 ];
 
 /** Şifre sıfırlama maili yeniden gönderme bekleme süresi */

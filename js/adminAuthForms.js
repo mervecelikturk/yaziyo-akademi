@@ -59,7 +59,7 @@ function escapeHtml(str) {
 }
 
 function getRedirectTarget() {
-    return window.YaziyoAdminPaths?.resolveAdminRedirectTarget?.('admin.html') || 'admin.html';
+    return window.YaziyoAdminPaths?.resolveAdminRedirectTarget?.('admin') || '../admin/';
 }
 
 function shouldSkipAutoRedirect() {

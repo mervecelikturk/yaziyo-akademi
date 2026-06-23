@@ -1,0 +1,2465 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" 
+        content="YAZİYO - Profil. Kullanıcı istatistikleri, çalışma geçmişi ile gelişiminizi takip edin.">
+    <title>Profilim - YAZİYO</title>
+    <link rel="icon" href="../../favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" href="../../images/logo.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="../../images/logo.png">
+
+    <!-- Open Graph / Sosyal Paylaşım -->
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:site_name" content="YAZİYO">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Profilim - YAZİYO">
+    <meta property="og:description" content="YAZİYO - Profil. Kullanıcı istatistikleri, çalışma geçmişi ile gelişiminizi takip edin.">
+    <meta property="og:url" content="https://yaziyoakademi.com/pages/profil/">
+    <meta property="og:image" content="https://yaziyoakademi.com/images/logo.png">
+    <meta property="og:image:alt" content="YAZİYO — Zabıt Katipliği Çalışma Platformu">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Profilim - YAZİYO">
+    <meta name="twitter:description" content="YAZİYO - Profil. Kullanıcı istatistikleri, çalışma geçmişi ile gelişiminizi takip edin.">
+    <meta name="twitter:image" content="https://yaziyoakademi.com/images/logo.png">
+    <meta name="twitter:image:alt" content="YAZİYO — Zabıt Katipliği Çalışma Platformu">
+    <link rel="canonical" href="https://yaziyoakademi.com/pages/profil/">
+
+    <!-- ========================================== -->
+    <!-- GECE/GÜNDÜZ MODU - FOUC Önleme -->
+    <script>
+        (function () {
+            // Siteye ilk girişte her zaman gündüz (light) modu zorunlu
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+    <!-- AUTH FOUC Önleme: Auth kontrolü tamamlanana kadar sayfayı gizle -->
+    <style>
+        body { visibility: hidden; opacity: 0; }
+        body.auth-ready { visibility: visible; opacity: 1; transition: opacity 0.15s ease; }
+    </style>
+    <!-- ========================================== -->
+
+    <!-- Google Fonts: Poppins & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS (build) -->
+    <link rel="stylesheet" href="../../css/tailwind.css">
+    <!-- Font Awesome (solid + regular + brands) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
+
+    <!-- Özel CSS Dosyası -->
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/keyboardHeatmap.css">
+
+    <style>
+        /* ========================================== */
+        /* Sayfa Özelinde İnce Ayarlar               */
+        /* ========================================== */
+        :root {
+            --rank-efsane: #D97706;
+            --rank-usta: #94A3B8;
+            --rank-gelismis: #A85507;
+            --rank-caliskan: #3B82F6;
+            --rank-umut: #22C55E;
+        }
+
+        /* RÜTBE SİSTEMİ ÇERÇEVELERİ */
+        .rank-border-efsane {
+            border: 4px solid var(--rank-efsane);
+            box-shadow: 0 0 18px rgba(217, 119, 6, 0.4);
+        }
+
+        .rank-border-usta {
+            border: 4px solid var(--rank-usta);
+            box-shadow: 0 0 12px rgba(148, 163, 184, 0.3);
+        }
+
+        .rank-border-gelismis {
+            border: 4px solid var(--rank-gelismis);
+            box-shadow: 0 0 12px rgba(168, 85, 7, 0.3);
+        }
+
+        .rank-border-caliskan {
+            border: 4px solid var(--rank-caliskan);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .rank-border-umut {
+            border: 4px solid var(--rank-umut);
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+        }
+
+        /* İSTATİSTİK KARTLARI HOVER EFEKTİ */
+        .stat-card-profile {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-profile:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Progress Bar Animasyonu */
+        .progress-bar-fill {
+            transition: width 1s ease-in-out;
+        }
+
+        /* SOL MENÜ KARTI - Menü öğesi stilleri */
+        .profile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            text-align: left;
+            width: 100%;
+            background: transparent;
+            color: #334155;
+            /* light mode */
+        }
+
+        html.dark .profile-menu-item {
+            color: #CBD5E1;
+            /* dark mode */
+        }
+
+        .profile-menu-item:hover {
+            background: rgba(217, 119, 6, 0.08);
+            border-color: rgba(217, 119, 6, 0.2);
+            color: rgb(217, 119, 6);
+        }
+
+        /* AKTİF menü öğesi - yalnızca yazı rengi sarıya döner */
+        .profile-menu-item.active {
+            background: transparent;
+            border-color: transparent;
+            color: rgb(217, 119, 6);
+        }
+
+        /* ÇIKIŞYAP öğesi kırmızımsı hover */
+        .profile-menu-item.logout-item:hover {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.25);
+            color: #ef4444;
+        }
+
+        /* HESABI SİL öğesi - kırmızı ve küçük */
+        .profile-menu-item.delete-item {
+            color: rgba(239, 68, 68, 0.55);
+            font-size: 0.78rem;
+            padding: 8px 16px;
+        }
+
+        .profile-menu-item.delete-item:hover {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* Menü ikon alanı */
+        .profile-menu-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            background: rgba(217, 119, 6, 0.08);
+            color: rgba(217, 119, 6, 0.7);
+        }
+
+        .profile-menu-item.active .profile-menu-icon {
+            background: rgba(217, 119, 6, 0.15);
+            color: rgb(217, 119, 6);
+        }
+
+        .profile-menu-item.logout-item .profile-menu-icon {
+            background: rgba(239, 68, 68, 0.08);
+            color: rgba(239, 68, 68, 0.6);
+        }
+
+        .profile-menu-item.delete-item .profile-menu-icon {
+            background: transparent;
+            color: rgba(239, 68, 68, 0.4);
+            width: 24px;
+            height: 24px;
+        }
+
+        /* İÇERİK PANELİ - Gizleme/gösterme */
+        .content-panel {
+            display: none;
+        }
+
+        .content-panel.active {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* MOBİL MENÜ TOGGLE */
+        @media (max-width: 1023px) {
+            .profile-menu-mobile-toggle {
+                display: flex !important;
+            }
+
+            .profile-menu-list {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease;
+            }
+
+            .profile-menu-list.mobile-open {
+                max-height: 700px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .profile-menu-mobile-toggle {
+                display: none !important;
+            }
+
+            .profile-menu-list {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+        }
+
+        /* GİRİŞ ALANLARI TASARIMI */
+        input[type="text"],
+        input[type="number"],
+        input[type="password"],
+        input[type="email"],
+        select,
+        textarea {
+            border: 2px solid rgb(var(--yaziyo-border-rgb) / 0.8) !important;
+            background-color: rgb(var(--yaziyo-bg-rgb) / 0.5) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            outline: none !important;
+        }
+
+        input:hover,
+        select:hover,
+        textarea:hover {
+            border-color: rgb(var(--yaziyo-gold-rgb) / 0.4) !important;
+            background-color: rgb(var(--yaziyo-bg-rgb) / 0.8) !important;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: rgb(var(--yaziyo-gold-rgb)) !important;
+            background-color: rgb(var(--yaziyo-card-rgb)) !important;
+            box-shadow: 0 0 0 4px rgb(var(--yaziyo-gold-rgb) / 0.15) !important;
+            transform: translateY(-1px);
+        }
+
+        /* AVATAR FİLTRE BUTONLARI */
+        .avatar-filter-btn {
+            color: rgb(var(--yaziyo-text-secondary-rgb));
+            background: transparent;
+        }
+        .avatar-filter-btn:hover {
+            color: var(--yaziyo-gold-hex);
+        }
+        .avatar-filter-btn.active {
+            background: var(--yaziyo-gold-hex) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
+        }
+
+        /* AVATAR SEÇİMİ */
+        .avatar-option.selected {
+            border-color: var(--yaziyo-gold-hex) !important;
+            box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15);
+        }
+        .avatar-option .avatar-check {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(var(--yaziyo-gold-rgb), 0.25);
+            backdrop-filter: blur(1px);
+            align-items: center;
+            justify-content: center;
+        }
+        .avatar-option.selected .avatar-check {
+            display: flex;
+        }
+
+        /* Mobil Optimizasyon */
+        @media (max-width: 640px) {
+            input, select, textarea {
+                font-size: 16px !important; /* Zoom engellemek için */
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- HEADER -->
+    <header id="main-header"
+        class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
+
+            <!-- Logo Alanı (Sol) -->
+            <a href="../../index.html" class="flex items-center gap-2 group" id="logo-link">
+                <img src="../../images/logo.png" alt="YAZİYO AKADEMİ Logo"
+                    class="h-5 sm:h-6 w-auto yaziyo-nav-logo object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    id="header-logo">
+                <span
+                    class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
+            </a>
+
+            <!-- Sağ Taraf: Tema Değiştir + Giriş Yap -->
+            <div class="flex items-center gap-2 sm:gap-3">
+
+                <!-- GECE/GÜNDÜZ MODU DEĞİŞTİRME BUTONU -->
+                <div class="relative group">
+                    <button id="theme-toggle-btn" class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card
+                               text-yaziyo-gold transition-all duration-300 hover:scale-110 hover:rotate-12 hover:border-yaziyo-gold
+                               hover:shadow-glow-gold active:scale-95" aria-label="Tema Değiştir">
+                        <i class="fa-solid fa-sun text-base sm:text-lg theme-icon-sun"></i>
+                        <i class="fa-solid fa-moon text-base sm:text-lg theme-icon-moon"></i>
+                    </button>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border
+                                rounded text-[11px] text-light-text-secondary dark:text-dark-text-secondary font-inter whitespace-nowrap
+                                opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50">
+                        Tema Değiştir
+                    </span>
+                </div>
+
+                <!-- BİLDİRİM BUTONU -->
+                <div class="relative group">
+                    <button id="notification-btn" class="flex relative items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card
+                               text-light-text-secondary dark:text-dark-text-secondary transition-all duration-300 hover:scale-110 hover:text-yaziyo-gold hover:border-yaziyo-gold
+                               hover:shadow-glow-gold active:scale-95" aria-label="Bildirimler">
+                        <i class="fa-solid fa-bell text-base sm:text-lg"></i>
+                        <span
+                            class="absolute top-2 right-2 w-[8px] h-[8px] bg-red-500 rounded-full border border-light-card dark:border-dark-card transition-colors duration-300 shadow-[0_0_8px_rgba(239,68,68,0.6)] hidden"></span>
+                    </button>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border
+                                rounded text-[11px] text-light-text-secondary dark:text-dark-text-secondary font-inter whitespace-nowrap
+                                opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50">
+                        Bildirimler
+                    </span>
+                </div>
+
+                <!-- Günlük Seri -->
+                <div class="relative group">
+                    <div
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-yaziyo-border bg-yaziyo-card cursor-not-allowed select-none">
+                        <i class="fa-solid fa-fire text-orange-400 text-base sm:text-lg"></i>
+                        <span id="streak-count" class="font-poppins font-bold text-sm text-orange-400">0</span>
+                    </div>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-yaziyo-card border border-yaziyo-border rounded text-[11px] text-yaziyo-text-secondary font-inter whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">Günlük
+                        Seri</span>
+                </div>
+                <a href="../giris-kayit/" id="auth-button" class="relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-lg
+                          transition-all duration-300 hover:shadow-glow-gold hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Giriş Yap / Kayıt Ol</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Header Alt Çizgi -->
+        <div class="w-full h-px bg-light-border dark:bg-dark-border transition-colors duration-300"></div>
+
+        <!-- NAVBAR (Navigasyon) -->
+        <nav id="main-navbar" class="bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-md transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+
+                <!-- Desktop Menü -->
+                <ul id="desktop-menu"
+                    class="hidden lg:flex items-center justify-center gap-x-0.5 xl:gap-x-1 py-2 text-[9px] xl:text-[10px] 2xl:text-[11px] font-medium flex-nowrap">
+                    <li><a href="../../index.html" class="nav-link" data-page="anasayfa">Ana Sayfa</a></li>
+                    <li><a href="../profil/" class="nav-link active" data-page="profil">Profil</a></li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="../hiz-testi/" class="nav-dropdown-item">Hız Testi</a></li>
+                            <li><a href="../klavye-calismasi/" class="nav-dropdown-item">Klavye Çalışması</a></li>
+                            <li><a href="../ozel-metin-calismasi/" class="nav-dropdown-item">Özel Metin Çalışması</a></li>
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Klavye Sınavı</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="oyunlar">Oyunlar <i
+                                class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled cursor-not-allowed">Klavye Düellosu</a></li>
+                            <li><a href="../kelime-evi/" class="nav-dropdown-item">Kelime Evi</a></li>
+                            <li><a href="../araba-yarisi/" class="nav-dropdown-item">Araba Yarışı</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="mulakatlar">Mülakatlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Sözlü Mülakat</a></li>
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Mülakat Simülasyonu</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled" data-page="becayis">Becayiş</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled" data-page="haberler">Haberler</a></li>
+                    <li><a href="../kpss-calismasi/" class="nav-link" data-page="kpss-calismasi">KPSS Çalışması</a></li>
+                    <li><a href="../iletisim/" class="nav-link" data-page="iletisim">İletişim</a></li>
+                </ul>
+
+
+                <!-- Mobil Hamburger Butonu -->
+                <div class="lg:hidden flex items-center justify-between py-2">
+                    <span
+                        class="text-light-text-secondary dark:text-dark-text-secondary text-sm font-inter transition-colors duration-300">Menü</span>
+                    <button id="hamburger-btn"
+                        class="text-light-text dark:text-dark-text p-2 rounded-lg hover:bg-light-card dark:hover:bg-dark-card transition-colors duration-300"
+                        aria-label="Menüyü aç/kapat">
+                        <i class="fa-solid fa-bars text-xl" id="hamburger-icon"></i>
+                    </button>
+                </div>
+
+                <!-- Mobil Menü -->
+                <div id="mobile-menu" class="lg:hidden hidden overflow-hidden transition-all duration-300">
+                    <ul class="flex flex-col gap-1 pb-4 text-sm">
+                        <li><a href="../../index.html" class="mobile-nav-link" data-page="anasayfa">Ana Sayfa</a></li>
+                        <li><a href="../profil/" class="mobile-nav-link active" data-page="profil">Profil</a></li>
+                        <li class="mobile-dropdown">
+                            <button class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="../hiz-testi/" class="mobile-nav-link text-[0.8em]">Hız Testi</a></li>
+                                <li><a href="../klavye-calismasi/" class="mobile-nav-link text-[0.8em]">Klavye Çalışması</a></li>
+                                <li><a href="../ozel-metin-calismasi/" class="mobile-nav-link text-[0.8em]">Özel Metin Çalışması</a></li>
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Klavye Sınavı</a></li>
+                            </ul>
+                        </li>
+                        <li class="mobile-dropdown">
+                            <button
+                                class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between"
+                                data-page="oyunlar">Oyunlar <i
+                                    class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em] cursor-not-allowed">Klavye Düellosu</a></li>
+                                <li><a href="../kelime-evi/" class="mobile-nav-link text-[0.8em]">Kelime Evi</a></li>
+                                <li><a href="../araba-yarisi/" class="mobile-nav-link text-[0.8em]">Araba Yarışı</a></li>
+                            </ul>
+                        </li>
+                        <li class="mobile-dropdown">
+                            <button class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between" data-page="mulakatlar">Mülakatlar <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Sözlü Mülakat</a></li>
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Mülakat Simülasyonu</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="becayis">Becayiş</a></li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="haberler">Haberler</a></li>
+                        <li><a href="../kpss-calismasi/" class="mobile-nav-link" data-page="kpss-calismasi">KPSS Çalışması</a></li>
+                        <li><a href="../iletisim/" class="mobile-nav-link" data-page="iletisim">İletişim</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- PROFİL İÇERİĞİ -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
+
+        <!-- Üst Başlık -->
+        <div class="mb-10 text-center lg:text-left">
+            <h1
+                class="font-poppins font-extrabold text-3xl sm:text-4xl text-light-text dark:text-dark-text flex items-center justify-center lg:justify-start gap-4">
+                <i class="fa-solid fa-address-card text-yaziyo-gold"></i>
+                Profilim
+            </h1>
+            <div class="w-20 h-1 bg-yaziyo-gold mt-2 mx-auto lg:mx-0 rounded-full"></div>
+        </div>
+
+        <!-- ==============================================================
+             ANA LAYOUT: Sol Menü Kartı + Sağ İçİİçerik Paneli
+             ============================================================== -->
+        
+        <!-- Giriş Yapılmamışsa Gösterilecek Kart -->
+        <div id="auth-gate" class="w-full max-w-2xl mx-auto mt-10 transition-all duration-500">
+            <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-8 sm:p-12 shadow-2xl text-center flex flex-col items-center gap-6 transition-all duration-300">
+                <div class="w-20 h-20 rounded-full bg-yaziyo-gold/10 flex items-center justify-center border border-yaziyo-gold/20 shadow-glow-gold/10 text-3xl text-yaziyo-gold animate-bounce">
+                    <i class="fa-solid fa-user-lock"></i>
+                </div>
+                <div>
+                    <h2 class="font-poppins font-extrabold text-2xl sm:text-3xl text-light-text dark:text-dark-text mb-2">
+                        Lütfen giriş yapın / kayıt olun
+                    </h2>
+                    <p class="text-light-text-secondary dark:text-dark-text-secondary text-sm sm:text-base max-w-md mx-auto">
+                        Profil istatistiklerinizi görmek ve ilerlemenizi kaydetmek için lütfen giriş yapın veya kayıt olun.
+                    </p>
+                </div>
+                <a href="../giris-kayit/" class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl shadow-lg hover:shadow-glow-gold hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Giriş Yap / Kayıt Ol</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- FLASH OF WRONG CONTENT ÖNLEME: Veriler çekilene kadar içerik görünmez (opacity-0) -->
+        <div id="profile-main-content" class="hidden grid-cols-1 lg:grid-cols-12 gap-8 items-start opacity-0 pointer-events-none transition-opacity duration-500">
+
+            <!-- ============================================================
+                 SOL MENÜ KARTI - Tıklanan öğeye göre sağ içİİçerik değişecek
+                 ============================================================ -->
+            <aside class="lg:col-span-4 xl:col-span-3">
+                <div
+                    class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl overflow-hidden shadow-xl transition-all duration-300">
+
+                    <!-- ------- KULLANICI BİLGİLERİ BÖLÜMÜ ------- -->
+                    <div class="flex flex-col items-center text-center px-6 pt-8 pb-6">
+
+                        <!-- BÜYÜK YUVARLAK PROFİL FOTOĞRAFI + RÜTBE ÇERÇEVESİ -->
+                        <div class="relative mb-5">
+                            <div id="profile-avatar"
+                                class="w-28 h-28 rounded-full bg-light-bg dark:bg-dark-bg flex items-center justify-center text-light-text-secondary/30 dark:text-dark-text-secondary/30 rank-border-efsane">
+                                <i class="fa-solid fa-user text-5xl"></i>
+                            </div>
+                            <!-- Rütbe simgesi (küçük rozet) -->
+                            <div class="absolute -bottom-1 right-0 w-9 h-9 bg-light-card dark:bg-dark-card rounded-full flex items-center justify-center border-2 border-yaziyo-gold shadow-lg"
+                                id="rank-icon-bg">
+                                <i class="fa-solid fa-crown text-yaziyo-gold text-base" id="rank-icon"></i>
+                            </div>
+                        </div>
+
+                        <!-- AD SOYAD -->
+                        <h2 class="font-poppins font-black text-xl text-light-text dark:text-dark-text mb-0.5 leading-tight"
+                            id="user-name">Merve Çeliktürk</h2>
+
+                        <!-- E-POSTA -->
+                        <p class="text-light-text-secondary dark:text-dark-text-secondary text-xs font-medium mb-3"
+                            id="user-email">merve@yaziyo.com</p>
+
+                        <!-- KATILMA TARİHİ -->
+                        <div
+                            class="flex items-center gap-1.5 text-[11px] text-light-text-secondary dark:text-dark-text-secondary mb-4">
+                            <i class="fa-solid fa-calendar-day text-yaziyo-gold text-xs"></i>
+                            <span id="user-join-date">Katılma Tarihi: Yükleniyor...</span>
+                        </div>
+
+                        <!-- RÜTBE İSMİ VE SİMGESİ -->
+                        <div id="rank-badge"
+                            class="px-5 py-1.5 bg-yaziyo-gold/10 border border-yaziyo-gold/25 rounded-full flex items-center gap-2 transition-colors duration-300">
+                            <i id="rank-badge-icon" class="fa-solid fa-medal text-yaziyo-gold text-xs transition-colors duration-300"></i>
+                            <span class="font-poppins font-bold text-yaziyo-gold text-xs uppercase tracking-widest transition-colors duration-300"
+                                id="rank-name">Umut Vadedenler</span>
+                        </div>
+                    </div>
+
+                    <!-- Ayırıcı çizgi -->
+                    <div class="w-full h-px bg-light-border dark:bg-dark-border"></div>
+
+                    <!-- ------- DİKEY MENÜ LİSTESİ ------- -->
+
+                    <!-- MOBİL: Menüyü aç/kapat butonu -->
+                    <button id="profile-menu-toggle" onclick="toggleProfileMenu()" class="profile-menu-mobile-toggle hidden w-full px-6 py-4 flex items-center justify-between
+                               text-sm font-bold text-light-text dark:text-dark-text
+                               hover:bg-light-bg dark:hover:bg-dark-bg transition-colors">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-bars-staggered text-yaziyo-gold"></i>
+                            Menü
+                        </span>
+                        <i class="fa-solid fa-chevron-down text-light-text-secondary dark:text-dark-text-secondary text-xs transition-transform duration-300"
+                            id="profile-menu-chevron"></i>
+                    </button>
+
+                    <!-- MENÜ ÖĞELERİ LİSTESİ -->
+                    <nav class="profile-menu-list p-4 flex flex-col gap-0" id="profile-menu-list">
+
+                        <!-- ANALİZ -->
+                        <button class="profile-menu-item active" id="menu-analiz" onclick="switchPanel('analiz')">
+                            <span class="profile-menu-icon"><i class="fa-solid fa-chart-bar"></i></span>
+                            Analiz
+                        </button>
+
+                        <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
+
+                        <!-- HEDEFLERİM -->
+                        <button class="profile-menu-item" id="menu-hedeflerim" onclick="switchPanel('hedeflerim')">
+                            <span class="profile-menu-icon"><i class="fa-solid fa-bullseye"></i></span>
+                            Hedeflerim
+                        </button>
+
+                        <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
+
+                        <!-- KLAVYE ISI HARİTASI -->
+                        <button class="profile-menu-item" id="menu-isi-haritasi" onclick="switchPanel('isi-haritasi')">
+                            <span class="profile-menu-icon"><i class="fa-solid fa-fire-flame-curved"></i></span>
+                            Klavye Isı Haritası
+                        </button>
+
+                        <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
+
+                        <!-- SON ÇALIŞMALARIM -->
+                        <button class="profile-menu-item" id="menu-son-calismalar"
+                            onclick="switchPanel('son-calismalar')">
+                            <span class="profile-menu-icon"><i class="fa-solid fa-history"></i></span>
+                            Son Çalışmalarım
+                        </button>
+
+                        <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
+
+                        <!-- KELİME EVİM -->
+                        <button class="profile-menu-item" id="menu-kelime-evim" onclick="switchPanel('kelime-evim')">
+                            <span class="profile-menu-icon"><i class="fa-solid fa-house-chimney"></i></span>
+                            Kelime Evim
+                        </button>
+
+                        <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
+
+                        <!-- BİLGİLERİMİ DÜZENLE -->
+                        <button class="profile-menu-item" id="menu-duzenle" onclick="switchPanel('duzenle')">
+                            <span class="profile-menu-icon"><i class="fa-solid fa-user-gear"></i></span>
+                            Bilgilerimi Düzenle
+                        </button>
+
+                        <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
+
+                        <!-- ÇIKIŞYAP -->
+                        <button type="button" class="profile-menu-item logout-item" id="menu-cikis">
+                            <span class="profile-menu-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+                            Çıkış Yap
+                        </button>
+
+                        <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
+
+                        <!-- HESABI SİL -->
+                        <button class="profile-menu-item delete-item" id="menu-sil" onclick="confirmDelete()">
+                            <span class="profile-menu-icon"><i class="fa-solid fa-trash-can"></i></span>
+                            Hesabı Sil
+                        </button>
+
+                    </nav>
+                </div>
+            </aside>
+
+            <!-- ==============================================================
+                 SAĞ TARAF: İçerik panelleri
+                 ============================================================== -->
+            <div class="lg:col-span-8 xl:col-span-9">
+
+                <!-- PANEL: ANALİZ -->
+                <div class="content-panel active" id="panel-analiz">
+
+                    <!-- İSTATİSTİK KARTLARI -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                        <!-- WPM Rekor -->
+                        <div
+                            class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-5 rounded-2xl stat-card-profile flex items-center gap-4 shadow-md">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 text-xl border border-orange-500/20">
+                                <i class="fa-solid fa-bolt-lightning"></i>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-[10px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
+                                    3 Dk Rekor (kelime)</p>
+                                <h3 id="profile-3dk-record" class="text-xl font-poppins font-black text-light-text dark:text-dark-text">0</h3>
+                            </div>
+                        </div>
+
+                        <!-- Toplam Kelime -->
+                        <div
+                            class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-5 rounded-2xl stat-card-profile flex items-center gap-4 shadow-md">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-yaziyo-gold/10 flex items-center justify-center text-yaziyo-gold text-xl border border-yaziyo-gold/20">
+                                <i class="fa-solid fa-keyboard"></i>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-[10px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
+                                    Toplam Kelime</p>
+                                <h3 id="profile-total-words" class="text-xl font-poppins font-black text-light-text dark:text-dark-text">0</h3>
+                            </div>
+                        </div>
+
+                        <!-- Çalışma Süresi -->
+                        <div id="profile-study-time-card"
+                            class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-5 rounded-2xl stat-card-profile flex items-center gap-4 shadow-md cursor-pointer hover:border-yaziyo-gold/40 transition-colors"
+                            onclick="window.openStudyTimeModalFromProfile && window.openStudyTimeModalFromProfile()"
+                            title="Detaylı çalışma süresi">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center text-green-500 text-xl border border-green-500/20">
+                                <i class="fa-solid fa-clock"></i>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-[10px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
+                                    Çalışma Süresi</p>
+                                <h3 id="profile-study-time" class="text-xl font-poppins font-black text-light-text dark:text-dark-text">0sn</h3>
+                            </div>
+                        </div>
+
+                        <!-- Genel Sıralama -->
+                        <div id="profile-genel-siralama-card"
+                            class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-5 rounded-2xl stat-card-profile flex items-center gap-4 shadow-md cursor-pointer hover:border-yaziyo-gold/40 transition-colors"
+                            onclick="window.openGenelSiralamaModalFromProfile && window.openGenelSiralamaModalFromProfile()"
+                            title="Genel sıralamayı gör">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 text-xl border border-blue-500/20">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-[10px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
+                                    Genel Sıralama</p>
+                                <h3 id="profile-genel-siralama" class="text-xl font-poppins font-black text-light-text dark:text-dark-text">#—</h3>
+                            </div>
+                        </div>
+
+                        <!-- Düello İstatistikleri -->
+                        <div
+                            class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-5 rounded-2xl stat-card-profile flex items-center gap-4 shadow-md">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 text-xl border border-purple-500/20 shrink-0">
+                                <i class="fa-solid fa-hand-fist"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <p
+                                        class="text-[10px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
+                                        Düello</p>
+                                    <span id="profile-duello-winrate" class="text-[10px] font-black text-light-text-secondary dark:text-dark-text-secondary opacity-60" title="Yakında">—</span>
+                                </div>
+                                <div class="flex items-center gap-2 mt-1 text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary opacity-60">
+                                    <span><span id="profile-duello-wins">—</span><span class="text-green-500/70">G</span></span>
+                                    <span><span id="profile-duello-losses">—</span><span class="text-red-500/70">M</span></span>
+                                    <span><span id="profile-duello-draws">—</span><span class="text-yellow-500/70">B</span></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kombo İstatistikleri -->
+                        <div
+                            class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border p-5 rounded-2xl stat-card-profile flex items-center gap-4 shadow-md">
+                            <div
+                                class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 text-xl border border-red-500/20 shrink-0">
+                                <i class="fa-solid fa-fire text-orange-500"></i>
+                            </div>
+                            <div>
+                                <p
+                                    class="text-[10px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">
+                                    En Yüksek Kombo</p>
+                                <h3 id="profile-max-combo" class="text-xl font-poppins font-black text-light-text dark:text-dark-text">0</h3>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- RÜTBE PROGRESS BAR -->
+                    <div
+                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 shadow-lg">
+                        <div class="flex justify-between items-center mb-4 px-1">
+                            <div>
+                                <h4
+                                    class="font-poppins font-bold text-sm text-light-text dark:text-dark-text flex items-center gap-2">
+                                    Rütbe Seviyesi
+                                    <button onclick="openRankModal()"
+                                        class="text-[10px] text-yaziyo-gold hover:underline font-medium">
+                                        (Rütbe Nedir?)
+                                    </button>
+                                </h4>
+                                <p id="rank-progress-subtitle"
+                                    class="text-xs text-light-text-secondary dark:text-dark-text-secondary mt-0.5">
+                                    Rütbe ilerlemeniz:</p>
+                            </div>
+                        </div>
+                        <div
+                            class="w-full h-4 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-full overflow-hidden p-0.5">
+                            <div id="rank-progress-fill"
+                                class="progress-bar-fill h-full bg-gradient-to-r from-yaziyo-gold to-yellow-600 rounded-full shadow-[0_0_10px_rgba(217,119,6,0.4)] transition-all duration-500"
+                                style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between mt-2 px-1">
+                            <span id="rank-progress-current"
+                                class="text-[10px] font-bold text-light-text-secondary dark:text-dark-text-secondary italic">0
+                                kelime</span>
+                            <span id="rank-progress-target"
+                                class="text-[10px] font-bold text-light-text-secondary dark:text-dark-text-secondary italic">10.000
+                                kelime</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL: HEDEFLERİM -->
+                <div class="content-panel" id="panel-hedeflerim">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <!-- Hız Testi Hedef Ekle -->
+                        <div
+                            class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 shadow-md transition-all duration-300">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20">
+                                    <i class="fa-solid fa-bolt-lightning text-lg"></i>
+                                </div>
+                                <h3 class="font-poppins font-bold text-base">Hız Testi Hedefi</h3>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase mb-1.5 ml-1">Süre
+                                        Seçin</label>
+                                    <select id="hiz-hedef-sure"
+                                        class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-2.5 text-sm focus:border-yaziyo-gold outline-none transition-all duration-300">
+                                        <option value="1">1 Dakika</option>
+                                        <option value="3">3 Dakika</option>
+                                        <option value="5">5 Dakika</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase mb-1.5 ml-1">Hedef
+                                        Kelime</label>
+                                    <input type="number" id="hiz-hedef-deger" placeholder="Örn: 100"
+                                        class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-2.5 text-sm focus:border-yaziyo-gold outline-none transition-all duration-300"
+                                        oninput="validateGoalInput(this, 'hiz')">
+                                </div>
+                                <button onclick="saveNewGoal('hiz')"
+                                    class="w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold rounded-xl shadow-lg hover:shadow-orange-500/20 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+                                    Hedef Ekle
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Klavye Çalışması Hedef Ekle -->
+                        <div
+                            class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 shadow-md transition-all duration-300">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500 border border-purple-500/20">
+                                    <i class="fa-solid fa-keyboard text-lg"></i>
+                                </div>
+                                <h3 class="font-poppins font-bold text-base">Klavye Çalışması Hedefi</h3>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase mb-1.5 ml-1">Süre
+                                        Seçin</label>
+                                    <select id="klavye-hedef-sure"
+                                        class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-2.5 text-sm focus:border-yaziyo-gold outline-none transition-all duration-300"
+                                        onchange="updateKlavyeMax(this)">
+                                        <option value="1">1 Dakika</option>
+                                        <option value="3">3 Dakika</option>
+                                        <option value="5">5 Dakika</option>
+                                        <option value="10">10 Dakika</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase mb-1.5 ml-1">Hedef
+                                        Kelime</label>
+                                    <input type="number" id="klavye-hedef-deger" placeholder="Örn: 500"
+                                        class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-2.5 text-sm focus:border-yaziyo-gold outline-none transition-all duration-300"
+                                        oninput="validateGoalInput(this, 'klavye')">
+                                </div>
+                                <button onclick="saveNewGoal('klavye')"
+                                    class="w-full py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-poppins font-bold rounded-xl shadow-lg hover:shadow-purple-500/20 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+                                    Hedef Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MEVCUT HEDEFLER TABLOSU -->
+                    <div
+                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl overflow-hidden shadow-xl">
+                        <div
+                            class="p-6 border-b border-light-border dark:border-dark-border bg-light-bg/30 dark:bg-dark-bg/30">
+                            <h3
+                                class="font-poppins font-extrabold text-lg text-light-text dark:text-dark-text flex items-center gap-2">
+                                <i class="fa-solid fa-bullseye text-yaziyo-gold text-sm"></i>
+                                Hedeflerim
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead
+                                    class="bg-light-bg dark:bg-dark-bg/50 text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-widest border-b border-light-border dark:border-dark-border">
+                                    <tr>
+                                        <th class="px-6 py-4">Hedef Türü</th>
+                                        <th class="px-6 py-4">Süre</th>
+                                        <th class="px-6 py-4">Hedef Değer</th>
+                                        <th class="px-6 py-4">Durum</th>
+                                        <th class="px-6 py-4 text-center">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="goals-table-body"
+                                    class="divide-y divide-light-border dark:divide-dark-border">
+                                    <tr>
+                                        <td colspan="5"
+                                            class="px-6 py-12 text-center text-light-text-secondary dark:text-dark-text-secondary italic text-sm">
+                                            Henüz bir hedef belirlemediniz.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL: KLAVYE ISI HARİTASI -->
+                <div class="content-panel" id="panel-isi-haritasi">
+                    <div
+                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 sm:p-8 shadow-xl kh-panel">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                            <div>
+                                <h3 class="font-poppins font-extrabold text-lg text-light-text dark:text-dark-text flex items-center gap-2">
+                                    <i class="fa-solid fa-fire-flame-curved text-orange-500"></i>
+                                    Klavye Isı Haritası
+                                </h3>
+                                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
+                                    Kaydettiğiniz son 10 çalışmanın tuş kullanım analizi. Hangi tuşlarda güçlü veya zayıf olduğunuzu görün.
+                                </p>
+                            </div>
+                        </div>
+                        <div id="keyboard-heatmap-root">
+                            <div class="kh-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Yükleniyor…</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tuş detay modalı -->
+                <div id="kh-key-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4" role="dialog" aria-modal="true">
+                    <div id="kh-key-modal-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+                    <div class="kh-key-modal-panel relative w-full max-w-sm bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 text-center">
+                        <button type="button" id="kh-key-modal-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-light-text-secondary hover:text-red-500 transition-colors" aria-label="Kapat">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <div class="w-16 h-16 rounded-2xl bg-yaziyo-gold/10 border border-yaziyo-gold/25 flex items-center justify-center text-yaziyo-gold text-3xl font-poppins font-black mx-auto mb-4" id="kh-key-modal-title">A</div>
+                        <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-1">Tuş</p>
+                        <p class="font-inter text-base font-semibold text-light-text dark:text-dark-text mb-4" id="kh-key-modal-label">A</p>
+                        <div class="kh-stat-grid">
+                            <div class="kh-stat-box">
+                                <div class="label">Toplam Basım</div>
+                                <div class="value" id="kh-key-modal-count">0</div>
+                            </div>
+                            <div class="kh-stat-box">
+                                <div class="label">Kullanım Oranı</div>
+                                <div class="value" id="kh-key-modal-pct">%0</div>
+                            </div>
+                        </div>
+                        <button type="button" id="kh-key-modal-ok" class="w-full py-2.5 rounded-xl bg-yaziyo-gold text-slate-900 font-poppins font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all">Tamam</button>
+                    </div>
+                </div>
+
+                <!-- PANEL: SON ÇALIŞMALARIM -->
+                <div class="content-panel" id="panel-son-calismalar">
+                    <div
+                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl overflow-hidden shadow-xl">
+                        <div
+                            class="p-6 border-b border-light-border dark:border-dark-border flex justify-between items-center bg-light-bg/30 dark:bg-dark-bg/30">
+                            <h3
+                                class="font-poppins font-extrabold text-lg text-light-text dark:text-dark-text flex items-center gap-2">
+                                <i class="fa-solid fa-history text-yaziyo-gold text-sm"></i>
+                                Son Çalışmalarım (Klavye)
+                            </h3>
+                            <button class="text-xs font-bold text-yaziyo-gold hover:underline">Tümünü Gör</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead
+                                    class="bg-light-bg dark:bg-dark-bg/50 text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-widest border-b border-light-border dark:border-dark-border text-nowrap">
+                                    <tr>
+                                        <th class="px-6 py-4">Çalışma Saati</th>
+                                        <th class="px-6 py-4">Metin</th>
+                                        <th class="px-6 py-4">Doğru</th>
+                                        <th class="px-6 py-4 text-red-500">Yanlış</th>
+                                        <th class="px-6 py-4">Doğru Kelimeler</th>
+                                        <th class="px-6 py-4">Süre</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="son-calismalar-tbody" class="divide-y divide-light-border dark:divide-dark-border">
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-8 text-center text-light-text-secondary italic">Henüz çalışma yok.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL: KELİME EVİM -->
+                <div class="content-panel" id="panel-kelime-evim">
+                    <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 sm:p-8 shadow-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                            <div>
+                                <h3 class="font-poppins font-extrabold text-lg text-light-text dark:text-dark-text flex items-center gap-2">
+                                    <i class="fa-solid fa-house-chimney text-yaziyo-gold"></i>
+                                    Kelime Evim
+                                </h3>
+                                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
+                                    Son 3 evinin görseli ve seviyesi burada listelenir.
+                                </p>
+                            </div>
+                            <a href="../kelime-evi/" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-xl hover:shadow-glow-gold transition-all">
+                                <i class="fa-solid fa-hammer"></i> Yeni Ev İnşa Et
+                            </a>
+                        </div>
+                        <div id="kelime-evi-empty" class="hidden text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
+                            <div class="text-5xl mb-4 opacity-60">🏡</div>
+                            <p class="font-medium mb-2">Henüz kayıtlı evin yok</p>
+                            <p class="text-sm">Kelime Evi oyununda çalışmayı bitirip "Sonucu Kaydet" ile evini profiline ekleyebilirsin.</p>
+                        </div>
+                        <div id="kelime-evi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+                    </div>
+                </div>
+
+                <!-- PANEL: BİLGİLERİMİ DÜZENLE -->
+                <!-- PANEL: BİLGİLERİMİ DÜZENLE -->
+                <div class="content-panel" id="panel-duzenle">
+                    <div
+                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-8 shadow-xl">
+                        <h3
+                            class="text-2xl font-poppins font-black text-yaziyo-gold mb-8 flex items-center gap-3 underline decoration-yaziyo-gold/20 underline-offset-8">
+                            <i class="fa-solid fa-user-pen"></i>
+                            Bilgilerimi Düzenle
+                        </h3>
+
+                        <div class="max-w-3xl space-y-12">
+                            <!-- 1. Kişisel Bilgiler Bölümü -->
+                            <section class="space-y-6">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-1.5 h-6 bg-yaziyo-gold rounded-full"></div>
+                                    <h4 class="font-poppins font-bold text-lg text-light-text dark:text-dark-text">Kişisel Bilgiler</h4>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1">Ad</label>
+                                        <input type="text" id="edit-ad" placeholder="Adınızı giriniz"
+                                            class="w-full px-5 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                        <p id="error-edit-ad" class="text-[11px] text-red-500 font-medium mt-1 hidden">Lütfen bu alanı doldurunuz.</p>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1">Soyad</label>
+                                        <input type="text" id="edit-soyad" placeholder="Soyadınızı giriniz"
+                                            class="w-full px-5 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                        <p id="error-edit-soyad" class="text-[11px] text-red-500 font-medium mt-1 hidden">Lütfen bu alanı doldurunuz.</p>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end pt-2">
+                                    <button id="btn-save-personal" type="button" onclick="savePersonalInfo()"
+                                        class="px-8 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-xl hover:shadow-glow-gold hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                                        <span id="btn-save-personal-text" class="flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-floppy-disk"></i>
+                                            Kişisel Bilgileri Kaydet
+                                        </span>
+                                    </button>
+                                </div>
+                            </section>
+
+                            <!-- 2. Güvenlik Bölümü -->
+                            <section class="space-y-6">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-1.5 h-6 bg-yaziyo-gold rounded-full"></div>
+                                    <h4 class="font-poppins font-bold text-lg text-light-text dark:text-dark-text">Güvenlik</h4>
+                                </div>
+                                <div class="flex flex-col gap-5 max-w-md">
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1">Mevcut Şifre</label>
+                                        <div class="relative">
+                                            <input type="password" id="edit-password-old" placeholder="Mevcut şifrenizi giriniz" 
+                                                class="w-full px-5 pr-12 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                            <button type="button" onclick="togglePassword('edit-password-old', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-light-text-secondary hover:text-yaziyo-gold transition-colors">
+                                                <i class="fa-solid fa-eye text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1">Yeni Şifre</label>
+                                        <div class="relative">
+                                            <input type="password" id="edit-password-new" placeholder="Yeni şifrenizi giriniz" 
+                                                class="w-full px-5 pr-12 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                            <button type="button" onclick="togglePassword('edit-password-new', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-light-text-secondary hover:text-yaziyo-gold transition-colors">
+                                                <i class="fa-solid fa-eye text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1">Yeni Şifre (Tekrar)</label>
+                                        <div class="relative">
+                                            <input type="password" id="edit-password-confirm" placeholder="Yeni şifrenizi tekrar giriniz" 
+                                                class="w-full px-5 pr-12 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                            <button type="button" onclick="togglePassword('edit-password-confirm', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-light-text-secondary hover:text-yaziyo-gold transition-colors">
+                                                <i class="fa-solid fa-eye text-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end pt-2">
+                                    <button id="btn-save-security" type="button" onclick="saveSecurityChanges()"
+                                        class="px-8 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-xl hover:shadow-glow-gold hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                                        <span id="btn-save-security-text" class="flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-lock"></i>
+                                            Şifreyi Kaydet
+                                        </span>
+                                    </button>
+                                </div>
+                            </section>
+
+                            <!-- 3. Profil Karakteri Seç -->
+                            <section class="space-y-6">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-1.5 h-6 bg-yaziyo-gold rounded-full"></div>
+                                        <h4 class="font-poppins font-bold text-lg text-light-text dark:text-dark-text">Profil Karakteri</h4>
+                                    </div>
+                                    
+                                    <!-- Filtre Butonları -->
+                                    <div class="flex items-center p-1 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl gap-1">
+                                        <button onclick="filterAvatars('all')" id="filter-all" class="avatar-filter-btn active px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all">Tümü</button>
+                                        <button onclick="filterAvatars('female')" id="filter-female" class="avatar-filter-btn px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all">Kadın</button>
+                                        <button onclick="filterAvatars('male')" id="filter-male" class="avatar-filter-btn px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all">Erkek</button>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4" id="avatar-container">
+                                    <!-- Kadın Karakterler -->
+                                    <button onclick="setAvatarSelection('../images/profile/female1.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                        <img src="../../images/profile/female1.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/female2.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                        <img src="../../images/profile/female2.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/female3.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                        <img src="../../images/profile/female3.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/female4.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                        <img src="../../images/profile/female4.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/female5.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                        <img src="../../images/profile/female5.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/female6.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                        <img src="../../images/profile/female6.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+
+                                    <!-- Erkek Karakterler -->
+                                    <button onclick="setAvatarSelection('../images/profile/male1.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                        <img src="../../images/profile/male1.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/male2.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                        <img src="../../images/profile/male2.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/male3.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                        <img src="../../images/profile/male3.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/male4.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                        <img src="../../images/profile/male4.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/male5.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                        <img src="../../images/profile/male5.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                    <button onclick="setAvatarSelection('../images/profile/male6.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                        <img src="../../images/profile/male6.png" class="w-full h-full object-cover">
+                                        <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
+                                    </button>
+                                </div>
+                                <div class="flex justify-end pt-4">
+                                    <button id="btn-save-avatar" type="button" onclick="saveAvatarProfile()"
+                                        class="px-8 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-xl hover:shadow-glow-gold hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                                        <span id="btn-save-avatar-text" class="flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-user-check"></i>
+                                            Profil Karakterini Kaydet
+                                        </span>
+                                    </button>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+        <!-- ============================================ -->
+    <!-- FOOTER (Alt Bilgi) -->
+    <!-- ============================================ -->
+    <footer id="main-footer"
+        class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col items-center gap-4">
+
+                <!-- Logo ve Marka -->
+                <div class="flex flex-col items-center">
+                    <div class="flex items-center gap-2 mb-0.5">
+                        <img src="../../images/logo.png" alt="YAZİYO AKADEMİ Logo"
+                            class="h-4 w-auto object-contain rounded-lg border border-yaziyo-gold">
+                        <span class="yaziyo-brand-name yaziyo-brand-name--footer">YAZİYO AKADEMİ</span>
+                    </div>
+                    <p
+                        class="text-light-text-secondary dark:text-dark-text-secondary text-xs font-inter transition-colors duration-300">
+                        Zabıt Katipliği Çalışma Platformu</p>
+                </div>
+
+                <!-- İletişim & Sosyal Medya -->
+                <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
+                    <!-- E-posta -->
+                    <div
+                        class="flex items-center gap-2 text-light-text-secondary dark:text-dark-text-secondary transition-colors duration-300">
+                        <i class="fa-solid fa-envelope text-yaziyo-gold text-sm"></i>
+                        <a href="mailto:destek@yaziyoakademi.com"
+                            class="font-inter text-xs hover:text-yaziyo-gold transition-colors duration-300">destek@yaziyoakademi.com</a>
+                    </div>
+
+                    <!-- Sosyal Medya İkonları -->
+                    <div class="flex items-center gap-4">
+                        <a href="https://www.instagram.com/yaziyoakademi?igsh=MXRlbnl3Y2Y5d3FuZw==" id="social-instagram"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-instagram text-lg"></i>
+                        </a>
+                        <a href="https://www.tiktok.com/@yaziyo.akademi?_r=1&_t=ZS-97OMpAkPoub" id="social-tiktok"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors" aria-label="TikTok" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-tiktok text-lg"></i>
+                        </a>
+                        <a href="https://www.facebook.com/profile.php?id=61591456372093&mibextid=wwXIfr&mibextid=wwXIfr"
+                            id="social-facebook"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
+                            aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-facebook text-lg"></i>
+                        </a>
+                        <a href="https://x.com/yaziyoakademi?s=21"
+                            id="social-x"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
+                            aria-label="X" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-x-twitter text-lg"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Çizgi Ayırıcı -->
+                <div class="w-full max-w-md h-px bg-light-border dark:bg-dark-border transition-colors duration-300">
+                </div>
+
+                <!-- Telif Hakkı -->
+                <p
+                    class="text-light-text-secondary dark:text-dark-text-secondary text-[10px] sm:text-xs font-inter tracking-wide transition-colors duration-300">
+                    © 2026 YAZİYO AKADEMİ. Tüm hakları saklıdır.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ÇALIŞMA SÜRESİ MODALI -->
+    <div id="study-time-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <div id="study-time-modal-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="study-time-modal-content"
+            class="relative w-full max-w-md mx-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300">
+            <button type="button" onclick="window.closeStudyTimeModal && window.closeStudyTimeModal()"
+                class="absolute top-6 right-6 text-light-text-secondary hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 class="text-2xl font-poppins font-black text-yaziyo-gold mb-2 flex items-center gap-3">
+                <i class="fa-solid fa-clock"></i>
+                Çalışma Süresi
+            </h3>
+            <p id="study-time-summary" class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6">0sn</p>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="p-4 rounded-2xl bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border">
+                    <p class="text-[10px] uppercase font-bold text-light-text-secondary mb-1">Saat</p>
+                    <p id="study-time-hours" class="text-2xl font-poppins font-black text-light-text dark:text-dark-text">0</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border">
+                    <p class="text-[10px] uppercase font-bold text-light-text-secondary mb-1">Dakika</p>
+                    <p id="study-time-minutes" class="text-2xl font-poppins font-black text-light-text dark:text-dark-text">0</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border">
+                    <p class="text-[10px] uppercase font-bold text-light-text-secondary mb-1">Saniye</p>
+                    <p id="study-time-seconds" class="text-2xl font-poppins font-black text-light-text dark:text-dark-text">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GENEL SIRALAMA MODALI -->
+    <div id="genel-siralama-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <div id="genel-siralama-modal-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="genel-siralama-modal-content"
+            class="relative w-full max-w-lg mx-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="window.closeGenelSiralamaModal && window.closeGenelSiralamaModal()"
+                class="absolute top-6 right-6 text-light-text-secondary hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 class="text-2xl font-poppins font-black text-yaziyo-gold mb-2 flex items-center gap-3">
+                <i class="fa-solid fa-trophy"></i>
+                Genel Sıralama
+            </h3>
+            <p id="genel-siralama-my-rank" class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-4">Sıralamanız yükleniyor…</p>
+            <p class="text-[10px] text-light-text-secondary dark:text-dark-text-secondary mb-3 uppercase tracking-wider">Toplam kelimeye göre · İlk 3</p>
+            <table class="w-full text-left text-sm">
+                <thead>
+                    <tr class="text-[10px] uppercase text-light-text-secondary border-b border-light-border dark:border-dark-border">
+                        <th class="pb-2 pr-4">Sıra</th>
+                        <th class="pb-2 pr-4">Kullanıcı</th>
+                        <th class="pb-2 text-right">Kelime</th>
+                    </tr>
+                </thead>
+                <tbody id="genel-siralama-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- RANK MODAL -->
+    <div id="rank-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <div id="rank-modal-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="rank-modal-content"
+            class="relative w-full max-w-lg mx-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeRankModal()"
+                class="absolute top-6 right-6 text-light-text-secondary hover:text-red-500 transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3
+                class="text-2xl font-poppins font-black text-yaziyo-gold mb-6 flex items-center gap-3 underline decoration-yaziyo-gold/20 underline-offset-8">
+                <i class="fa-solid fa-circle-info"></i>
+                Rütbe Sistemi Rehberi
+            </h3>
+
+            <!-- Çizgisel ilerleme ölçeği (0 – 100.000 kelime) -->
+            <div class="mb-6 p-4 rounded-2xl bg-light-bg/80 dark:bg-dark-bg/80 border border-light-border dark:border-dark-border">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary mb-3">
+                    Toplam kelime konumunuz
+                </p>
+                <div class="relative h-3 rounded-full bg-light-border dark:bg-dark-border overflow-visible mb-1">
+                    <div id="rank-modal-scale-fill"
+                        class="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-yaziyo-gold to-yellow-600 transition-all duration-500"
+                        style="width: 0%"></div>
+                    <div id="rank-modal-marker"
+                        class="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white dark:bg-dark-card border-2 border-yaziyo-gold shadow-md transition-all duration-500 z-10"
+                        style="left: 0%"></div>
+                </div>
+                <div class="flex justify-between text-[9px] font-bold text-light-text-secondary dark:text-dark-text-secondary mt-2 px-0.5">
+                    <span>0</span>
+                    <span>10K</span>
+                    <span>25K</span>
+                    <span>50K</span>
+                    <span>100K+</span>
+                </div>
+                <table class="w-full mt-4 text-left border-collapse">
+                    <thead>
+                        <tr class="text-[10px] uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary border-b border-light-border dark:border-dark-border">
+                            <th class="pb-2 font-bold">Rütbe</th>
+                            <th class="pb-2 font-bold">Kelime aralığı</th>
+                            <th class="pb-2 font-bold text-right">Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rank-tier-table-body" class="text-xs">
+                        <tr><td colspan="3" class="py-3 text-center text-light-text-secondary italic">Veriler yükleniyor…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Efsaneler -->
+                <div data-rank-tier="efsane" class="flex items-start gap-4 p-4 rounded-2xl bg-[#D97706]/10 border border-[#D97706]/20 group hover:bg-[#D97706]/15 transition-all duration-300">
+                    <div class="w-10 h-10 rounded-full bg-[#D97706] flex items-center justify-center text-white shrink-0 shadow-[0_0_15px_rgba(217,119,6,0.4)]">
+                        <i class="fa-solid fa-crown"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-poppins font-bold text-[#D97706]">Efsaneler (100,000+ Kelime)</h4>
+                        <p class="text-[11px] text-light-text-secondary dark:text-dark-text-secondary leading-relaxed mt-1">Platformun zirvesi. Hız ve tecrübenin doruk noktası olan en kıdemli rütbe.</p>
+                    </div>
+                </div>
+                
+                <!-- Ustalar -->
+                <div data-rank-tier="usta" class="flex items-start gap-4 p-4 rounded-2xl bg-[#94A3B8]/10 border border-[#94A3B8]/20 group hover:bg-[#94A3B8]/15 transition-all duration-300">
+                    <div class="w-10 h-10 rounded-full bg-[#94A3B8] flex items-center justify-center text-white shrink-0">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-poppins font-bold text-[#94A3B8]">Ustalar (50,000 - 99,999 Kelime)</h4>
+                        <p class="text-[11px] text-light-text-secondary dark:text-dark-text-secondary leading-relaxed mt-1">Kusursuzluğa çok yakınsınız, yetenekleriniz kanıtlanmış durumda.</p>
+                    </div>
+                </div>
+
+                <!-- Gelişmişler -->
+                <div data-rank-tier="gelismis" class="flex items-start gap-4 p-4 rounded-2xl bg-[#A85507]/10 border border-[#A85507]/20 group hover:bg-[#A85507]/15 transition-all duration-300">
+                    <div class="w-10 h-10 rounded-full bg-[#A85507] flex items-center justify-center text-white shrink-0">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-poppins font-bold text-[#A85507]">Gelişmişler (25.000 – 49.999 kelime)</h4>
+                        <p class="text-[11px] text-light-text-secondary dark:text-dark-text-secondary leading-relaxed mt-1">Ciddi bir ilerleme kaydettiniz, deneyimleriniz meyvelerini veriyor.</p>
+                    </div>
+                </div>
+
+                <!-- Çalışkanlar -->
+                <div data-rank-tier="caliskan" class="flex items-start gap-4 p-4 rounded-2xl bg-[#3B82F6]/10 border border-[#3B82F6]/20 group hover:bg-[#3B82F6]/15 transition-all duration-300">
+                    <div class="w-10 h-10 rounded-full bg-[#3B82F6] flex items-center justify-center text-white shrink-0">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-poppins font-bold text-[#3B82F6]">Çalışkanlar (10,000 - 24,999 Kelime)</h4>
+                        <p class="text-[11px] text-light-text-secondary dark:text-dark-text-secondary leading-relaxed mt-1">Emeğinizin karşılığını almaya başladınız, temponuz harika.</p>
+                    </div>
+                </div>
+
+                <!-- Umut Vadedenler -->
+                <div data-rank-tier="umut" class="flex items-start gap-4 p-4 rounded-2xl bg-[#22C55E]/10 border border-[#22C55E]/20 group hover:bg-[#22C55E]/15 transition-all duration-300">
+                    <div class="w-10 h-10 rounded-full bg-[#22C55E] flex items-center justify-center text-white shrink-0">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-poppins font-bold text-[#22C55E]">Umut Vadedenler (0 - 9,999 Kelime)</h4>
+                        <p class="text-[11px] text-light-text-secondary dark:text-dark-text-secondary leading-relaxed mt-1">Yolculuğun başındasınız, istikrar en büyük gücünüz olacak.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <button onclick="closeRankModal()"
+                    class="px-8 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-xl hover:scale-105 transition-transform shadow-glow-gold">
+                    Anladım, Teşekkürler
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BİLDİRİM MODALI -->
+    <div id="notification-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <div id="notification-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="notification-content"
+            class="relative w-full max-w-sm mx-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl shadow-2xl p-6 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center">
+            <button id="notification-close"
+                class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-bg dark:hover:bg-dark-bg hover:text-red-500 transition-all duration-300">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div
+                class="w-16 h-16 rounded-full bg-yaziyo-gold/10 flex items-center justify-center text-yaziyo-gold text-3xl mb-5 shadow-glow-gold">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <h3
+                class="text-xl font-poppins font-bold text-light-text dark:text-dark-text mb-2 transition-colors duration-300 text-center">
+                Bildirimler</h3>
+            <p id="notification-empty-msg"
+                class="text-light-text-secondary dark:text-dark-text-secondary font-inter text-center mb-6 transition-colors duration-300 text-sm">
+                Bildirimlerinizi görmek için giriş yapın.
+            </p>
+            <div class="w-full h-px bg-light-border dark:bg-dark-border mb-4 transition-colors duration-300"></div>
+            <p id="notification-footer-msg" class="text-xs text-yaziyo-gold font-inter font-medium tracking-wide text-center">
+                <a href="../giris-kayit/" class="inline-flex items-center gap-1 text-yaziyo-gold hover:underline transition-all font-semibold"><i class="fa-solid fa-right-to-bracket"></i> Giriş yap / Kayıt ol</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- BAŞARI BİLDİRİM OVERLAY -->
+    <div id="success-overlay" class="fixed inset-0 z-[200] hidden items-center justify-center pointer-events-none">
+        <div id="success-overlay-content"
+            class="bg-light-card dark:bg-dark-card border border-green-500/30 rounded-full p-2 shadow-[0_0_40px_rgba(34,197,94,0.3)] transform scale-50 opacity-0 transition-all duration-300 flex items-center justify-center">
+            <div
+                class="w-24 h-24 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 text-5xl">
+                <i class="fa-solid fa-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEDEF İŞLEM MODALI (CUSTOM UI) -->
+    <div id="goal-action-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div id="goal-action-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="goal-action-content"
+            class="relative w-full max-w-sm bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center">
+            <div id="goal-modal-icon-container"
+                class="w-16 h-16 rounded-full bg-yaziyo-gold/10 flex items-center justify-center mb-5 border border-yaziyo-gold/20 shadow-glow-gold/10 text-2xl">
+                <i id="goal-modal-icon" class="fa-solid fa-bullseye text-yaziyo-gold"></i>
+            </div>
+            <h3 id="goal-modal-title"
+                class="text-xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-2">Başlık</h3>
+            <p id="goal-modal-desc"
+                class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6 leading-relaxed">Açıklama
+                metni buraya gelecek.</p>
+            <div id="goal-modal-input-area" class="w-full mb-6 hidden">
+                <input type="number" id="goal-modal-input"
+                    class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-center font-poppins font-bold text-lg focus:border-yaziyo-gold outline-none transition-all">
+            </div>
+            <div class="flex items-center gap-3 w-full">
+                <button onclick="closeGoalActionModal()"
+                    class="flex-1 py-2.5 rounded-xl border border-light-border dark:border-dark-border text-sm font-poppins font-bold hover:bg-light-bg dark:hover:bg-dark-bg transition-all">İptal</button>
+                <button id="goal-modal-confirm-btn"
+                    class="flex-1 py-2.5 rounded-xl bg-yaziyo-gold text-slate-900 shadow-glow-gold font-poppins font-bold text-sm hover:scale-105 active:scale-95 transition-all">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- BİLGİLERİMİ DÜZENLE UYARI MODALI -->
+    <div id="profile-alert-modal" class="fixed inset-0 z-[115] hidden items-center justify-center p-4" role="dialog"
+        aria-modal="true" aria-labelledby="profile-alert-title">
+        <div id="profile-alert-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="profile-alert-content"
+            class="relative w-full max-w-sm bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center">
+            <div id="profile-alert-icon-wrap"
+                class="w-16 h-16 rounded-full bg-yaziyo-gold/10 flex items-center justify-center mb-5 border border-yaziyo-gold/20 shadow-glow-gold/10 text-2xl">
+                <i id="profile-alert-icon" class="fa-solid fa-triangle-exclamation text-yaziyo-gold"></i>
+            </div>
+            <h3 id="profile-alert-title"
+                class="text-xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-2">Uyarı</h3>
+            <p id="profile-alert-message"
+                class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6 leading-relaxed"></p>
+            <button type="button" id="profile-alert-ok-btn"
+                class="w-full py-2.5 rounded-xl bg-yaziyo-gold text-slate-900 shadow-glow-gold font-poppins font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all">
+                Tamam
+            </button>
+        </div>
+    </div>
+
+    <!-- ÇIKIŞYAP MODALI -->
+    <div id="logout-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div id="logout-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="logout-content"
+            class="relative w-full max-w-sm bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center">
+            <div
+                class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-5 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)] text-2xl">
+                <i class="fa-solid fa-right-from-bracket text-red-500"></i>
+            </div>
+            <h3 class="text-xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-2">Çıkış Yap</h3>
+            <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6 leading-relaxed">
+                Hesabınızdan çıkış yapmak istediğinize emin misiniz?
+            </p>
+            <div class="flex items-center gap-3 w-full">
+                <button onclick="closeLogoutModal()"
+                    class="flex-1 py-2.5 rounded-xl border border-light-border dark:border-dark-border text-sm font-poppins font-bold hover:bg-light-bg dark:hover:bg-dark-bg transition-all">İptal</button>
+                <button type="button" id="logout-confirm-btn" onclick="window.performLogout && window.performLogout()"
+                    class="flex-1 py-2.5 rounded-xl bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)] font-poppins font-bold text-sm hover:scale-105 active:scale-95 transition-all">Evet, Çıkış Yap</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HESAP SİL MODALI -->
+    <div id="delete-account-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div id="delete-account-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="delete-account-content"
+            class="relative w-full max-w-sm bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center text-center overflow-hidden">
+            
+            <div id="delete-modal-initial-view" class="w-full flex flex-col items-center">
+                <div class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-5 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)] text-2xl">
+                    <i class="fa-solid fa-user-xmark text-red-500"></i>
+                </div>
+                <h3 class="text-xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-2">Hesabı Sil</h3>
+                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-4 leading-relaxed">
+                    Bu hesabı neden silmek istediğinizi bildirin:
+                </p>
+                <textarea id="delete-reason-input" rows="3" placeholder="Kısa bir açıklama..."
+                    class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-sm font-inter text-light-text dark:text-dark-text focus:border-red-500 outline-none transition-all mb-6 resize-none"></textarea>
+                
+                <div class="flex items-center gap-3 w-full">
+                    <button onclick="closeDeleteAccountModal()"
+                        class="flex-1 py-2.5 rounded-xl border border-light-border dark:border-dark-border text-sm font-poppins font-bold hover:bg-light-bg dark:hover:bg-dark-bg transition-all">İptal</button>
+                    <button type="button" id="delete-submit-btn" onclick="submitDeleteRequest()"
+                        class="flex-1 py-2.5 rounded-xl bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)] font-poppins font-bold text-sm hover:scale-105 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none">Mesajı Gönder</button>
+                </div>
+            </div>
+
+            <div id="delete-modal-success-view" class="w-full hidden flex-col items-center">
+                <div class="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-5 border border-green-500/20 shadow-[0_0_15px_rgba(34,197,94,0.2)] text-2xl mx-auto">
+                    <i class="fa-solid fa-check text-green-500"></i>
+                </div>
+                <h3 class="text-xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-2">Talebiniz Alındı</h3>
+                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6 leading-relaxed">
+                    Talebiniz alınmıştır. 3-7 iş günü içerisinde işlem incelenecektir.
+                </p>
+                <button onclick="closeDeleteAccountModal()"
+                    class="w-full py-2.5 rounded-xl border border-light-border dark:border-dark-border text-sm font-poppins font-bold hover:bg-light-bg dark:hover:bg-dark-bg transition-all">Kapat</button>
+            </div>
+            
+        </div>
+    </div>
+    <script src="../../js/lib/sitePaths.js"></script>
+    <script src="../../js/pageStatus.js"></script>
+    <script src="../../js/siteNavbar.js"></script>
+    <script src="../../js/main.js"></script>
+    <script type="module" src="../../js/auth.js"></script>
+    <script type="module" src="../../js/profileAuthGuard.js"></script>
+    <script type="module" src="../../js/profilHesapSil.js"></script>
+    <script type="module" src="../../js/keyboardHeatmap.js"></script>
+    <script>
+        function switchPanel(panelId) {
+            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.profile-menu-item').forEach(i => i.classList.remove('active'));
+            const targetPanel = document.getElementById('panel-' + panelId);
+            if (targetPanel) targetPanel.classList.add('active');
+            const targetMenuItem = document.getElementById('menu-' + panelId);
+            if (targetMenuItem) targetMenuItem.classList.add('active');
+
+            if (panelId === 'isi-haritasi' && window.yaziyoSupabase && window.YaziyoKeyboardHeatmap) {
+                if (!window._yaziyoHeatmapLoaded) {
+                    window._yaziyoHeatmapLoaded = true;
+                    window.YaziyoKeyboardHeatmap.initKeyboardHeatmapPanel(window.yaziyoSupabase);
+                }
+            }
+            if (window.innerWidth < 1024) toggleProfileMenu();
+        }
+
+        function toggleProfileMenu() {
+            const menuList = document.getElementById('profile-menu-list');
+            const chevron = document.getElementById('profile-menu-chevron');
+            if (!menuList) return;
+            const isOpen = menuList.classList.toggle('mobile-open');
+            if (chevron) chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+        }
+
+        function confirmDelete() {
+            const modal = document.getElementById('delete-account-modal');
+            const backdrop = document.getElementById('delete-account-backdrop');
+            const content = document.getElementById('delete-account-content');
+            const initialView = document.getElementById('delete-modal-initial-view');
+            const successView = document.getElementById('delete-modal-success-view');
+            const input = document.getElementById('delete-reason-input');
+            
+            if (input) input.value = '';
+            if (initialView) {
+                initialView.classList.remove('hidden');
+                initialView.classList.add('flex');
+            }
+            if (successView) {
+                successView.classList.remove('flex');
+                successView.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function closeDeleteAccountModal() {
+            const modal = document.getElementById('delete-account-modal');
+            const backdrop = document.getElementById('delete-account-backdrop');
+            const content = document.getElementById('delete-account-content');
+            
+            backdrop.classList.add('opacity-0');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        const rankModal = document.getElementById('rank-modal');
+        const rankModalBackdrop = document.getElementById('rank-modal-backdrop');
+        const rankModalContent = document.getElementById('rank-modal-content');
+
+        function openRankModal() {
+            if (typeof window._yaziyoApplyRankUI === 'function') {
+                window._yaziyoApplyRankUI(window._yaziyoTotalWords ?? 0);
+            }
+            rankModal.classList.remove('hidden');
+            rankModal.classList.add('flex');
+            setTimeout(() => {
+                rankModalBackdrop.classList.remove('opacity-0');
+                rankModalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function closeRankModal() {
+            rankModalBackdrop.classList.add('opacity-0');
+            rankModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { rankModal.classList.add('hidden'); rankModal.classList.remove('flex'); }, 300);
+        }
+        rankModalBackdrop.onclick = closeRankModal;
+
+        let userGoals = [];
+
+        function updateKlavyeMax(selectEl) {
+            const val = parseInt(selectEl.value, 10);
+            const input = document.getElementById('klavye-hedef-deger');
+            if (!input) return;
+            const maxLimit = val === 10 ? 10000 : 1000;
+            input.placeholder = val === 10 ? 'Örn: 5000' : 'Örn: 500';
+            if (parseInt(input.value, 10) > maxLimit) input.value = maxLimit;
+        }
+
+        function validateGoalInput(input, type) {
+            let val = input.value;
+            if (val.includes('.') || val.includes(',')) input.value = Math.floor(parseFloat(val)) || '';
+            let maxLimit = (type === 'klavye' && document.getElementById('klavye-hedef-sure').value === '10') ? 10000 : 1000;
+            if (parseInt(input.value) > maxLimit) input.value = maxLimit;
+        }
+
+        async function loadGoalsFromServer() {
+            const tbody = document.getElementById('goals-table-body');
+            if (!tbody) return;
+            try {
+                const { loadUserGoals, getGoalTypeLabel } = await import('../js/userGoals.js');
+                userGoals = await loadUserGoals(window.yaziyoSupabase);
+                renderGoalsTable(getGoalTypeLabel);
+            } catch (err) {
+                console.error('Hedef yükleme:', err);
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-red-400 italic text-sm">Hedefler yüklenemedi.</td></tr>';
+            }
+        }
+
+        function renderGoalsTable(getGoalTypeLabel) {
+            const tbody = document.getElementById('goals-table-body');
+            if (!tbody) return;
+            if (userGoals.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-12 text-center text-light-text-secondary italic text-sm">Henüz bir hedef belirlemediniz.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = userGoals.map(goal => {
+                const status = goal.tamamlandi
+                    ? '<span class="text-xs font-bold text-green-500"><i class="fa-solid fa-check mr-1"></i>Tamamlandı</span>'
+                    : '<span class="text-xs font-bold text-orange-500">Devam ediyor</span>';
+                const deleteBtn = `
+                    <button type="button" onclick="deleteGoal('${goal.id}')"
+                        class="text-red-500 hover:text-red-600 hover:bg-red-500/10 p-1.5 rounded-lg transition-colors inline-flex"
+                        title="Hedefi sil" aria-label="Hedefi sil">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>`;
+                return `
+                <tr class="hover:bg-light-bg/50 dark:hover:bg-dark-bg/30 transition-colors ${goal.tamamlandi ? 'opacity-75' : ''}">
+                    <td class="px-6 py-4"><span class="text-sm font-semibold">${getGoalTypeLabel(goal.tur)}</span></td>
+                    <td class="px-6 py-4 text-sm font-medium">${goal.sure_dakika} Dakika</td>
+                    <td class="px-6 py-4"><span class="font-poppins font-black text-yaziyo-gold text-lg">${goal.hedef_kelime}</span></td>
+                    <td class="px-6 py-4">${status}</td>
+                    <td class="px-6 py-4 text-center">${deleteBtn}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        async function saveNewGoal(type) {
+            const sure = document.getElementById(type + '-hedef-sure').value;
+            const degerInput = document.getElementById(type + '-hedef-deger');
+            const numDeger = parseInt(degerInput.value, 10);
+            if (!numDeger || numDeger <= 0) return alert('Lütfen geçerli bir değer girin.');
+
+            const btn = document.querySelector(`button[onclick="saveNewGoal('${type}')"]`);
+            const originalHTML = btn?.innerHTML;
+            const oldClasses = btn?.className;
+
+            try {
+                const { createUserGoal } = await import('../js/userGoals.js');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+                }
+                await createUserGoal(window.yaziyoSupabase, {
+                    tur: type,
+                    sureDakika: sure,
+                    hedefKelime: numDeger,
+                    userId: getCachedProfileUser()?.id || null,
+                });
+                degerInput.value = '';
+                await loadGoalsFromServer();
+                if (btn) {
+                    btn.className = 'w-full py-2.5 bg-green-500 text-white font-poppins font-bold rounded-xl shadow-[0_0_15px_rgba(34,197,94,0.5)] flex items-center justify-center';
+                    btn.innerHTML = '<i class="fa-solid fa-check text-xl"></i>';
+                    setTimeout(() => {
+                        btn.className = oldClasses;
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
+                    }, 800);
+                }
+            } catch (err) {
+                console.error('Hedef kaydetme hatası:', err);
+                let msg = err.message || 'Hedef kaydedilemedi';
+                if (err.code === '42P01' || (msg && msg.includes('relation') && msg.includes('does not exist'))) {
+                    msg = 'Hedefler tablosu henüz oluşturulmamış. Supabase Dashboard → SQL Editor\'da "003_hedefler_bildirimler.sql" dosyasını çalıştırın.';
+                } else if (err.code === '23505' || msg.includes('already')) {
+                    msg = 'Bu süre için zaten aktif bir hedefiniz var.';
+                } else if (err.status === 401 || err.status === 403 || msg.includes('oturum') || msg.includes('giriş')) {
+                    msg = 'Oturumunuz sona ermiş olabilir. Lütfen çıkış yapıp tekrar giriş yapın.';
+                }
+                alert(msg);
+                if (btn) {
+                    btn.className = oldClasses;
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        function deleteGoal(id) {
+            openGoalActionModal({
+                title: 'Hedefi Sil',
+                description: 'Bu hedefi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+                type: 'delete',
+                onConfirm: async () => {
+                    try {
+                        const { deleteUserGoal } = await import('../js/userGoals.js');
+                        await deleteUserGoal(window.yaziyoSupabase, id);
+                        await loadGoalsFromServer();
+                    } catch (err) {
+                        alert(err.message || 'Hedef silinemedi');
+                    }
+                }
+            });
+        }
+
+        window.loadGoalsFromServer = loadGoalsFromServer;
+
+        function copyMistypedWords(id, btn) {
+            navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+                const old = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check text-green-500"></i>';
+                setTimeout(() => btn.innerHTML = old, 2000);
+            });
+        }
+
+        function togglePassword(id, btn) {
+            const input = document.getElementById(id);
+            const icon = btn.querySelector('i');
+            input.type = input.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        }
+
+        function filterAvatars(gender) {
+            // Butonları güncelle
+            document.querySelectorAll('.avatar-filter-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('filter-' + gender).classList.add('active');
+
+            // Avatarları filtrele
+            document.querySelectorAll('.avatar-option').forEach(opt => {
+                if (gender === 'all' || opt.getAttribute('data-gender') === gender) {
+                    opt.classList.remove('hidden');
+                } else {
+                    opt.classList.add('hidden');
+                }
+            });
+        }
+
+        let selectedAvatarSrc = null;
+
+        function setAvatarSelection(src, btn) {
+            // Önceki seçimi kaldır
+            document.querySelectorAll('.avatar-option').forEach(b => {
+                b.classList.remove('selected');
+            });
+            // Yeni seçimi ekle
+            btn.classList.add('selected');
+            selectedAvatarSrc = src;
+        }
+
+        const PROFILE_ALERT_VARIANTS = {
+            warning: {
+                title: 'Uyarı',
+                iconWrap: 'w-16 h-16 rounded-full bg-yaziyo-gold/10 flex items-center justify-center mb-5 border border-yaziyo-gold/20 shadow-glow-gold/10 text-2xl',
+                icon: 'fa-solid fa-triangle-exclamation text-yaziyo-gold',
+            },
+            error: {
+                title: 'Güncelleme Başarısız',
+                iconWrap: 'w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-5 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)] text-2xl',
+                icon: 'fa-solid fa-circle-xmark text-red-500',
+            },
+        };
+
+        let profileAlertEscHandler = null;
+
+        function showProfileAlertModal(message, opts = {}) {
+            const modal = document.getElementById('profile-alert-modal');
+            const backdrop = document.getElementById('profile-alert-backdrop');
+            const content = document.getElementById('profile-alert-content');
+            const iconWrap = document.getElementById('profile-alert-icon-wrap');
+            const icon = document.getElementById('profile-alert-icon');
+            const titleEl = document.getElementById('profile-alert-title');
+            const messageEl = document.getElementById('profile-alert-message');
+
+            if (!modal || !message) return;
+
+            const variant = opts.variant === 'error' ? 'error' : 'warning';
+            const v = PROFILE_ALERT_VARIANTS[variant];
+
+            iconWrap.className = v.iconWrap;
+            icon.className = v.icon;
+            titleEl.textContent = opts.title || v.title;
+            messageEl.textContent = message;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+
+            if (profileAlertEscHandler) {
+                document.removeEventListener('keydown', profileAlertEscHandler);
+            }
+            profileAlertEscHandler = (e) => {
+                if (e.key === 'Escape') closeProfileAlertModal();
+            };
+            document.addEventListener('keydown', profileAlertEscHandler);
+
+            document.getElementById('profile-alert-ok-btn')?.focus();
+        }
+
+        function closeProfileAlertModal() {
+            const modal = document.getElementById('profile-alert-modal');
+            const backdrop = document.getElementById('profile-alert-backdrop');
+            const content = document.getElementById('profile-alert-content');
+
+            if (!modal) return;
+
+            backdrop.classList.add('opacity-0');
+            content.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+
+            if (profileAlertEscHandler) {
+                document.removeEventListener('keydown', profileAlertEscHandler);
+                profileAlertEscHandler = null;
+            }
+        }
+
+        document.getElementById('profile-alert-backdrop')?.addEventListener('click', closeProfileAlertModal);
+        document.getElementById('profile-alert-ok-btn')?.addEventListener('click', closeProfileAlertModal);
+
+        async function runProfileSaveButton(btn, btnText, saveFn) {
+            if (!btn || !btnText) return;
+            const originalHTML = btnText.innerHTML;
+            btnText.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Kaydediliyor...';
+            btn.disabled = true;
+            try {
+                await saveFn();
+                btn.classList.add('!bg-green-600', '!from-green-600', '!to-green-600');
+                btnText.innerHTML = '<i class="fa-solid fa-check"></i> Kaydedildi';
+                setTimeout(() => {
+                    btn.classList.remove('!bg-green-600', '!from-green-600', '!to-green-600');
+                    btnText.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }, 2000);
+            } catch (err) {
+                console.error('Profil güncelleme hatası:', err);
+                showProfileAlertModal(err.message || 'Bilinmeyen hata', { variant: 'error' });
+                btnText.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        function isProfileEmailVerified(user) {
+            return Boolean(user?.email_confirmed_at || user?.confirmed_at || user?.user_metadata?.email_verified === true);
+        }
+
+        function formatProfileJoinDate(dateValue) {
+            if (!dateValue) return 'Katılma Tarihi: Bilinmiyor';
+            const dateObj = new Date(dateValue);
+            if (Number.isNaN(dateObj.getTime())) return 'Katılma Tarihi: Bilinmiyor';
+            return `Katılma Tarihi: ${dateObj.toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            })}`;
+        }
+
+        function getCachedProfileUser() {
+            // Beni Hatırla: yalnızca aktif depodan oku (authStorage.js ile aynı mantık)
+            const remember = localStorage.getItem('yaziyo-remember-me') === 'true';
+            const store = remember ? localStorage : sessionStorage;
+            const raw = store.getItem('yaziyo-verified-auth-user');
+            if (!raw) return null;
+
+            try {
+                const user = JSON.parse(raw);
+                return user?.id && isProfileEmailVerified(user) ? user : null;
+            } catch (_) {
+                localStorage.removeItem('yaziyo-verified-auth-user');
+                sessionStorage.removeItem('yaziyo-verified-auth-user');
+                return null;
+            }
+        }
+
+        async function getProfilePageUser({ allowCached = false } = {}) {
+            if (!window.yaziyoSupabase) throw new Error('Supabase yüklenmedi');
+
+            const { data: { user } } = await window.yaziyoSupabase.auth.getUser();
+            if (user && isProfileEmailVerified(user)) return user;
+
+            const { data: { session } } = await window.yaziyoSupabase.auth.getSession();
+            if (session?.user && isProfileEmailVerified(session.user)) return session.user;
+
+            const cached = allowCached ? getCachedProfileUser() : null;
+            if (cached) return cached;
+
+            if (allowCached) return null;
+            throw new Error('Kullanıcı girişi bulunamadı');
+        }
+
+        async function getLoggedInUser() {
+            return getProfilePageUser();
+        }
+
+        function showProfileContent() {
+            const mainContent = document.getElementById('profile-main-content');
+            const authGate = document.getElementById('auth-gate');
+
+            document.documentElement.classList.add('is-logged-in');
+            if (authGate) authGate.style.display = 'none';
+            if (mainContent) {
+                mainContent.classList.remove('hidden');
+                mainContent.classList.remove('opacity-0', 'pointer-events-none');
+                mainContent.classList.add('opacity-100', 'pointer-events-auto');
+                mainContent.style.setProperty('display', 'grid', 'important');
+                mainContent.style.setProperty('opacity', '1', 'important');
+                mainContent.style.setProperty('pointer-events', 'auto', 'important');
+            }
+        }
+
+        function showProfileGate() {
+            const mainContent = document.getElementById('profile-main-content');
+            const authGate = document.getElementById('auth-gate');
+
+            document.documentElement.classList.remove('is-logged-in');
+            if (authGate) authGate.style.display = 'block';
+            if (mainContent) {
+                mainContent.style.setProperty('display', 'none', 'important');
+                mainContent.classList.add('hidden', 'opacity-0', 'pointer-events-none');
+                mainContent.classList.remove('opacity-100', 'pointer-events-auto');
+            }
+        }
+
+        function validatePersonalFields() {
+            const editAd = document.getElementById('edit-ad');
+            const editSoyad = document.getElementById('edit-soyad');
+            const errorAd = document.getElementById('error-edit-ad');
+            const errorSoyad = document.getElementById('error-edit-soyad');
+
+            if (errorAd) errorAd.classList.add('hidden');
+            if (errorSoyad) errorSoyad.classList.add('hidden');
+            editAd.classList.remove('border-red-500');
+            editSoyad.classList.remove('border-red-500');
+
+            let isValid = true;
+            if (!editAd.value.trim()) {
+                editAd.classList.add('border-red-500');
+                if (errorAd) errorAd.classList.remove('hidden');
+                isValid = false;
+            }
+            if (!editSoyad.value.trim()) {
+                editSoyad.classList.add('border-red-500');
+                if (errorSoyad) errorSoyad.classList.remove('hidden');
+                isValid = false;
+            }
+            return isValid ? { ad: editAd.value.trim(), soyad: editSoyad.value.trim() } : null;
+        }
+
+        async function savePersonalInfo() {
+            const fields = validatePersonalFields();
+            if (!fields) return;
+
+            const btn = document.getElementById('btn-save-personal');
+            const btnText = document.getElementById('btn-save-personal-text');
+
+            await runProfileSaveButton(btn, btnText, async () => {
+                const user = await getLoggedInUser();
+                const fullName = `${fields.ad} ${fields.soyad}`;
+
+                const { error: dbError } = await window.yaziyoSupabase.auth.updateUser({
+                    data: { full_name: fullName },
+                });
+                if (dbError) throw dbError;
+
+                try {
+                    await window.yaziyoSupabase.from('kullanicilar').upsert({
+                        id: user.id,
+                        full_name: fullName,
+                        email: user.email,
+                    });
+                } catch (syncErr) {
+                    console.warn('kullanicilar tablosu senkronu atlandi:', syncErr);
+                }
+
+                const userNameDisplay = document.getElementById('user-name');
+                if (userNameDisplay) userNameDisplay.textContent = fullName;
+            });
+        }
+
+        function isProfilePasswordValid(password) {
+            return password.length >= 8
+                && password.length <= 64
+                && /[\p{Lu}]/u.test(password)
+                && /[\p{Ll}]/u.test(password)
+                && /[0-9]/.test(password)
+                && !/\s/.test(password);
+        }
+
+        function validatePasswordFields() {
+            const oldPass = document.getElementById('edit-password-old');
+            const newPass = document.getElementById('edit-password-new');
+            const confirmPass = document.getElementById('edit-password-confirm');
+
+            [oldPass, newPass, confirmPass].forEach((el) => {
+                el.classList.remove('border-red-500');
+            });
+
+            const currentPassword = oldPass.value;
+            const newPassword = newPass.value;
+            const confirmPassword = confirmPass.value;
+
+            let message = '';
+
+            if (!currentPassword) {
+                oldPass.classList.add('border-red-500');
+                message = 'Mevcut şifrenizi giriniz.';
+            } else if (!newPassword) {
+                newPass.classList.add('border-red-500');
+                message = 'Yeni şifrenizi giriniz.';
+            } else if (!isProfilePasswordValid(newPassword)) {
+                newPass.classList.add('border-red-500');
+                message = 'Yeni şifre 8-64 karakter olmalı; en az bir büyük harf, bir küçük harf ve bir rakam içermeli, boşluk içermemelidir.';
+            } else if (newPassword === currentPassword) {
+                newPass.classList.add('border-red-500');
+                message = 'Yeni şifre mevcut şifrenizle aynı olamaz.';
+            } else if (newPassword !== confirmPassword) {
+                confirmPass.classList.add('border-red-500');
+                if (!confirmPassword) {
+                    message = 'Yeni şifrenizi tekrar giriniz.';
+                } else {
+                    message = 'Yeni şifreler eşleşmiyor.';
+                }
+            }
+
+            if (message) {
+                showProfileAlertModal(message, { variant: 'warning' });
+                return null;
+            }
+
+            return { currentPassword, newPassword };
+        }
+
+        async function saveSecurityChanges() {
+            const fields = validatePasswordFields();
+            if (!fields) return;
+
+            const btn = document.getElementById('btn-save-security');
+            const btnText = document.getElementById('btn-save-security-text');
+
+            await runProfileSaveButton(btn, btnText, async () => {
+                const user = await getLoggedInUser();
+                if (!user?.email) {
+                    throw new Error('Oturum bilgisi alınamadı. Lütfen tekrar giriş yapın.');
+                }
+
+                const { error: verifyError } = await window.yaziyoSupabase.auth.signInWithPassword({
+                    email: user.email,
+                    password: fields.currentPassword,
+                });
+
+                if (verifyError) {
+                    document.getElementById('edit-password-old').classList.add('border-red-500');
+                    throw new Error('Mevcut şifre hatalı.');
+                }
+
+                const { error } = await window.yaziyoSupabase.auth.updateUser({
+                    password: fields.newPassword,
+                });
+                if (error) throw error;
+
+                document.getElementById('edit-password-old').value = '';
+                document.getElementById('edit-password-new').value = '';
+                document.getElementById('edit-password-confirm').value = '';
+            });
+        }
+
+        async function saveAvatarProfile() {
+            if (!selectedAvatarSrc) {
+                showProfileAlertModal('Lütfen bir profil karakteri seçin.', { variant: 'warning' });
+                return;
+            }
+
+            const btn = document.getElementById('btn-save-avatar');
+            const btnText = document.getElementById('btn-save-avatar-text');
+
+            await runProfileSaveButton(btn, btnText, async () => {
+                await getLoggedInUser();
+
+                const { error: dbError } = await window.yaziyoSupabase.auth.updateUser({
+                    data: { avatar_url: selectedAvatarSrc },
+                });
+                if (dbError) throw dbError;
+
+                const avatarContainer = document.getElementById('profile-avatar');
+                if (avatarContainer) {
+                    avatarContainer.innerHTML = `<img src="${selectedAvatarSrc}" class="w-full h-full object-cover rounded-full" alt="Profil">`;
+                }
+            });
+        }
+
+
+        const goalModalBackdrop = document.getElementById('goal-action-backdrop');
+
+        function openGoalActionModal(config) {
+            const modal = document.getElementById('goal-action-modal');
+            const backdrop = document.getElementById('goal-action-backdrop');
+            const content = document.getElementById('goal-action-content');
+            
+            document.getElementById('goal-modal-title').textContent = config.title;
+            document.getElementById('goal-modal-desc').textContent = config.description;
+            
+            const iconContainer = document.getElementById('goal-modal-icon-container');
+            const icon = document.getElementById('goal-modal-icon');
+            const confirmBtn = document.getElementById('goal-modal-confirm-btn');
+            
+            if (config.type === 'delete') {
+                iconContainer.className = 'w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-5 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)] text-2xl';
+                icon.className = 'fa-solid fa-trash-can text-red-500';
+                confirmBtn.className = 'flex-1 py-2.5 rounded-xl bg-red-500 text-white shadow-[0_0_10px_rgba(239,68,68,0.4)] font-poppins font-bold text-sm hover:scale-105 active:scale-95 transition-all';
+                confirmBtn.textContent = 'Sil';
+            } else {
+                iconContainer.className = 'w-16 h-16 rounded-full bg-yaziyo-gold/10 flex items-center justify-center mb-5 border border-yaziyo-gold/20 shadow-glow-gold/10 text-2xl';
+                icon.className = 'fa-solid fa-bullseye text-yaziyo-gold';
+                confirmBtn.className = 'flex-1 py-2.5 rounded-xl bg-yaziyo-gold text-slate-900 shadow-glow-gold font-poppins font-bold text-sm hover:scale-105 active:scale-95 transition-all';
+                confirmBtn.textContent = 'Tamam';
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+
+            confirmBtn.onclick = () => { 
+                if(config.onConfirm) config.onConfirm(); 
+                closeGoalActionModal(); 
+            };
+        }
+        
+        function closeGoalActionModal() { 
+            const modal = document.getElementById('goal-action-modal');
+            const backdrop = document.getElementById('goal-action-backdrop');
+            const content = document.getElementById('goal-action-content');
+            
+            backdrop.classList.add('opacity-0');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        goalModalBackdrop.onclick = closeGoalActionModal;
+
+        // Çıkış Yap Modalı Fonksiyonları
+        window.openLogoutModal = function() {
+            const modal = document.getElementById('logout-modal');
+            const backdrop = document.getElementById('logout-backdrop');
+            const content = document.getElementById('logout-content');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                backdrop.classList.remove('opacity-0');
+                content.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        window.closeLogoutModal = function() {
+            const modal = document.getElementById('logout-modal');
+            const backdrop = document.getElementById('logout-backdrop');
+            const content = document.getElementById('logout-content');
+            
+            backdrop.classList.add('opacity-0');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        document.getElementById('logout-backdrop').onclick = window.closeLogoutModal;
+
+        // ========================================================
+        // SUPABASE ENTEGRASYONU - Profil Yükleme İşlemi (user_metadata üzerinden)
+        // FLASH OF WRONG CONTENT ÖNLEME: İçİİçerik veri çekilene kadar gizli kalır
+        // ========================================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            const checkAndLoad = async () => {
+                try {
+                    if (!window.yaziyoSupabase) {
+                        setTimeout(checkAndLoad, 50);
+                        return;
+                    }
+                    
+                    const user = await getProfilePageUser({ allowCached: true });
+                    if (!user) {
+                        showProfileGate();
+                        return;
+                    }
+
+                    showProfileContent();
+
+                    // 1. Temel Auth Bilgileri
+                    const userEmail = document.getElementById('user-email');
+                    if (userEmail) userEmail.textContent = user.email;
+
+                    const joinDateEl = document.getElementById('user-join-date');
+                    if (joinDateEl) {
+                        joinDateEl.textContent = formatProfileJoinDate(user.created_at);
+                    }
+
+                    // 2. User Metadata'dan Veri Çekme
+                    const meta = user.user_metadata || {};
+                    
+                    if (meta.full_name) {
+                        const userNameEl = document.getElementById('user-name');
+                        if (userNameEl) userNameEl.textContent = meta.full_name;
+                        
+                        // "Bilgilerimi Düzenle" formuna ad soyadı doldur
+                        const names = meta.full_name.split(' ');
+                        const lastName = names.pop() || '';
+                        const firstName = names.join(' ') || '';
+                        
+                        const editAd = document.getElementById('edit-ad');
+                        const editSoyad = document.getElementById('edit-soyad');
+                        if (editAd) editAd.value = firstName;
+                        if (editSoyad) editSoyad.value = lastName;
+                    }
+
+                    if (meta.avatar_url) {
+                        const avatarContainer = document.getElementById('profile-avatar');
+                        if (avatarContainer) {
+                            avatarContainer.innerHTML = `<img src="${meta.avatar_url}" class="w-full h-full object-cover rounded-full">`;
+                        }
+                    }
+                    
+                    // Veriler tamamen yüklendi, artık içeriği görünür yap!
+                    showProfileContent();
+                    const {
+                        loadUserStats,
+                        applyProfileStatsUI,
+                        applyDuelPlaceholderUI,
+                        applyRankUI,
+                        loadProfilOzet,
+                        applyGenelSiralamaUI,
+                        loadGenelSiralama,
+                        loadSonKlavyeCalismalari,
+                        renderSonKlavyeCalismalari,
+                        loadKelimeEvleri,
+                        renderKelimeEvleri,
+                        openStudyTimeModal,
+                        closeStudyTimeModal,
+                        openGenelSiralamaModal,
+                        closeGenelSiralamaModal,
+                    } = await import('../js/userStats.js');
+
+                    window._yaziyoApplyRankUI = applyRankUI;
+                    window.updateRank = applyRankUI;
+                    window._yaziyoCalismaSureSaniye = 0;
+
+                    window.openStudyTimeModalFromProfile = () => {
+                        openStudyTimeModal(window._yaziyoCalismaSureSaniye);
+                    };
+                    window.closeStudyTimeModal = closeStudyTimeModal;
+                    window.openGenelSiralamaModalFromProfile = async () => {
+                        const data = await loadGenelSiralama(window.yaziyoSupabase, 3);
+                        if (data) openGenelSiralamaModal(data);
+                    };
+                    window.closeGenelSiralamaModal = closeGenelSiralamaModal;
+
+                    document.getElementById('study-time-modal-backdrop')?.addEventListener('click', closeStudyTimeModal);
+                    document.getElementById('genel-siralama-modal-backdrop')?.addEventListener('click', closeGenelSiralamaModal);
+
+                    // İstatistikler + genel sıralama TEK RPC çağrısında gelir → sıralama
+                    // artık diğer verilerle aynı anda, aynı hızda yüklenir.
+                    const stats = await loadProfilOzet(window.yaziyoSupabase, user.id);
+                    if (stats) {
+                        const joinDateEl = document.getElementById('user-join-date');
+                        if (joinDateEl) {
+                            joinDateEl.textContent = formatProfileJoinDate(stats.created_at || user.created_at);
+                        }
+                        window._yaziyoCalismaSureSaniye = stats.calisma_sure_saniye;
+                        applyProfileStatsUI(stats);
+                        applyGenelSiralamaUI(stats.genel_siralama);
+                    } else {
+                        applyRankUI(0);
+                        applyDuelPlaceholderUI();
+                    }
+
+                    try {
+                        const kayitlar = await loadSonKlavyeCalismalari(window.yaziyoSupabase, user.id, 10);
+                        renderSonKlavyeCalismalari(kayitlar || []);
+                    } catch (sonErr) {
+                        console.warn('Son çalışmalar yüklenemedi:', sonErr);
+                        renderSonKlavyeCalismalari([]);
+                    }
+
+                    try {
+                        const evler = await loadKelimeEvleri(window.yaziyoSupabase, user.id, 3);
+                        renderKelimeEvleri(evler || []);
+                    } catch (evErr) {
+                        console.warn('Kelime evleri yüklenemedi:', evErr);
+                        renderKelimeEvleri([]);
+                    }
+
+                    if (typeof window.loadGoalsFromServer === 'function') {
+                        await window.loadGoalsFromServer();
+                    }
+
+                } catch (err) {
+                    console.error("Supabase veri çekme hatası:", err);
+                    // Hata olsa bile içeriği göster ki boş kalmasın
+                    if (getCachedProfileUser() || document.documentElement.classList.contains('is-logged-in')) {
+                        showProfileContent();
+                    }
+                }
+            };
+
+            // Yükleme kontrolünü başlat
+            checkAndLoad();
+        });
+    </script>
+</body>
+
+</html>
+

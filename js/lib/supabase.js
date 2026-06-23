@@ -10,7 +10,7 @@ let initPromise = null;
 
 function isPasswordRecoveryPage() {
     return typeof window !== 'undefined'
-        && /sifre-sifirla\.html$/i.test(window.location.pathname.replace(/\\/g, '/'));
+        && /\/pages\/sifre-sifirla\/?$/i.test(window.location.pathname.replace(/\\/g, '/'));
 }
 
 function buildSupabaseClient() {

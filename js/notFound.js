@@ -3,34 +3,34 @@
  */
 (function () {
     const SITE_PAGES = [
-        { file: 'index.html', href: '/index.html', label: 'Ana Sayfa' },
-        { file: 'girisKayit.html', href: '/pages/girisKayit.html', label: 'Giriş / Kayıt' },
-        { file: 'profil.html', href: '/pages/profil.html', label: 'Profil' },
-        { file: 'hizTesti.html', href: '/pages/hizTesti.html', label: 'Hız Testi' },
-        { file: 'klavyeCalismasi.html', href: '/pages/klavyeCalismasi.html', label: 'Klavye Çalışması' },
-        { file: 'ozelMetinCalismasi.html', href: '/pages/ozelMetinCalismasi.html', label: 'Özel Metin' },
-        { file: 'klavyeSinavi.html', href: '/pages/klavyeSinavi.html', label: 'Klavye Sınavı' },
-        { file: 'klavyeDuellosu.html', href: '/pages/klavyeDuellosu.html', label: 'Klavye Düellosu' },
-        { file: 'kelimeEvi.html', href: '/pages/kelimeEvi.html', label: 'Kelime Evi' },
-        { file: 'arabaYarisi.html', href: '/pages/arabaYarisi.html', label: 'Araba Yarışı' },
-        { file: 'haberler.html', href: '/pages/haberler.html', label: 'Haberler' },
-        { file: 'egitimPaketleri.html', href: '/pages/egitimPaketleri.html', label: 'Eğitim Paketleri' },
-        { file: 'iletisim.html', href: '/pages/iletisim.html', label: 'İletişim' },
+        { slug: 'index', href: '/index.html', label: 'Ana Sayfa' },
+        { slug: 'giris-kayit', href: '/pages/giris-kayit/', label: 'Giriş / Kayıt' },
+        { slug: 'profil', href: '/pages/profil/', label: 'Profil' },
+        { slug: 'hiz-testi', href: '/pages/hiz-testi/', label: 'Hız Testi' },
+        { slug: 'klavye-calismasi', href: '/pages/klavye-calismasi/', label: 'Klavye Çalışması' },
+        { slug: 'ozel-metin-calismasi', href: '/pages/ozel-metin-calismasi/', label: 'Özel Metin' },
+        { slug: 'klavye-sinavi', href: '/pages/klavye-sinavi/', label: 'Klavye Sınavı' },
+        { slug: 'klavye-duellosu', href: '/pages/klavye-duellosu/', label: 'Klavye Düellosu' },
+        { slug: 'kelime-evi', href: '/pages/kelime-evi/', label: 'Kelime Evi' },
+        { slug: 'araba-yarisi', href: '/pages/araba-yarisi/', label: 'Araba Yarışı' },
+        { slug: 'haberler', href: '/pages/haberler/', label: 'Haberler' },
+        { slug: 'egitim-paketleri', href: '/pages/egitim-paketleri/', label: 'Eğitim Paketleri' },
+        { slug: 'iletisim', href: '/pages/iletisim/', label: 'İletişim' },
     ];
 
     const TYPO_MAP = {
-        hiztesti: 'hizTesti.html',
-        hiztest: 'hizTesti.html',
-        klavyecalismasi: 'klavyeCalismasi.html',
-        klavyecalisma: 'klavyeCalismasi.html',
-        ozelmetin: 'ozelMetinCalismasi.html',
-        klavyesinavi: 'klavyeSinavi.html',
-        klavyeduellosu: 'klavyeDuellosu.html',
-        kelimeevi: 'kelimeEvi.html',
-        arabayarisi: 'arabaYarisi.html',
-        egitimpaketleri: 'egitimPaketleri.html',
-        giriskayit: 'girisKayit.html',
-        sifresifirla: 'sifre-sifirla.html',
+        hiztesti: 'hiz-testi',
+        hiztest: 'hiz-testi',
+        klavyecalismasi: 'klavye-calismasi',
+        klavyecalisma: 'klavye-calismasi',
+        ozelmetin: 'ozel-metin-calismasi',
+        klavyesinavi: 'klavye-sinavi',
+        klavyeduellosu: 'klavye-duellosu',
+        kelimeevi: 'kelime-evi',
+        arabayarisi: 'araba-yarisi',
+        egitimpaketleri: 'egitim-paketleri',
+        giriskayit: 'giris-kayit',
+        sifresifirla: 'sifre-sifirla',
     };
 
     function stripExt(name) {
@@ -45,9 +45,13 @@
             .replace(/[^a-z0-9]/g, '');
     }
 
-    function getRequestedFilename(pathname) {
+    function getRequestedSlug(pathname) {
         const parts = pathname.replace(/\\/g, '/').split('/').filter(Boolean);
-        return parts[parts.length - 1] || '';
+        const pagesIdx = parts.indexOf('pages');
+        if (pagesIdx >= 0 && parts[pagesIdx + 1]) {
+            return parts[pagesIdx + 1].replace(/\.html$/i, '').toLowerCase();
+        }
+        return (parts[parts.length - 1] || '').replace(/\.html$/i, '').toLowerCase();
     }
 
     function levenshtein(a, b) {
@@ -66,15 +70,15 @@
     }
 
     function findSuggestedPage(pathname) {
-        const requested = getRequestedFilename(pathname);
+        const requested = getRequestedSlug(pathname);
         if (!requested) return null;
 
-        const exact = SITE_PAGES.find((p) => p.file.toLowerCase() === requested.toLowerCase());
+        const exact = SITE_PAGES.find((p) => p.slug === requested);
         if (exact) return exact;
 
         const typoTarget = TYPO_MAP[normalizeKey(requested)];
         if (typoTarget) {
-            const typoPage = SITE_PAGES.find((p) => p.file.toLowerCase() === typoTarget.toLowerCase());
+            const typoPage = SITE_PAGES.find((p) => p.slug === typoTarget);
             if (typoPage) return typoPage;
         }
 
@@ -85,7 +89,7 @@
         let bestScore = Infinity;
 
         for (const page of SITE_PAGES) {
-            const pageKey = normalizeKey(page.file);
+            const pageKey = normalizeKey(page.slug);
             const dist = levenshtein(reqKey, pageKey);
             if (dist < bestScore && dist <= 3) {
                 bestScore = dist;

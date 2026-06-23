@@ -23,6 +23,107 @@ body {
 }
 
 /* ============================================ */
+/* ADMIN PANEL — mobil tablo görünürlüğü         */
+/* ============================================ */
+#main-header[data-yaziyo-admin-header="1"] ~ main {
+    min-width: 0;
+    max-width: 100%;
+}
+
+#main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll,
+#main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    max-width: 100%;
+    min-width: 0;
+}
+
+@media (max-width: 767px) {
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll {
+        overflow-x: visible;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table {
+        min-width: 0 !important;
+        width: 100%;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody {
+        display: block;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody tr {
+        display: block;
+        margin-bottom: 0.75rem;
+        padding: 0.875rem 1rem;
+        border: 1px solid rgb(var(--yaziyo-border-rgb));
+        border-radius: 0.875rem;
+        background: rgb(var(--yaziyo-card-rgb));
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody tr:last-child {
+        margin-bottom: 0;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td {
+        display: grid;
+        grid-template-columns: minmax(6.5rem, 38%) 1fr;
+        gap: 0.35rem 0.75rem;
+        align-items: start;
+        padding: 0.45rem 0;
+        border: none;
+        font-size: 0.8125rem;
+        color: rgb(var(--yaziyo-text-rgb));
+        text-align: left !important;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td::before {
+        content: attr(data-label);
+        font-size: 0.625rem;
+        font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: rgb(var(--yaziyo-text-secondary-rgb));
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td[colspan] {
+        display: block;
+        padding: 1.25rem 0.5rem;
+        text-align: center !important;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td[colspan]::before {
+        display: none;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td:empty {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll > table,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto > table {
+        min-width: 640px;
+    }
+}
+
+/* ============================================ */
 /* GECE/GÜNDÜZ MODU RENK DEĞİŞKENLERİ          */
 /* localStorage ile mod kaydediliyor             */
 /* ============================================ */

@@ -11,25 +11,29 @@
         };
     }
 
+    const SLUG_TO_ACTIVE = {
+        profil: 'profil',
+        'hiz-testi': 'klavye-calismalari',
+        'klavye-calismasi': 'klavye-calismalari',
+        'ozel-metin-calismasi': 'klavye-calismalari',
+        'klavye-sinavi': 'klavye-calismalari',
+        'kelime-evi': 'oyunlar',
+        'araba-yarisi': 'oyunlar',
+        'klavye-duellosu': 'oyunlar',
+        'sozlu-mulakat': 'mulakatlar',
+        'mulakat-simulasyonu': 'mulakatlar',
+        becayis: 'becayis',
+        'egitim-paketleri': 'egitim-paketleri',
+        haberler: 'haberler',
+        'kpss-calismasi': 'kpss-calismasi',
+        iletisim: 'iletisim',
+        'giris-kayit': '',
+        'sifre-sifirla': '',
+    };
+
     const FILE_TO_ACTIVE = {
         'index.html': 'anasayfa',
-        'profil.html': 'profil',
-        'hiztesti.html': 'klavye-calismalari',
-        'klavyecalismasi.html': 'klavye-calismalari',
-        'ozelmetincalismasi.html': 'klavye-calismalari',
-        'klavyesinavi.html': 'klavye-calismalari',
-        'kelimeevi.html': 'oyunlar',
-        'arabayarisi.html': 'oyunlar',
-        'klavyeduellosu.html': 'oyunlar',
-        'sozlumulakat.html': 'mulakatlar',
-        'mulakatsimulasyonu.html': 'mulakatlar',
-        'becayis.html': 'becayis',
-        'egitimpaketleri.html': 'egitim-paketleri',
-        'haberler.html': 'haberler',
-        'kpsscalismasi.html': 'kpss-calismasi',
-        'iletisim.html': 'iletisim',
-        'giriskayit.html': '',
-        'sifresifirla.html': '',
+        ...SLUG_TO_ACTIVE,
     };
 
     function isAdminNavbar() {
@@ -45,6 +49,8 @@
         if (fromBody) return fromBody;
         const fromHeader = document.getElementById('main-header')?.dataset?.yaziyoNavActive;
         if (fromHeader) return fromHeader;
+        const slug = global.YaziyoPaths?.currentPageSlug?.() || '';
+        if (slug && SLUG_TO_ACTIVE[slug] !== undefined) return SLUG_TO_ACTIVE[slug];
         const file = (global.location.pathname.split('/').pop() || 'index.html').toLowerCase();
         return FILE_TO_ACTIVE[file] || '';
     }
@@ -57,13 +63,14 @@
         return active === key ? ' open' : '';
     }
 
-    function linkBasename(href) {
+    function linkSlug(href) {
         if (!href || href.startsWith('javascript')) return '';
-        return href.split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+        const parts = href.split('?')[0].split('#')[0].replace(/\/+$/, '').split('/').filter(Boolean);
+        return (parts[parts.length - 1] || '').toLowerCase();
     }
 
     function resolveActiveFromHref(href) {
-        return FILE_TO_ACTIVE[linkBasename(href)] || '';
+        return SLUG_TO_ACTIVE[linkSlug(href)] || FILE_TO_ACTIVE[linkSlug(href)] || '';
     }
 
     function resolveActiveFromLink(link) {

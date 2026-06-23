@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YAZİYO Yönetici Paneli- Haber ve Duyuru Yönetimi.">
+    <title>Haberler - Admin - YAZİYO</title>
+    <link rel="icon" href="../../favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" href="../../images/logo.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="../../images/logo.png">
+
+    <!-- Open Graph / Sosyal Paylaşım -->
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:site_name" content="YAZİYO">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Haberler - Admin - YAZİYO">
+    <meta property="og:description" content="YAZİYO Yönetici Paneli- Haber ve Duyuru Yönetimi.">
+    <meta property="og:url" content="https://yaziyoakademi.com/pages/admin-haberler/">
+    <meta property="og:image" content="https://yaziyoakademi.com/images/logo.png">
+    <meta property="og:image:alt" content="YAZİYO — Zabıt Katipliği Çalışma Platformu">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Haberler - Admin - YAZİYO">
+    <meta name="twitter:description" content="YAZİYO Yönetici Paneli- Haber ve Duyuru Yönetimi.">
+    <meta name="twitter:image" content="https://yaziyoakademi.com/images/logo.png">
+    <meta name="twitter:image:alt" content="YAZİYO — Zabıt Katipliği Çalışma Platformu">
+    <link rel="canonical" href="https://yaziyoakademi.com/pages/admin-haberler/">
+
+    <script>
+        (function () {
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS (build) -->
+    <link rel="stylesheet" href="../../css/tailwind.css">
+
+        <!-- Font Awesome (solid + regular + brands) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--yaziyo-gold-rgb) / 0.3); border-radius: 10px; }
+
+        .admin-form-input, .admin-form-select, .admin-form-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            background-color: rgb(var(--yaziyo-bg-rgb) / 0.5);
+            border: 2px solid rgb(var(--yaziyo-border-rgb) / 0.8);
+            color: rgb(var(--yaziyo-text-rgb));
+        }
+        .admin-form-input:focus, .admin-form-select:focus, .admin-form-textarea:focus {
+            outline: none;
+            border-color: rgb(var(--yaziyo-gold-rgb));
+            box-shadow: 0 0 0 4px rgb(var(--yaziyo-gold-rgb) / 0.15);
+        }
+        .admin-form-textarea { min-height: 100px; resize: vertical; }
+
+        .admin-tab {
+            padding: 0.625rem 1.25rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            border-radius: 0.75rem;
+            border: 1px solid rgb(var(--yaziyo-border-rgb));
+            background: rgb(var(--yaziyo-card-rgb));
+            color: rgb(var(--yaziyo-text-secondary-rgb));
+            transition: all 0.3s ease;
+        }
+        .admin-tab:hover { border-color: var(--yaziyo-gold-hex); color: var(--yaziyo-gold-hex); }
+        .admin-tab-active {
+            background: linear-gradient(135deg, var(--yaziyo-gold-hex), #ca8a04);
+            border-color: transparent;
+            color: #0f172a;
+            box-shadow: 0 4px 16px rgba(var(--yaziyo-gold-rgb), 0.3);
+        }
+
+        .admin-stat-card {
+            background: rgb(var(--yaziyo-card-rgb));
+            border: 1px solid rgb(var(--yaziyo-border-rgb));
+            border-radius: 1rem;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+        }
+        .admin-stat-card:hover {
+            border-color: var(--yaziyo-gold-hex);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .admin-toggle {
+            appearance: none;
+            width: 2.75rem;
+            height: 1.5rem;
+            border-radius: 9999px;
+            background: rgb(var(--yaziyo-border-rgb));
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .admin-toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 1.125rem;
+            height: 1.125rem;
+            border-radius: 50%;
+            background: white;
+            transition: transform 0.3s;
+        }
+        .admin-toggle:checked { background: var(--yaziyo-gold-hex); }
+        .admin-toggle:checked::after { transform: translateX(1.25rem); }
+    </style>
+</head>
+
+<body class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
+
+    <header id="main-header" data-yaziyo-admin-header="1" class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
+            <a href="../admin/" class="flex items-center gap-2 group">
+                <img src="../../images/logo.png" alt="YAZİYO AKADEMİ Logo" class="h-5 sm:h-6 w-auto yaziyo-nav-logo object-contain rounded-lg transition-transform duration-300 group-hover:scale-105">
+                <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
+            </a>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="theme-toggle-btn" class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold transition-all duration-300 hover:scale-110 hover:rotate-12 hover:border-yaziyo-gold" aria-label="Tema Değiştir">
+                    <i class="fa-solid fa-sun text-base sm:text-lg theme-icon-sun"></i>
+                    <i class="fa-solid fa-moon text-base sm:text-lg theme-icon-moon"></i>
+                </button>
+                <a href="../admin/" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm rounded-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-user-shield"></i><span>Admin</span>
+                </a>
+            </div>
+        </div>
+        <div class="w-full h-px bg-light-border dark:bg-dark-border"></div>
+
+        <nav id="main-navbar" class="bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-md transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+                <ul id="desktop-menu" class="hidden sm:flex items-center justify-center gap-x-1 xl:gap-x-2 py-2 text-xs xl:text-sm font-medium">
+                    <li><a href="../admin/" class="nav-link" data-page="admin"><i class="fa-solid fa-gauge-high mr-1.5 text-[0.85em]"></i>Admin</a></li>
+                    <li><a href="../kullanicilar/" class="nav-link" data-page="kullanicilar"><i class="fa-solid fa-users mr-1.5 text-[0.85em]"></i>Kullanıcılar</a></li>
+                    <li><a href="../icerik-ekle/" class="nav-link" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-1.5 text-[0.85em]"></i>İçerik Ekle</a></li>
+                    <li><a href="../sinav-ekle/" class="nav-link" data-page="sinav-ekle"><i class="fa-solid fa-award mr-1.5 text-[0.85em]"></i>Sınav Ekle</a></li>
+                    <li><a href="../admin-haberler/" class="nav-link active" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-1.5 text-[0.85em]"></i>Haberler</a></li>
+                    <li><a href="../admin-egitim-paketleri/" class="nav-link" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-1.5 text-[0.85em]"></i>Eğitim Paketleri</a></li>
+                    <li class="nav-dropdown">
+                        <button type="button" class="nav-link nav-dropdown-trigger" data-page="admin-mulakatlar"><i class="fa-solid fa-microphone-lines mr-1.5 text-[0.85em]"></i>Mülakatlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="../admin-sozlu-mulakat/" class="nav-dropdown-item" data-page="admin-sozlu-mulakat">Sözlü Mülakat</a></li>
+                            <li><a href="../admin-mulakat-simulasyonu/" class="nav-dropdown-item" data-page="admin-mulakat-simulasyonu">Mülakat Simülasyonu</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="../mesajlar/" class="nav-link" data-page="mesajlar"><i class="fa-solid fa-envelope mr-1.5 text-[0.85em]"></i>Mesajlar</a></li>
+                </ul>
+                <div class="sm:hidden flex items-center justify-between py-2">
+                    <span class="text-light-text-secondary dark:text-dark-text-secondary text-sm">Admin Menü</span>
+                    <button id="hamburger-btn" class="text-light-text dark:text-dark-text p-2 rounded-lg hover:bg-light-card dark:hover:bg-dark-card" aria-label="Menü">
+                        <i class="fa-solid fa-bars text-xl" id="hamburger-icon"></i>
+                    </button>
+                </div>
+                <div id="mobile-menu" class="sm:hidden hidden overflow-hidden transition-all duration-300">
+                    <ul class="flex flex-col gap-1 pb-4 text-sm">
+                        <li><a href="../admin/" class="mobile-nav-link" data-page="admin"><i class="fa-solid fa-gauge-high mr-2"></i>Admin</a></li>
+                        <li><a href="../kullanicilar/" class="mobile-nav-link" data-page="kullanicilar"><i class="fa-solid fa-users mr-2"></i>Kullanıcılar</a></li>
+                        <li><a href="../icerik-ekle/" class="mobile-nav-link" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-2"></i>İçerik Ekle</a></li>
+                        <li><a href="../sinav-ekle/" class="mobile-nav-link" data-page="sinav-ekle"><i class="fa-solid fa-award mr-2"></i>Sınav Ekle</a></li>
+                        <li><a href="../admin-haberler/" class="mobile-nav-link active" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-2"></i>Haberler</a></li>
+                        <li><a href="../admin-egitim-paketleri/" class="mobile-nav-link" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-2"></i>Eğitim Paketleri</a></li>
+                        <li><a href="../admin-sozlu-mulakat/" class="mobile-nav-link" data-page="admin-sozlu-mulakat"><i class="fa-solid fa-microphone-lines mr-2"></i>Sözlü Mülakat</a></li>
+                        <li><a href="../admin-mulakat-simulasyonu/" class="mobile-nav-link" data-page="admin-mulakat-simulasyonu"><i class="fa-solid fa-user-tie mr-2"></i>Mülakat Simülasyonu</a></li>
+                        <li><a href="../mesajlar/" class="mobile-nav-link" data-page="mesajlar"><i class="fa-solid fa-envelope mr-2"></i>Mesajlar</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full">
+
+        <!-- Başlık -->
+        <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-8">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-poppins font-bold text-light-text dark:text-dark-text">Haberler</h1>
+                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1 max-w-2xl">
+                    Kullanıcı <a href="../haberler/" target="_blank" rel="noopener" class="text-yaziyo-gold font-semibold hover:underline">haberler sayfasında</a> görünen duyuru, haber ve Resmî Gazete kayıtlarını buradan yönetin.
+                </p>
+                <p class="text-[11px] text-green-600 dark:text-green-400 mt-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-cloud"></i>
+                    Veriler Supabase veritabanında saklanır ve kullanıcı sayfasına anında yansır.
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="../haberler/" target="_blank" rel="noopener"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-sm font-semibold hover:border-yaziyo-gold hover:text-yaziyo-gold transition-all">
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i> Önizleme
+                </a>
+                <button type="button" id="btn-export-draft"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-sm font-semibold hover:border-yaziyo-gold transition-all">
+                    <i class="fa-solid fa-download text-xs"></i> JSON İndir
+                </button>
+                <button type="button" id="btn-refresh-haberler"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-sm font-semibold hover:border-yaziyo-gold hover:text-yaziyo-gold transition-all"
+                    title="Listeyi yenile">
+                    <i class="fa-solid fa-rotate text-xs"></i> Yenile
+                </button>
+            </div>
+        </div>
+
+        <!-- İstatistikler -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+            <div class="admin-stat-card">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Toplam Haber</p>
+                <p id="stat-total-news" class="text-2xl font-poppins font-bold text-yaziyo-gold mt-1">0</p>
+            </div>
+            <div class="admin-stat-card">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Yayında</p>
+                <p id="stat-published" class="text-2xl font-poppins font-bold text-green-500 mt-1">0</p>
+            </div>
+            <div class="admin-stat-card">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Taslak</p>
+                <p id="stat-draft" class="text-2xl font-poppins font-bold text-slate-400 mt-1">0</p>
+            </div>
+            <div class="admin-stat-card">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Öne Çıkan</p>
+                <p id="stat-featured" class="text-2xl font-poppins font-bold text-orange-400 mt-1">0</p>
+            </div>
+            <div class="admin-stat-card col-span-2 sm:col-span-1">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Resmî Gazete</p>
+                <p id="stat-rg" class="text-2xl font-poppins font-bold text-red-400 mt-1">0</p>
+            </div>
+        </div>
+
+        <!-- Sekmeler -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button type="button" id="tab-news" class="admin-tab admin-tab-active">
+                <i class="fa-solid fa-newspaper mr-1.5"></i> Haber & Duyurular
+            </button>
+            <button type="button" id="tab-rg" class="admin-tab">
+                <i class="fa-solid fa-file-pdf mr-1.5"></i> Resmî Gazete
+            </button>
+        </div>
+
+        <!-- HABERLER PANELİ -->
+        <div id="panel-news">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div class="flex flex-col sm:flex-row gap-3 flex-grow max-w-3xl">
+                    <div class="relative flex-grow">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50 text-sm"></i>
+                        <input id="news-search" type="search" placeholder="Haber ara..." class="admin-form-input pl-11">
+                    </div>
+                    <select id="news-cat-filter" class="admin-form-select sm:max-w-[180px]">
+                        <option value="all">Tüm Kategoriler</option>
+                        <option value="admin-duyuru">Admin Duyuruları</option>
+                        <option value="resmi-gazete">Resmi Gazete</option>
+                        <option value="sistem">Sistem Güncellemeleri</option>
+                        <option value="sinav">Sınavlar</option>
+                        <option value="kamu-alim">Kamu Personel Alımları</option>
+                    </select>
+                    <select id="news-status-filter" class="admin-form-select sm:max-w-[160px]">
+                        <option value="all">Tüm Durumlar</option>
+                        <option value="published">Yayında</option>
+                        <option value="draft">Taslak</option>
+                        <option value="featured">Öne Çıkan</option>
+                    </select>
+                </div>
+                <button type="button" id="btn-add-news"
+                    class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm rounded-lg hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:scale-105 transition-all shrink-0">
+                    <i class="fa-solid fa-plus"></i> Yeni Haber
+                </button>
+            </div>
+
+            <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-bg/30 dark:bg-dark-bg/30">
+                    <h2 class="text-sm font-poppins font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Haber Listesi</h2>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr class="bg-light-bg/50 dark:bg-dark-bg/50 border-b border-light-border dark:border-dark-border">
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Başlık / Özet</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Kategori</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Tarih</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Yazar</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Görüntülenme</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Durum</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="news-admin-tbody" class="divide-y divide-light-border dark:divide-dark-border"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESMİ GAZETE PANELİ -->
+        <div id="panel-rg" class="hidden">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div class="relative flex-grow max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50 text-sm"></i>
+                    <input id="rg-search" type="search" placeholder="Karar no veya özet ara..." class="admin-form-input pl-11">
+                </div>
+                <button type="button" id="btn-add-rg"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white font-poppins font-bold text-sm rounded-lg hover:shadow-[0_0_15px_rgba(220,38,38,0.35)] transition-all shrink-0">
+                    <i class="fa-solid fa-file-pdf"></i> Yeni Kayıt
+                </button>
+            </div>
+
+            <div class="bg-light-card dark:bg-dark-card border border-red-500/20 rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-light-border dark:border-dark-border bg-red-500/5">
+                    <h2 class="text-sm font-poppins font-bold text-red-400/90 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-landmark"></i> Resmî Gazete Kayıtları
+                    </h2>
+                </div>
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full text-left border-collapse min-w-[700px]">
+                        <thead>
+                            <tr class="bg-light-bg/50 dark:bg-dark-bg/50 border-b border-light-border dark:border-dark-border">
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Karar No</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Tarih</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Kategori</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Özet</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Durum</th>
+                                <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rg-admin-tbody" class="divide-y divide-light-border dark:divide-dark-border"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- HABER MODAL -->
+    <div id="news-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div data-panel class="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto custom-scrollbar bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-2xl p-6 sm:p-8 transform scale-95 opacity-0 transition-all duration-300">
+            <button type="button" data-close-news-modal class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-light-bg dark:hover:bg-dark-bg transition-all z-10">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 id="news-modal-title" class="text-xl font-poppins font-bold mb-1">Yeni Haber Ekle</h3>
+            <p class="text-xs text-light-text-secondary dark:text-dark-text-secondary mb-6">Kullanıcı sayfasındaki kart ve öne çıkan alan bu alanlarla beslenir.</p>
+
+            <form id="news-form" class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div class="lg:col-span-3 space-y-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Başlık *</label>
+                        <input type="text" name="title" required maxlength="200" class="admin-form-input" placeholder="Haber başlığı">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Kısa Açıklama (kart) *</label>
+                        <textarea name="excerpt" required maxlength="400" class="admin-form-textarea" rows="3" placeholder="2-3 satırlık özet — liste ve öne çıkan kartta görünür"></textarea>
+                        <p class="text-[10px] text-light-text-secondary mt-1">Maks. 400 karakter</p>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Tam Metin (Devamını Oku)</label>
+                        <textarea name="content" class="admin-form-textarea" rows="6" placeholder="Detay sayfası için tam içerik — backend sonrası kullanılacak"></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Kategori *</label>
+                            <select name="category" class="admin-form-select">
+                                <option value="admin-duyuru">Admin Duyuruları</option>
+                                <option value="resmi-gazete">Resmi Gazete</option>
+                                <option value="sistem">Sistem Güncellemeleri</option>
+                                <option value="sinav">Sınavlar</option>
+                                <option value="kamu-alim">Kamu Personel Alımları</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Yayın Tarihi *</label>
+                            <input type="date" name="date" required class="admin-form-input">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Yazar / Admin</label>
+                            <input type="text" name="author" class="admin-form-input" value="Admin Merve" placeholder="Admin Merve">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Başlangıç Görüntülenme</label>
+                            <input type="number" name="views" min="0" class="admin-form-input" value="0">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Kaynak URL</label>
+                            <input type="url" name="sourceUrl" class="admin-form-input" placeholder="https://ornek.gov.tr/haber..." inputmode="url">
+                            <p class="text-[10px] text-light-text-secondary dark:text-dark-text-secondary mt-1">Kullanıcı haberi açtığında gösterilecek dış bağlantı (isteğe bağlı).</p>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Kart Görsel Tonu</label>
+                            <select name="imageGradient" class="admin-form-select"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="rounded-xl border border-light-border dark:border-dark-border p-4 bg-light-bg/40 dark:bg-dark-bg/40">
+                        <p class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-3">Canlı Önizleme</p>
+                        <div id="news-preview"></div>
+                    </div>
+
+                    <div class="rounded-xl border border-light-border dark:border-dark-border p-4 space-y-3">
+                        <p class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest">Rozet & Durum</p>
+                        <label class="flex items-center justify-between gap-3 cursor-pointer">
+                            <span class="text-sm font-medium">Yayında</span>
+                            <input type="checkbox" name="published" class="admin-toggle" checked>
+                        </label>
+                        <label class="flex items-center justify-between gap-3 cursor-pointer">
+                            <span class="text-sm font-medium">Öne çıkan haber <span class="text-[10px] text-light-text-secondary">(tek)</span></span>
+                            <input type="checkbox" name="featured" class="admin-toggle">
+                        </label>
+                        <label class="flex items-center justify-between gap-3 cursor-pointer">
+                            <span class="text-sm font-medium">Önemli (pin + pulse)</span>
+                            <input type="checkbox" name="pinned" class="admin-toggle">
+                        </label>
+                        <label class="flex items-center justify-between gap-3 cursor-pointer">
+                            <span class="text-sm font-medium">Yeni rozeti</span>
+                            <input type="checkbox" name="isNew" class="admin-toggle">
+                        </label>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" data-close-news-modal class="flex-1 py-3 rounded-xl border border-light-border dark:border-dark-border font-poppins font-bold text-sm hover:bg-light-bg dark:hover:bg-dark-bg transition-all">İptal</button>
+                        <button type="submit" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm hover:shadow-glow-gold transition-all">Kaydet</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RESMİ GAZETE MODAL -->
+    <div id="rg-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div data-panel class="relative w-full max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar bg-light-card dark:bg-dark-card border border-red-500/25 rounded-2xl shadow-2xl p-6 sm:p-8 transform scale-95 opacity-0 transition-all duration-300">
+            <button type="button" data-close-rg-modal class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-light-bg dark:hover:bg-dark-bg transition-all">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="w-12 h-12 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center text-xl mb-4 mx-auto">
+                <i class="fa-solid fa-file-pdf"></i>
+            </div>
+            <h3 id="rg-modal-title" class="text-xl font-poppins font-bold text-center mb-1">Yeni Resmî Gazete Kaydı</h3>
+            <p class="text-xs text-light-text-secondary text-center mb-6">Kullanıcı sayfasındaki “Tam Metni Aç” bölümü</p>
+
+            <form id="rg-form" class="space-y-4">
+                <div>
+                    <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Karar Numarası *</label>
+                    <input type="text" name="kararNo" required class="admin-form-input" placeholder="2026/1842">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Tarih *</label>
+                        <input type="date" name="date" required class="admin-form-input">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">İlgili Kategori *</label>
+                        <select name="category" class="admin-form-select">
+                            <option>Resmi Gazete</option>
+                            <option>Kamu Personel Alımı</option>
+                            <option>Sınav</option>
+                            <option>Sistem</option>
+                            <option>Admin Duyurusu</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">Özet Açıklama *</label>
+                    <textarea name="excerpt" required class="admin-form-textarea" rows="4" placeholder="Resmi karar özeti"></textarea>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-1 block">PDF / Tam Metin URL</label>
+                    <input type="url" name="pdfUrl" class="admin-form-input" placeholder="https://... (backend sonrası)">
+                    <p class="text-[10px] text-light-text-secondary mt-1">Boş bırakılabilir — şimdilik “Tam Metni Aç” butonu önizleme modunda.</p>
+                </div>
+                <label class="flex items-center justify-between gap-3 cursor-pointer py-2">
+                    <span class="text-sm font-medium">Yayında</span>
+                    <input type="checkbox" name="published" class="admin-toggle" checked>
+                </label>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" data-close-rg-modal class="flex-1 py-3 rounded-xl border border-light-border dark:border-dark-border font-poppins font-bold text-sm">İptal</button>
+                    <button type="submit" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white font-poppins font-bold text-sm">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SİL MODAL -->
+    <div id="delete-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4">
+        <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div data-panel class="relative w-full max-w-sm bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-2xl p-8 text-center transform scale-95 opacity-0 transition-all duration-300">
+            <div class="w-14 h-14 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-2xl mx-auto mb-4">
+                <i class="fa-solid fa-trash"></i>
+            </div>
+            <h3 class="font-poppins font-bold text-lg mb-2">Kaydı Sil</h3>
+            <p id="delete-message" class="text-sm text-light-text-secondary mb-6"></p>
+            <div class="flex gap-3">
+                <button type="button" data-close-delete-modal class="flex-1 py-2.5 rounded-xl border font-bold text-sm">İptal</button>
+                <button type="button" id="btn-confirm-delete" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm">Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-toast" class="hidden fixed bottom-6 right-6 z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl"></div>
+<div id="notification-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <div id="notification-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="notification-content" class="relative w-full max-w-sm mx-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl shadow-2xl p-6 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center">
+            <button id="notification-close" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:text-red-500 transition-all"><i class="fa-solid fa-xmark"></i></button>
+            <div class="w-16 h-16 rounded-full bg-yaziyo-gold/10 flex items-center justify-center text-yaziyo-gold text-3xl mb-5"><i class="fa-solid fa-bell"></i></div>
+            <h3 class="text-xl font-poppins font-bold mb-2 text-center">Bildirimler</h3>
+            <p class="text-light-text-secondary text-center mb-6 text-sm">Henüz yeni bildiriminiz yok.</p>
+        </div>
+    </div>
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../../js/lib/sitePaths.js"></script>
+    <script src="../../js/lib/adminPaths.js"></script>
+    <script src="../../js/pageStatus.js"></script>
+    <script src="../../js/adminNavbar.js"></script>
+    <script src="../../js/main.js"></script>
+    <script type="module" src="../../js/adminHaberler.js"></script>
+</body>
+
+</html>

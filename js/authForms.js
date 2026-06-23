@@ -174,8 +174,8 @@ async function handleResendVerificationEmail() {
 
 function scrubAuthUrl() {
     if (window.location.search || window.location.hash) {
-        const clean = window.location.pathname.split('/').pop() || 'girisKayit.html';
-        window.history.replaceState({}, document.title, clean);
+        const slug = window.YaziyoPaths?.currentPageSlug?.() || 'giris-kayit';
+        window.history.replaceState({}, document.title, `../${slug}/`);
     }
 }
 
@@ -542,7 +542,7 @@ function initAuthFormsPage() {
 
         if (params.get('reset') === 'success') {
             showToast('Şifreniz güncellendi. Yeni şifrenizle giriş yapabilirsiniz.', 'success');
-            window.history.replaceState({}, '', 'girisKayit.html');
+            window.history.replaceState({}, '', (window.YaziyoPaths?.pageHref?.('girisKayit.html')) || '../giris-kayit/');
         }
 
         if (params.get('forgot') === '1') {

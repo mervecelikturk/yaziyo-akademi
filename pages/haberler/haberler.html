@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="YAZİYO Haberler - Platform güncellemeleri, resmi gazete gelişmeleri ve önemli kamu duyurularına kolayca ulaşın.">
+    <title>Haberler - YAZİYO</title>
+    <link rel="icon" href="../../favicon.ico" sizes="48x48">
+    <link rel="icon" type="image/png" href="../../images/logo.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="../../images/logo.png">
+
+    <!-- Open Graph / Sosyal Paylaşım -->
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:site_name" content="YAZİYO">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Haberler - YAZİYO">
+    <meta property="og:description" content="YAZİYO Haberler - Platform güncellemeleri, resmi gazete gelişmeleri ve önemli kamu duyurularına kolayca ulaşın.">
+    <meta property="og:url" content="https://yaziyoakademi.com/pages/haberler/">
+    <meta property="og:image" content="https://yaziyoakademi.com/images/logo.png">
+    <meta property="og:image:alt" content="YAZİYO — Zabıt Katipliği Çalışma Platformu">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Haberler - YAZİYO">
+    <meta name="twitter:description" content="YAZİYO Haberler - Platform güncellemeleri, resmi gazete gelişmeleri ve önemli kamu duyurularına kolayca ulaşın.">
+    <meta name="twitter:image" content="https://yaziyoakademi.com/images/logo.png">
+    <meta name="twitter:image:alt" content="YAZİYO — Zabıt Katipliği Çalışma Platformu">
+    <link rel="canonical" href="https://yaziyoakademi.com/pages/haberler/">
+
+    <script>
+        (function () {
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS (build) -->
+    <link rel="stylesheet" href="../../css/tailwind.css">
+
+        <!-- Font Awesome (solid + regular + brands) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+
+<body
+    class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
+
+    <header id="main-header"
+        class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
+            <a href="../../index.html" class="flex items-center gap-2 group" id="logo-link">
+                <img src="../../images/logo.png" alt="YAZİYO AKADEMİ Logo"
+                    class="h-5 sm:h-6 w-auto yaziyo-nav-logo object-contain rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    id="header-logo">
+                <span
+                    class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
+            </a>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="relative group">
+                    <button id="theme-toggle-btn"
+                        class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold transition-all duration-300 hover:scale-110 hover:rotate-12 hover:border-yaziyo-gold hover:shadow-glow-gold active:scale-95"
+                        aria-label="Tema Değiştir">
+                        <i class="fa-solid fa-sun text-base sm:text-lg theme-icon-sun"></i>
+                        <i class="fa-solid fa-moon text-base sm:text-lg theme-icon-moon"></i>
+                    </button>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded text-[11px] text-light-text-secondary dark:text-dark-text-secondary font-inter whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50">Tema
+                        Değiştir</span>
+                </div>
+
+                <div class="relative group">
+                    <button id="notification-btn"
+                        class="flex relative items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-secondary dark:text-dark-text-secondary transition-all duration-300 hover:scale-110 hover:text-yaziyo-gold hover:border-yaziyo-gold hover:shadow-glow-gold active:scale-95"
+                        aria-label="Bildirimler">
+                        <i class="fa-solid fa-bell text-base sm:text-lg"></i>
+                        <span
+                            class="absolute top-2 right-2 w-[8px] h-[8px] bg-red-500 rounded-full border border-light-card dark:border-dark-card shadow-[0_0_8px_rgba(239,68,68,0.6)] hidden"></span>
+                    </button>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded text-[11px] text-light-text-secondary dark:text-dark-text-secondary font-inter whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-50">Bildirimler</span>
+                </div>
+
+                <div class="relative group">
+                    <div
+                        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-yaziyo-border bg-yaziyo-card cursor-not-allowed select-none">
+                        <i class="fa-solid fa-fire text-orange-400 text-base sm:text-lg"></i>
+                        <span id="streak-count" class="font-poppins font-bold text-sm text-orange-400">0</span>
+                    </div>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-yaziyo-card border border-yaziyo-border rounded text-[11px] text-yaziyo-text-secondary font-inter whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">Günlük
+                        Seri</span>
+                </div>
+
+                <a href="../giris-kayit/" id="auth-button"
+                    class="relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-lg transition-all duration-300 hover:shadow-glow-gold hover:scale-105 active:scale-95">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Giriş Yap / Kayıt Ol</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="w-full h-px bg-light-border dark:bg-dark-border transition-colors duration-300"></div>
+
+        <nav id="main-navbar" class="bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-md transition-colors duration-300">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+                <ul id="desktop-menu"
+                    class="hidden lg:flex items-center justify-center gap-x-0.5 xl:gap-x-1 py-2 text-[9px] xl:text-[10px] 2xl:text-[11px] font-medium flex-nowrap">
+                    <li><a href="../../index.html" class="nav-link" data-page="anasayfa">Ana Sayfa</a></li>
+                    <li><a href="../profil/" class="nav-link" data-page="profil">Profil</a></li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="klavye-calismalari">Klavye Çalışmaları
+                            <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="../hiz-testi/" class="nav-dropdown-item">Hız Testi</a></li>
+                            <li><a href="../klavye-calismasi/" class="nav-dropdown-item">Klavye Çalışması</a></li>
+                            <li><a href="../ozel-metin-calismasi/" class="nav-dropdown-item">Özel Metin Çalışması</a></li>
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Klavye Sınavı</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="oyunlar">Oyunlar <i
+                                class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled cursor-not-allowed">Klavye Düellosu</a></li>
+                            <li><a href="../kelime-evi/" class="nav-dropdown-item">Kelime Evi</a></li>
+                            <li><a href="../araba-yarisi/" class="nav-dropdown-item">Araba Yarışı</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="mulakatlar">Mülakatlar <i
+                                class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Sözlü Mülakat</a></li>
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Mülakat Simülasyonu</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled" data-page="becayis">Becayiş</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                    <li><a href="../haberler/" class="nav-link active" data-page="haberler">Haberler</a></li>
+                    <li><a href="../kpss-calismasi/" class="nav-link" data-page="kpss-calismasi">KPSS Çalışması</a></li>
+                    <li><a href="../iletisim/" class="nav-link" data-page="iletisim">İletişim</a></li>
+                </ul>
+
+                <div class="lg:hidden flex items-center justify-between py-2">
+                    <span class="text-light-text-secondary dark:text-dark-text-secondary text-sm font-inter">Menü</span>
+                    <button id="hamburger-btn"
+                        class="text-light-text dark:text-dark-text p-2 rounded-lg hover:bg-light-card dark:hover:bg-dark-card transition-colors duration-300"
+                        aria-label="Menüyü aç/kapat">
+                        <i class="fa-solid fa-bars text-xl" id="hamburger-icon"></i>
+                    </button>
+                </div>
+
+                <div id="mobile-menu" class="lg:hidden hidden overflow-hidden transition-all duration-300">
+                    <ul class="flex flex-col gap-1 pb-4 text-sm">
+                        <li><a href="../../index.html" class="mobile-nav-link" data-page="anasayfa">Ana Sayfa</a></li>
+                        <li><a href="../profil/" class="mobile-nav-link" data-page="profil">Profil</a></li>
+                        <li class="mobile-dropdown">
+                            <button class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="../hiz-testi/" class="mobile-nav-link text-[0.8em]">Hız Testi</a></li>
+                                <li><a href="../klavye-calismasi/" class="mobile-nav-link text-[0.8em]">Klavye Çalışması</a></li>
+                                <li><a href="../ozel-metin-calismasi/" class="mobile-nav-link text-[0.8em]">Özel Metin Çalışması</a></li>
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Klavye Sınavı</a></li>
+                            </ul>
+                        </li>
+                        <li class="mobile-dropdown">
+                            <button class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between" data-page="oyunlar">Oyunlar <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em] cursor-not-allowed">Klavye Düellosu</a></li>
+                                <li><a href="../kelime-evi/" class="mobile-nav-link text-[0.8em]">Kelime Evi</a></li>
+                                <li><a href="../araba-yarisi/" class="mobile-nav-link text-[0.8em]">Araba Yarışı</a></li>
+                            </ul>
+                        </li>
+                        <li class="mobile-dropdown">
+                            <button class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between" data-page="mulakatlar">Mülakatlar <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Sözlü Mülakat</a></li>
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Mülakat Simülasyonu</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="becayis">Becayiş</a></li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                        <li><a href="../haberler/" class="mobile-nav-link active" data-page="haberler">Haberler</a></li>
+                        <li><a href="../kpss-calismasi/" class="mobile-nav-link" data-page="kpss-calismasi">KPSS Çalışması</a></li>
+                        <li><a href="../iletisim/" class="mobile-nav-link" data-page="iletisim">İletişim</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- HERO -->
+    <section class="haber-hero">
+        <div class="haber-hero-grid" aria-hidden="true"></div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-yaziyo-gold/30 bg-yaziyo-gold/10 text-yaziyo-gold text-xs font-bold uppercase tracking-widest mb-5">
+                <i class="fa-solid fa-rss"></i>
+                Haber Merkezi
+            </div>
+            <h1 class="font-poppins font-extrabold text-3xl sm:text-4xl md:text-5xl text-light-text dark:text-dark-text mb-4 leading-tight">
+                Güncel Haberler ve <span class="text-yaziyo-gold">Duyurular</span>
+            </h1>
+            <p class="font-inter text-base sm:text-lg text-light-text-secondary dark:text-dark-text-secondary max-w-2xl mx-auto leading-relaxed">
+                Platform güncellemeleri, resmi gazete gelişmeleri ve önemli duyuruları takip edin.
+            </p>
+            <div class="mt-6 mx-auto w-20 h-1 bg-gradient-to-r from-transparent via-yaziyo-gold to-transparent rounded-full"></div>
+        </div>
+    </section>
+
+    <main class="flex-grow w-full">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-24">
+
+            <!-- STICKY FİLTRE -->
+            <div class="haber-filter-bar -mx-4 px-4 sm:mx-0 sm:px-0 mb-8 sm:mb-10" role="toolbar" aria-label="Haber kategorileri">
+                <div class="haber-filter-scroll" id="haber-filters">
+                    <button type="button" class="haber-filter-btn haber-filter-active" data-filter="all" aria-pressed="true">Tümü</button>
+                    <button type="button" class="haber-filter-btn" data-filter="admin-duyuru" aria-pressed="false">Admin Duyuruları</button>
+                    <button type="button" class="haber-filter-btn" data-filter="resmi-gazete" aria-pressed="false">Resmi Gazete</button>
+                    <button type="button" class="haber-filter-btn" data-filter="sistem" aria-pressed="false">Sistem Güncellemeleri</button>
+                    <button type="button" class="haber-filter-btn" data-filter="sinav" aria-pressed="false">Sınavlar</button>
+                    <button type="button" class="haber-filter-btn" data-filter="kamu-alim" aria-pressed="false">Kamu Personel Alımları</button>
+                </div>
+            </div>
+
+            <!-- SKELETON -->
+            <div id="haber-skeleton" class="space-y-8 mb-8" aria-hidden="true">
+                <div class="haber-skeleton-card">
+                    <div class="h-48 sm:h-64 bg-light-border/30 dark:bg-dark-border/30"></div>
+                    <div class="p-6 space-y-3">
+                        <div class="haber-skeleton-line w-3/4"></div>
+                        <div class="haber-skeleton-line w-full"></div>
+                        <div class="haber-skeleton-line w-5/6"></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="haber-skeleton-card h-72"></div>
+                    <div class="haber-skeleton-card h-72 hidden sm:block"></div>
+                    <div class="haber-skeleton-card h-72 hidden lg:block"></div>
+                </div>
+            </div>
+
+            <!-- İÇERİK -->
+            <div id="haber-content" class="opacity-0 transition-opacity duration-500 space-y-12 sm:space-y-16">
+
+                <section aria-labelledby="haber-featured-heading">
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-yaziyo-gold/15 text-yaziyo-gold">
+                            <i class="fa-solid fa-star"></i>
+                        </span>
+                        <h2 id="haber-featured-heading" class="font-poppins font-bold text-xl sm:text-2xl text-light-text dark:text-dark-text">
+                            Öne Çıkan Haber
+                        </h2>
+                    </div>
+                    <div id="haber-featured"></div>
+                </section>
+
+                <section aria-labelledby="haber-list-heading">
+                    <div class="flex items-center justify-between gap-4 mb-6 flex-wrap">
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-yaziyo-gold/15 text-yaziyo-gold">
+                                <i class="fa-solid fa-table-cells"></i>
+                            </span>
+                            <h2 id="haber-list-heading" class="font-poppins font-bold text-xl sm:text-2xl text-light-text dark:text-dark-text">
+                                Tüm Haberler
+                            </h2>
+                        </div>
+                    </div>
+
+                    <div id="haber-empty" class="hidden text-center py-16 px-6 rounded-2xl border border-dashed border-light-border dark:border-dark-border bg-light-card/50 dark:bg-dark-card/50">
+                        <i class="fa-solid fa-filter-circle-xmark text-4xl text-yaziyo-gold/60 mb-4"></i>
+                        <p class="font-inter text-light-text-secondary dark:text-dark-text-secondary">Bu kategoride henüz haber bulunmuyor.</p>
+                    </div>
+
+                    <div id="haber-news-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"></div>
+                </section>
+
+                <!-- RESMİ GAZETE -->
+                <section class="haber-rg-section" aria-labelledby="haber-rg-heading" data-reveal>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                        <div class="flex items-start gap-4">
+                            <div class="haber-rg-icon !w-14 !h-14 text-2xl">
+                                <i class="fa-solid fa-landmark"></i>
+                            </div>
+                            <div>
+                                <h2 id="haber-rg-heading" class="font-poppins font-bold text-xl sm:text-2xl text-light-text dark:text-dark-text mb-1">
+                                    Resmî Gazete
+                                </h2>
+                                <p class="font-inter text-sm text-light-text-secondary dark:text-dark-text-secondary max-w-xl">
+                                    Resmi kararlar, atama ilanları ve mevzuat güncellemeleri — belge formatında özetlenmiş kayıtlar.
+                                </p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-red-400/90 border border-red-500/30 rounded-lg px-3 py-2 bg-red-500/5">
+                            <i class="fa-solid fa-file-lines"></i>
+                            Resmi Kaynak
+                        </span>
+                    </div>
+                    <div id="haber-rg-grid" class="flex flex-col gap-4"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer id="main-footer"
+        class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col items-center gap-4">
+
+                <!-- Logo ve Marka -->
+                <div class="flex flex-col items-center">
+                    <div class="flex items-center gap-2 mb-0.5">
+                        <img src="../../images/logo.png" alt="YAZİYO AKADEMİ Logo"
+                            class="h-4 w-auto object-contain rounded-lg border border-yaziyo-gold">
+                        <span
+                            class="yaziyo-brand-name yaziyo-brand-name--footer">YAZİYO AKADEMİ</span>
+                    </div>
+                    <p
+                        class="text-light-text-secondary dark:text-dark-text-secondary text-xs font-inter transition-colors duration-300">
+                        Zabıt Katipliği Çalışma Platformu</p>
+                </div>
+
+                <!-- İletişim & Sosyal Medya -->
+                <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
+                    <!-- E-posta -->
+                    <div
+                        class="flex items-center gap-2 text-light-text-secondary dark:text-dark-text-secondary transition-colors duration-300">
+                        <i class="fa-solid fa-envelope text-yaziyo-gold text-sm"></i>
+                        <a href="mailto:destek@yaziyoakademi.com"
+                            class="font-inter text-xs hover:text-yaziyo-gold transition-colors duration-300">destek@yaziyoakademi.com</a>
+                    </div>
+
+                    <!-- Sosyal Medya İkonları -->
+                    <div class="flex items-center gap-4">
+                        <a href="https://www.instagram.com/yaziyoakademi?igsh=MXRlbnl3Y2Y5d3FuZw==" id="social-instagram"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
+                            aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-instagram text-lg"></i>
+                        </a>
+                        <a href="https://www.tiktok.com/@yaziyo.akademi?_r=1&_t=ZS-97OMpAkPoub"
+                            id="social-tiktok"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
+                            aria-label="TikTok" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-tiktok text-lg"></i>
+                        </a>
+                        <a href="https://www.facebook.com/profile.php?id=61591456372093&mibextid=wwXIfr&mibextid=wwXIfr"
+                            id="social-facebook"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
+                            aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-facebook text-lg"></i>
+                        </a>
+                        <a href="https://x.com/yaziyoakademi?s=21"
+                            id="social-x"
+                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
+                            aria-label="X" target="_blank" rel="noopener noreferrer">
+                            <i class="fa-brands fa-x-twitter text-lg"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Çizgi Ayırıcı -->
+                <div class="w-full max-w-md h-px bg-light-border dark:bg-dark-border transition-colors duration-300">
+                </div>
+
+                <!-- Telif Hakkı -->
+                <p
+                    class="text-light-text-secondary dark:text-dark-text-secondary text-[10px] sm:text-xs font-inter tracking-wide transition-colors duration-300">
+                    © 2026 YAZİYO AKADEMİ. Tüm hakları saklıdır.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Haber detay modalı -->
+    <div id="haber-read-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="haber-modal-title">
+        <div id="haber-read-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="haber-read-panel" class="haber-read-panel relative w-full max-w-2xl max-h-[90vh] flex flex-col transform scale-95 opacity-0 transition-all duration-300 overflow-hidden">
+            <button type="button" id="haber-read-close" class="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/40 text-white hover:bg-black/60 border border-white/20 transition-all" aria-label="Kapat">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="haber-modal-hero" class="haber-modal-hero relative shrink-0 h-36 sm:h-44 bg-gradient-to-br from-yaziyo-gold/30 to-dark-bg">
+                <div class="absolute inset-0 bg-gradient-to-t from-light-card dark:from-dark-card via-transparent to-transparent"></div>
+                <div id="haber-modal-badges" class="absolute top-4 left-4 flex flex-wrap gap-2 z-10"></div>
+            </div>
+            <div class="flex flex-col flex-grow min-h-0 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-b-2xl sm:rounded-2xl sm:-mt-4 relative z-10 px-5 sm:px-8 pt-6 pb-6">
+                <h2 id="haber-modal-title" class="font-poppins font-bold text-xl sm:text-2xl text-light-text dark:text-dark-text leading-tight mb-3 pr-8"></h2>
+                <div id="haber-modal-meta" class="flex flex-wrap gap-x-4 gap-y-2 text-xs text-light-text-secondary dark:text-dark-text-secondary mb-4"></div>
+                <div class="w-full h-px bg-light-border dark:bg-dark-border mb-4"></div>
+                <div id="haber-modal-body" class="haber-modal-body text-sm sm:text-base text-light-text dark:text-dark-text leading-relaxed whitespace-pre-wrap overflow-y-auto custom-scrollbar flex-grow pr-1"></div>
+                <div id="haber-modal-source" class="hidden mt-5 pt-4 border-t border-light-border dark:border-dark-border shrink-0">
+                    <p class="text-[10px] font-bold text-yaziyo-gold uppercase tracking-widest mb-2">Kaynak</p>
+                    <a id="haber-modal-source-link" href="#" target="_blank" rel="noopener noreferrer" class="haber-source-link inline-flex items-start gap-2 text-sm text-yaziyo-gold hover:underline break-all">
+                        <i class="fa-solid fa-arrow-up-right-from-square mt-0.5 shrink-0 text-xs"></i>
+                        <span id="haber-modal-source-text"></span>
+                    </a>
+                </div>
+                <button type="button" id="haber-read-close-btn" class="mt-6 w-full py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl hover:shadow-glow-gold transition-all duration-300 shrink-0">
+                    Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-modal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+        <div id="notification-backdrop"
+            class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="notification-content"
+            class="relative w-full max-w-sm mx-4 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl shadow-2xl p-6 transform scale-95 opacity-0 transition-all duration-300 flex flex-col items-center">
+            <button id="notification-close"
+                class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-bg dark:hover:bg-dark-bg hover:text-red-500 transition-all duration-300">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="w-16 h-16 rounded-full bg-yaziyo-gold/10 flex items-center justify-center text-yaziyo-gold text-3xl mb-5 shadow-glow-gold">
+                <i class="fa-solid fa-bell"></i>
+            </div>
+            <h3 class="text-xl font-poppins font-bold text-light-text dark:text-dark-text mb-2 text-center">Bildirimler</h3>
+            <p id="notification-empty-msg" class="text-light-text-secondary dark:text-dark-text-secondary font-inter text-center mb-6 text-sm">Bildirimlerinizi görmek için giriş yapın.</p>
+            <div class="w-full h-px bg-light-border dark:bg-dark-border mb-4"></div>
+            <p id="notification-footer-msg" class="text-xs text-yaziyo-gold font-inter font-medium tracking-wide text-center">
+                <a href="../giris-kayit/" class="inline-flex items-center gap-1 text-yaziyo-gold hover:underline transition-all font-semibold"><i class="fa-solid fa-right-to-bracket"></i> Giriş yap / Kayıt ol</a>
+            </p>
+        </div>
+    </div>
+    <script src="../../js/lib/sitePaths.js"></script>
+    <script src="../../js/pageStatus.js"></script>
+    <script src="../../js/siteNavbar.js"></script>
+    <script src="../../js/main.js"></script>
+    <script type="module" src="../../js/auth.js"></script>
+    <script type="module" src="../../js/haberler.js"></script>
+</body>
+
+</html>

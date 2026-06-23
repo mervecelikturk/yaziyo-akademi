@@ -13,5 +13,5 @@ bootAdminPanel();
 
 window.performAdminLogout = async () => {
     await performAdminLogout(getSupabaseClient());
-    window.location.replace('adminGiris.html?cikis=1');
+    window.location.replace('../admin-paneli/?cikis=1');
 };

@@ -66,7 +66,11 @@
 
     function linkBasename(href) {
         if (!href || href.startsWith('javascript')) return '';
-        return href.split('?')[0].split('#')[0].split('/').pop().toLowerCase();
+        const base = href.split('?')[0].split('#')[0].replace(/\/+$/, '').split('/').pop().toLowerCase();
+        if (base.endsWith('.html') && global.YaziyoPaths?.resolveSlug) {
+            return global.YaziyoPaths.resolveSlug(base);
+        }
+        return base;
     }
 
     function hrefMatchesPage(linkHref, pageHref) {

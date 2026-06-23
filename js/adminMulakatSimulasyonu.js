@@ -75,7 +75,7 @@ function renderQuestionPicker() {
     }
 
     if (!list.length) {
-        els.questionPicker.innerHTML = `<p class="text-sm text-light-text-secondary py-4 text-center">Soru bankası boş. <a href="adminSozluMulakat.html" class="text-yaziyo-gold font-semibold hover:underline">Sözlü Mülakat → Soru Bankası</a>ndan soru ekleyin.</p>`;
+        els.questionPicker.innerHTML = `<p class="text-sm text-light-text-secondary py-4 text-center">Soru bankası boş. <a href="../admin-sozlu-mulakat/" class="text-yaziyo-gold font-semibold hover:underline">Sözlü Mülakat → Soru Bankası</a>ndan soru ekleyin.</p>`;
         return;
     }
 

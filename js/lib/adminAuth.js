@@ -50,7 +50,7 @@ export function getAdminSessionUser() {
 
 function getAdminLoginUrl() {
     return window.YaziyoAdminPaths?.getAdminLoginRedirectUrl?.()
-        || 'adminGiris.html';
+        || '../admin-paneli/';
 }
 
 async function resolveAdminSession(client, retries = 2) {

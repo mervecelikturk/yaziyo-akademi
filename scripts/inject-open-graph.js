@@ -37,6 +37,7 @@ function extractDescription(html) {
 function pagePathFromFile(filePath) {
     const rel = path.relative(ROOT, filePath).replace(/\\/g, '/');
     if (rel === 'index.html') return '/';
+    if (rel.endsWith('/index.html')) return `/${rel.replace(/\/index\.html$/, '/')}`;
     return '/' + rel;
 }
 
