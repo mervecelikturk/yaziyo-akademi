@@ -44,12 +44,10 @@
             }
         })();
     </script>
-    <!-- AUTH FOUC Önleme: Auth kontrolü tamamlanana kadar sayfayı gizle -->
-    <style>
-        body { visibility: hidden; opacity: 0; }
-        body.auth-ready { visibility: visible; opacity: 1; transition: opacity 0.15s ease; }
-    </style>
-    <!-- ========================================== -->
+    <!-- Erken oturum durumu: authBoot.js (FOUC önleme, sayfa gizlenmez) -->
+    <script src="../../js/authBoot.js"></script>
+    <script src="../../js/lib/sitePaths.js"></script>
+    <script type="module" src="../../js/auth.js"></script>
 
     <!-- Google Fonts: Poppins & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -529,7 +527,7 @@
         </div>
 
         <!-- FLASH OF WRONG CONTENT ÖNLEME: Veriler çekilene kadar içerik görünmez (opacity-0) -->
-        <div id="profile-main-content" class="hidden grid-cols-1 lg:grid-cols-12 gap-8 items-start opacity-0 pointer-events-none transition-opacity duration-500">
+        <div id="profile-main-content" class="hidden grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-opacity duration-300">
 
             <!-- ============================================================
                  SOL MENÜ KARTI - Tıklanan öğeye göre sağ içİİçerik değişecek
@@ -1148,53 +1146,53 @@
 
                                 <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4" id="avatar-container">
                                     <!-- Kadın Karakterler -->
-                                    <button onclick="setAvatarSelection('../images/profile/female1.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                    <button onclick="setAvatarSelection('../../images/profile/female1.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
                                         <img src="../../images/profile/female1.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/female2.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                    <button onclick="setAvatarSelection('../../images/profile/female2.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
                                         <img src="../../images/profile/female2.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/female3.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                    <button onclick="setAvatarSelection('../../images/profile/female3.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
                                         <img src="../../images/profile/female3.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/female4.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                    <button onclick="setAvatarSelection('../../images/profile/female4.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
                                         <img src="../../images/profile/female4.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/female5.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                    <button onclick="setAvatarSelection('../../images/profile/female5.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
                                         <img src="../../images/profile/female5.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/female6.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
+                                    <button onclick="setAvatarSelection('../../images/profile/female6.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="female">
                                         <img src="../../images/profile/female6.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
 
                                     <!-- Erkek Karakterler -->
-                                    <button onclick="setAvatarSelection('../images/profile/male1.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                    <button onclick="setAvatarSelection('../../images/profile/male1.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
                                         <img src="../../images/profile/male1.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/male2.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                    <button onclick="setAvatarSelection('../../images/profile/male2.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
                                         <img src="../../images/profile/male2.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/male3.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                    <button onclick="setAvatarSelection('../../images/profile/male3.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
                                         <img src="../../images/profile/male3.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/male4.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                    <button onclick="setAvatarSelection('../../images/profile/male4.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
                                         <img src="../../images/profile/male4.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/male5.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                    <button onclick="setAvatarSelection('../../images/profile/male5.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
                                         <img src="../../images/profile/male5.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
-                                    <button onclick="setAvatarSelection('../images/profile/male6.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
+                                    <button onclick="setAvatarSelection('../../images/profile/male6.png', this)" class="avatar-option group relative aspect-square rounded-2xl overflow-hidden border-2 border-transparent hover:border-yaziyo-gold transition-all" data-gender="male">
                                         <img src="../../images/profile/male6.png" class="w-full h-full object-cover">
                                         <div class="avatar-check"><i class="fa-solid fa-check text-white text-xl drop-shadow-md"></i></div>
                                     </button>
@@ -1613,11 +1611,9 @@
             
         </div>
     </div>
-    <script src="../../js/lib/sitePaths.js"></script>
-    <script src="../../js/pageStatus.js"></script>
+<script src="../../js/pageStatus.js"></script>
     <script src="../../js/siteNavbar.js"></script>
     <script src="../../js/main.js"></script>
-    <script type="module" src="../../js/auth.js"></script>
     <script type="module" src="../../js/profileAuthGuard.js"></script>
     <script type="module" src="../../js/profilHesapSil.js"></script>
     <script type="module" src="../../js/keyboardHeatmap.js"></script>
@@ -1696,20 +1692,24 @@
             if (typeof window._yaziyoApplyRankUI === 'function') {
                 window._yaziyoApplyRankUI(window._yaziyoTotalWords ?? 0);
             }
+            if (!rankModal) return;
             rankModal.classList.remove('hidden');
             rankModal.classList.add('flex');
             setTimeout(() => {
-                rankModalBackdrop.classList.remove('opacity-0');
-                rankModalContent.classList.remove('scale-95', 'opacity-0');
+                rankModalBackdrop?.classList.remove('opacity-0');
+                rankModalContent?.classList.remove('scale-95', 'opacity-0');
             }, 10);
         }
 
         function closeRankModal() {
-            rankModalBackdrop.classList.add('opacity-0');
-            rankModalContent.classList.add('scale-95', 'opacity-0');
+            if (!rankModal) return;
+            rankModalBackdrop?.classList.add('opacity-0');
+            rankModalContent?.classList.add('scale-95', 'opacity-0');
             setTimeout(() => { rankModal.classList.add('hidden'); rankModal.classList.remove('flex'); }, 300);
         }
-        rankModalBackdrop.onclick = closeRankModal;
+        window.openRankModal = openRankModal;
+        window.closeRankModal = closeRankModal;
+        if (rankModalBackdrop) rankModalBackdrop.onclick = closeRankModal;
 
         let userGoals = [];
 
@@ -1733,7 +1733,7 @@
             const tbody = document.getElementById('goals-table-body');
             if (!tbody) return;
             try {
-                const { loadUserGoals, getGoalTypeLabel } = await import('../js/userGoals.js');
+                const { loadUserGoals, getGoalTypeLabel } = await import('../../js/userGoals.js');
                 userGoals = await loadUserGoals(window.yaziyoSupabase);
                 renderGoalsTable(getGoalTypeLabel);
             } catch (err) {
@@ -1781,7 +1781,7 @@
             const oldClasses = btn?.className;
 
             try {
-                const { createUserGoal } = await import('../js/userGoals.js');
+                const { createUserGoal } = await import('../../js/userGoals.js');
                 if (btn) {
                     btn.disabled = true;
                     btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
@@ -1829,7 +1829,7 @@
                 type: 'delete',
                 onConfirm: async () => {
                     try {
-                        const { deleteUserGoal } = await import('../js/userGoals.js');
+                        const { deleteUserGoal } = await import('../../js/userGoals.js');
                         await deleteUserGoal(window.yaziyoSupabase, id);
                         await loadGoalsFromServer();
                     } catch (err) {
@@ -2226,7 +2226,8 @@
 
                 const avatarContainer = document.getElementById('profile-avatar');
                 if (avatarContainer) {
-                    avatarContainer.innerHTML = `<img src="${selectedAvatarSrc}" class="w-full h-full object-cover rounded-full" alt="Profil">`;
+                    const displaySrc = window.YaziyoPaths?.resolveAssetUrl?.(selectedAvatarSrc) || selectedAvatarSrc;
+                    avatarContainer.innerHTML = `<img src="${displaySrc}" class="w-full h-full object-cover rounded-full" alt="Profil">`;
                 }
             });
         }
@@ -2317,13 +2318,40 @@
             }, 300);
         }
 
-        document.getElementById('logout-backdrop').onclick = window.closeLogoutModal;
+        document.getElementById('logout-backdrop')?.addEventListener('click', window.closeLogoutModal);
 
         // ========================================================
         // SUPABASE ENTEGRASYONU - Profil Yükleme İşlemi (user_metadata üzerinden)
         // FLASH OF WRONG CONTENT ÖNLEME: İçİİçerik veri çekilene kadar gizli kalır
         // ========================================================
         document.addEventListener('DOMContentLoaded', async () => {
+            function applyCachedProfileShell(user) {
+                showProfileContent();
+                const userEmail = document.getElementById('user-email');
+                if (userEmail && user.email) userEmail.textContent = user.email;
+                const joinDateEl = document.getElementById('user-join-date');
+                if (joinDateEl) joinDateEl.textContent = formatProfileJoinDate(user.created_at);
+                const meta = user.user_metadata || {};
+                if (meta.full_name) {
+                    const userNameEl = document.getElementById('user-name');
+                    if (userNameEl) userNameEl.textContent = meta.full_name;
+                }
+                if (meta.avatar_url) {
+                    const avatarContainer = document.getElementById('profile-avatar');
+                    const avatarSrc = window.YaziyoPaths?.resolveAssetUrl?.(meta.avatar_url) || meta.avatar_url;
+                    if (avatarContainer) {
+                        avatarContainer.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover rounded-full">`;
+                    }
+                }
+            }
+
+            const cachedEarly = getCachedProfileUser();
+            if (cachedEarly) {
+                applyCachedProfileShell(cachedEarly);
+            } else if (!document.documentElement.classList.contains('is-logged-in')) {
+                showProfileGate();
+            }
+
             const checkAndLoad = async () => {
                 try {
                     if (!window.yaziyoSupabase) {
@@ -2368,13 +2396,13 @@
 
                     if (meta.avatar_url) {
                         const avatarContainer = document.getElementById('profile-avatar');
+                        const avatarSrc = window.YaziyoPaths?.resolveAssetUrl?.(meta.avatar_url) || meta.avatar_url;
                         if (avatarContainer) {
-                            avatarContainer.innerHTML = `<img src="${meta.avatar_url}" class="w-full h-full object-cover rounded-full">`;
+                            avatarContainer.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover rounded-full">`;
                         }
                     }
                     
-                    // Veriler tamamen yüklendi, artık içeriği görünür yap!
-                    showProfileContent();
+                    // Veriler tamamen yüklendi
                     const {
                         loadUserStats,
                         applyProfileStatsUI,
@@ -2391,7 +2419,7 @@
                         closeStudyTimeModal,
                         openGenelSiralamaModal,
                         closeGenelSiralamaModal,
-                    } = await import('../js/userStats.js');
+                    } = await import('../../js/userStats.js');
 
                     window._yaziyoApplyRankUI = applyRankUI;
                     window.updateRank = applyRankUI;

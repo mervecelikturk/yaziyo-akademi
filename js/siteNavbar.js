@@ -196,9 +196,15 @@
                     <span class="yaziyo-header-tooltip">Günlük Seri</span>
                 </div>
                 <a href="${girisKayit}" id="auth-button" class="yaziyo-auth-btn inline-flex items-center justify-center bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-lg transition-all duration-300 hover:shadow-glow-gold hover:scale-105 active:scale-95 shrink-0" aria-label="Giriş yap veya kayıt ol">
-                    <i class="fa-solid fa-right-to-bracket yaziyo-auth-btn-icon" aria-hidden="true"></i>
-                    <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--full">Giriş Yap / Kayıt Ol</span>
-                    <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--short">Giriş</span>
+                    <span class="yaziyo-auth-state yaziyo-auth-state--guest inline-flex items-center justify-center gap-[0.3rem]">
+                        <i class="fa-solid fa-right-to-bracket yaziyo-auth-btn-icon" aria-hidden="true"></i>
+                        <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--full">Giriş Yap / Kayıt Ol</span>
+                        <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--short">Giriş</span>
+                    </span>
+                    <span class="yaziyo-auth-state yaziyo-auth-state--member">
+                        <i class="fa-solid fa-user yaziyo-auth-btn-icon" aria-hidden="true"></i>
+                        <span class="yaziyo-auth-btn-text">Profilim</span>
+                    </span>
                 </a>
             </div>
         </div>

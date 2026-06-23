@@ -898,6 +898,26 @@ html.theme-transition textarea {
     display: inline;
 }
 
+.yaziyo-auth-state--member {
+    display: none !important;
+}
+
+html.is-logged-in .yaziyo-auth-state--guest {
+    display: none !important;
+}
+
+html.is-logged-in .yaziyo-auth-state--member {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+html.is-logged-in #auth-button:not([data-yaziyo-auth-ready="1"]),
+html.is-logged-in #auth-nav-btn:not([data-yaziyo-auth-ready="1"]) {
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 html.is-logged-in .yaziyo-auth-btn {
     max-width: none;
     padding: 0.4rem 0.65rem;

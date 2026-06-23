@@ -41,6 +41,9 @@
             }
         })();
     </script>
+    <script src="../../js/authBoot.js"></script>
+    <script src="../../js/lib/sitePaths.js"></script>
+    <script type="module" src="../../js/auth.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -302,9 +305,7 @@
     </footer>
 
     <div id="auth-toast-container" class="auth-toast-container" aria-live="polite"></div>
-
-    <script src="../../js/lib/sitePaths.js"></script>
-    <script>
+<script>
         document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
             document.documentElement.classList.add('theme-transition');
             const isDark = document.documentElement.classList.toggle('dark');

@@ -47,20 +47,10 @@
             }
         })();
     </script>
-    <!-- AUTH FOUC Önleme: Auth kontrolü tamamlanana kadar sayfayı gizle -->
-    <style>
-        body {
-            visibility: hidden;
-            opacity: 0;
-        }
-
-        body.auth-ready {
-            visibility: visible;
-            opacity: 1;
-            transition: opacity 0.15s ease;
-        }
-    </style>
-    <!-- ========================================== -->
+    <!-- Oturum: authBoot.js head'de is-logged-in + navbar durumunu ayarlar -->
+    <script src="js/authBoot.js"></script>
+    <script src="js/lib/sitePaths.js"></script>
+    <script type="module" src="js/auth.js"></script>
 
     <!-- Google Fonts: Poppins & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -152,10 +142,16 @@
                         class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-yaziyo-card border border-yaziyo-border rounded text-[11px] text-yaziyo-text-secondary font-inter whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">Günlük
                         Seri</span>
                 </div>
-                <a href="pages/giris-kayit/" id="auth-button" class="relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-lg
-                          transition-all duration-300 hover:shadow-glow-gold hover:scale-105 active:scale-95">
-                    <i class="fa-solid fa-right-to-bracket"></i>
-                    <span>Giriş Yap / Kayıt Ol</span>
+                <a href="pages/giris-kayit/" id="auth-button" class="yaziyo-auth-btn relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-lg transition-all duration-300 hover:shadow-glow-gold hover:scale-105 active:scale-95" aria-label="Giriş yap veya kayıt ol">
+                    <span class="yaziyo-auth-state yaziyo-auth-state--guest inline-flex items-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--full">Giriş Yap / Kayıt Ol</span>
+                        <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--short">Giriş</span>
+                    </span>
+                    <span class="yaziyo-auth-state yaziyo-auth-state--member inline-flex items-center gap-2">
+                        <i class="fa-solid fa-user"></i>
+                        <span class="yaziyo-auth-btn-text">Profilim</span>
+                    </span>
                 </a>
             </div>
         </div>
@@ -534,15 +530,13 @@
     </div>
 
     <!-- Özel JS Dosyaları -->
-    <script defer src="js/lib/sitePaths.js"></script>
-    <script defer src="js/pageStatus.js"></script>
+<script defer src="js/pageStatus.js"></script>
     <script defer src="js/textCount.js"></script>
     <script type="module" src="js/indexStats.js"></script>
     <script defer src="js/indexHeroQuote.js"></script>
     <script defer src="js/siteNavbar.js"></script>
     <script defer src="js/main.js"></script>
     <script defer src="js/indexPage.js"></script>
-    <script type="module" src="js/auth.js"></script>
 
 
 </body>

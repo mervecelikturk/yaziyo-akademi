@@ -77,6 +77,23 @@
         return isInPagesDir() ? `../../${relativePath}` : relativePath;
     }
 
+    /** Eski veya göreli avatar/resim yollarını mevcut sayfaya göre çözümler */
+    function resolveAssetUrl(urlOrPath) {
+        if (!urlOrPath) return urlOrPath;
+        if (/^https?:\/\//i.test(urlOrPath)) return urlOrPath;
+        if (urlOrPath.startsWith('/')) return urlOrPath;
+
+        let relative = String(urlOrPath).replace(/\\/g, '/');
+        while (relative.startsWith('../')) {
+            relative = relative.slice(3);
+        }
+        const imagesIdx = relative.indexOf('images/');
+        if (imagesIdx > 0) {
+            relative = relative.slice(imagesIdx);
+        }
+        return assetHref(relative);
+    }
+
     function absolutePageUrl(slug) {
         const origin = global.location.origin && global.location.origin !== 'null'
             ? global.location.origin.replace(/\/$/, '')
@@ -93,6 +110,7 @@
         homeHref,
         pageHref,
         assetHref,
+        resolveAssetUrl,
         absolutePageUrl,
     };
 }(typeof window !== 'undefined' ? window : globalThis));

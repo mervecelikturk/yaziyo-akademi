@@ -49,24 +49,12 @@ function formatJoinDate(dateValue) {
     })}`;
 }
 
-async function hydrateProfileStats(user) {
-    if (!supabase || !user?.id) return;
-
-    try {
-        const { loadUserStats, applyProfileStatsUI, applyRankUI } = await import('./userStats.js');
-        const stats = await loadUserStats(supabase, user.id);
-        const joinDate = document.getElementById('user-join-date');
-        if (joinDate) {
-            joinDate.textContent = formatJoinDate(stats?.created_at || user.created_at);
-        }
-
-        if (stats) {
-            applyProfileStatsUI(stats);
-        } else {
-            applyRankUI(0);
-        }
-    } catch (err) {
-        console.warn('Profil istatistikleri guard üzerinden güncellenemedi:', err);
+async function applyProfileAuthState() {
+    const user = await resolveProfileUser();
+    if (user) {
+        forceProfileVisible(user);
+    } else {
+        showProfileGate();
     }
 }
 
@@ -117,29 +105,32 @@ async function resolveProfileUser() {
     return null;
 }
 
-async function applyProfileAuthState() {
-    const user = await resolveProfileUser();
-    if (user) {
-        forceProfileVisible(user);
-        hydrateProfileStats(user);
-    } else {
-        showProfileGate();
+let _profileAuthPass = 0;
+
+function scheduleProfileAuthChecks() {
+    applyProfileAuthState();
+    _profileAuthPass += 1;
+    if (_profileAuthPass < 3) {
+        window.setTimeout(applyProfileAuthState, _profileAuthPass === 1 ? 120 : 500);
     }
 }
 
-function scheduleProfileAuthChecks() {
-    [0, 50, 150, 350, 800, 1500, 3000].forEach((delay) => {
-        window.setTimeout(applyProfileAuthState, delay);
-    });
-}
+document.addEventListener('DOMContentLoaded', () => {
+    _profileAuthPass = 0;
+    scheduleProfileAuthChecks();
+});
 
-document.addEventListener('DOMContentLoaded', scheduleProfileAuthChecks);
-window.addEventListener('load', scheduleProfileAuthChecks);
-window.addEventListener('pageshow', scheduleProfileAuthChecks);
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        _profileAuthPass = 0;
+        scheduleProfileAuthChecks();
+    }
+});
 
 if (supabase) {
     supabase.auth.onAuthStateChange(() => {
-        scheduleProfileAuthChecks();
+        _profileAuthPass = 0;
+        applyProfileAuthState();
     });
 }
 

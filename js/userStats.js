@@ -532,7 +532,7 @@ export function applyProfileStatsUI(stats) {
     if (comboEl) comboEl.textContent = formatStatNumber(stats.en_yuksek_kombo);
     if (studyEl) studyEl.textContent = formatStudyDuration(stats.calisma_sure_saniye);
     if (record3dkEl) record3dkEl.textContent = formatStatNumber(stats.en_yuksek_3dk_kelime);
-    if (rankEl && stats.genel_siralama) {
+    if (rankEl && stats.genel_siralama != null) {
         rankEl.textContent = `#${formatStatNumber(stats.genel_siralama)}`;
     }
 

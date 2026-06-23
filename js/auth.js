@@ -29,34 +29,92 @@ const { homeHref, pageHref } = window.YaziyoPaths || {
     pageHref: (filename) => filename,
 };
 
-// Dinamik CSS (Görünürlük Kontrolü + Auth FOUC Önleme)
+// Profil / KPSS panelleri için görünürlük (sayfa gizlenmez — yalnızca auth-gate)
 const style = document.createElement('style');
 style.innerHTML = `
-    body.auth-loading {
-        visibility: hidden !important;
-        opacity: 0 !important;
-    }
-    body.auth-ready {
-        visibility: visible !important;
-        opacity: 1 !important;
-        transition: opacity 0.15s ease;
-    }
     html.is-logged-in #auth-gate { display: none !important; }
-    html.is-logged-in #profile-main-content, 
+    html.is-logged-in #profile-main-content,
     html.is-logged-in #dashboard-grid { display: grid !important; }
-    html:not(.is-logged-in) #profile-main-content, 
+    html:not(.is-logged-in) #profile-main-content,
     html:not(.is-logged-in) #dashboard-grid { display: none !important; }
     html:not(.is-logged-in) #auth-gate { display: block !important; }
 `;
 document.head.appendChild(style);
 
 let _authInitialCheckDone = false;
-if (document.body) {
-    document.body.classList.add('auth-loading');
-} else {
-    document.addEventListener('DOMContentLoaded', () => {
-        if (!_authInitialCheckDone) document.body.classList.add('auth-loading');
+
+function markAuthReady() {
+    if (_authInitialCheckDone) return;
+    _authInitialCheckDone = true;
+    if (document.body) {
+        document.body.classList.remove('auth-loading');
+        document.body.classList.add('auth-ready');
+    }
+}
+
+function releaseAuthPage() {
+    document.documentElement.classList.add('auth-nav-hydrated');
+    markAuthReady();
+}
+
+function syncAuthNavButtons(user) {
+    if (window.YaziyoAuthBoot?.prepareAuthButtons) {
+        window.YaziyoAuthBoot.prepareAuthButtons(user || null);
+        return;
+    }
+
+    const isLoggedIn = !!user;
+    document.querySelectorAll('#auth-button, #auth-nav-btn').forEach((authBtn) => {
+        authBtn.classList.add('yaziyo-auth-btn');
+        const mode = authBtn.getAttribute('data-yaziyo-auth-mode');
+        if (isLoggedIn) {
+            if (mode === 'member' && authBtn.getAttribute('data-yaziyo-auth-ready') === '1') return;
+            authBtn.href = pageHref('profil.html');
+            authBtn.setAttribute('aria-label', 'Profilim');
+            authBtn.setAttribute('data-yaziyo-auth-mode', 'member');
+            authBtn.setAttribute('data-yaziyo-auth-ready', '1');
+            if (!authBtn.querySelector('.yaziyo-auth-state--member')) {
+                authBtn.innerHTML = '<i class="fa-solid fa-user yaziyo-auth-btn-icon" aria-hidden="true"></i> <span class="yaziyo-auth-btn-text">Profilim</span>';
+            }
+        } else {
+            if (mode === 'guest' && authBtn.getAttribute('data-yaziyo-auth-ready') === '1') return;
+            authBtn.href = pageHref('girisKayit.html');
+            authBtn.setAttribute('aria-label', 'Giriş yap veya kayıt ol');
+            authBtn.setAttribute('data-yaziyo-auth-mode', 'guest');
+            authBtn.setAttribute('data-yaziyo-auth-ready', '1');
+        }
     });
+}
+
+function updateUIElements(user) {
+    if (user) {
+        document.documentElement.classList.add('is-logged-in');
+    } else if (!getStoredVerifiedUser()) {
+        document.documentElement.classList.remove('is-logged-in');
+    }
+
+    syncAuthNavButtons(user);
+
+    if (user) {
+        const name = user.user_metadata?.full_name || 'Kullanıcı';
+        const avatarUrl = user.user_metadata?.avatar_url;
+        const resolvedAvatar = window.YaziyoPaths?.resolveAssetUrl?.(avatarUrl) || avatarUrl;
+
+        if (document.getElementById('user-name')) document.getElementById('user-name').innerText = name;
+        if (document.getElementById('kpss-user-name')) document.getElementById('kpss-user-name').innerText = name;
+
+        const avatarHTML = resolvedAvatar
+            ? `<img src="${resolvedAvatar}" class="w-full h-full object-cover rounded-full">`
+            : '<i class="fa-solid fa-user text-4xl"></i>';
+
+        const kpssAvatar = document.getElementById('kpss-profile-avatar');
+        if (kpssAvatar) kpssAvatar.innerHTML = avatarHTML;
+
+        const profileAvatar = document.getElementById('profile-avatar');
+        if (profileAvatar) profileAvatar.innerHTML = avatarHTML;
+
+        updateGlobalRank(0);
+    }
 }
 
 /**
@@ -135,7 +193,10 @@ async function checkAuth() {
                 .catch(() => {});
         } else if (document.documentElement.classList.contains('profile-auth-ready')) {
             html.classList.add('is-logged-in');
-        } else {
+        } else if (getStoredVerifiedUser()) {
+            html.classList.add('is-logged-in');
+            updateUIElements(getStoredVerifiedUser());
+        } else if (!getStoredVerifiedUser()) {
             html.classList.remove('is-logged-in');
             updateUIElements(null);
             import('./dailyStreak.js')
@@ -145,13 +206,14 @@ async function checkAuth() {
     } catch (err) {
         console.error('CheckAuth Error:', err);
     } finally {
-        if (!_authInitialCheckDone) {
-            _authInitialCheckDone = true;
-            if (document.body) {
-                document.body.classList.remove('auth-loading');
-                document.body.classList.add('auth-ready');
-            }
+        const cached = getStoredVerifiedUser();
+        if (cached) {
+            document.documentElement.classList.add('is-logged-in');
+            updateUIElements(cached);
+        } else if (!document.documentElement.classList.contains('is-logged-in')) {
+            updateUIElements(null);
         }
+        releaseAuthPage();
     }
 }
 
@@ -175,10 +237,14 @@ const handleAuthClick = async (e) => {
 
 function attachAuthEvents() {
     document.querySelectorAll('#auth-button, #auth-nav-btn').forEach((authBtn) => {
+        if (authBtn.dataset.yaziyoAuthBound === '1') return;
+        authBtn.dataset.yaziyoAuthBound = '1';
         authBtn.addEventListener('click', handleAuthClick);
     });
 
     document.querySelectorAll('#menu-cikis, #logout-btn').forEach(btn => {
+        if (btn.dataset.yaziyoAuthBound === '1') return;
+        btn.dataset.yaziyoAuthBound = '1';
         btn.onclick = async (e) => {
             e.preventDefault();
             if (typeof window.openLogoutModal === 'function') {
@@ -206,44 +272,10 @@ window.performLogout = async () => {
     window.location.replace(homeHref());
 };
 
-attachAuthEvents();
-
-function updateUIElements(user) {
-    const isLoggedIn = !!user;
-
-    document.querySelectorAll('#auth-button, #auth-nav-btn').forEach((authBtn) => {
-        authBtn.classList.add('yaziyo-auth-btn');
-        if (isLoggedIn) {
-            authBtn.href = pageHref('profil.html');
-            authBtn.setAttribute('aria-label', 'Profilim');
-            authBtn.innerHTML = '<i class="fa-solid fa-user yaziyo-auth-btn-icon" aria-hidden="true"></i> <span class="yaziyo-auth-btn-text">Profilim</span>';
-        } else {
-            authBtn.href = pageHref('girisKayit.html');
-            authBtn.setAttribute('aria-label', 'Giriş yap veya kayıt ol');
-            authBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket yaziyo-auth-btn-icon" aria-hidden="true"></i> <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--full">Giriş Yap / Kayıt Ol</span><span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--short">Giriş</span>';
-        }
-    });
-
-    if (user) {
-        const name = user.user_metadata?.full_name || 'Kullanıcı';
-        const avatarUrl = user.user_metadata?.avatar_url;
-
-        if (document.getElementById('user-name')) document.getElementById('user-name').innerText = name;
-        if (document.getElementById('kpss-user-name')) document.getElementById('kpss-user-name').innerText = name;
-
-        const avatarHTML = avatarUrl
-            ? `<img src="${avatarUrl}" class="w-full h-full object-cover rounded-full">`
-            : '<i class="fa-solid fa-user text-4xl"></i>';
-
-        const kpssAvatar = document.getElementById('kpss-profile-avatar');
-        if (kpssAvatar) kpssAvatar.innerHTML = avatarHTML;
-
-        const profileAvatar = document.getElementById('profile-avatar');
-        if (profileAvatar) profileAvatar.innerHTML = avatarHTML;
-
-        // Gerçek rütbe profil istatistikleri yüklendiğinde `userStats.applyRankUI` ile güncellenir.
-        updateGlobalRank(0);
-    }
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', attachAuthEvents);
+} else {
+    attachAuthEvents();
 }
 
 function updateGlobalRank(totalWords) {
@@ -283,8 +315,15 @@ function updateGlobalRank(totalWords) {
     }
 }
 
+/** auth.js modülü yüklendiğinde authBoot henüz hazırlamadıysa devreye girer */
+const bootCachedUser = getStoredVerifiedUser();
+if (bootCachedUser) {
+    document.documentElement.classList.add('is-logged-in');
+} else if (!document.documentElement.classList.contains('auth-nav-hydrated')) {
+    document.documentElement.classList.remove('is-logged-in');
+}
+
 checkAuth();
-window.addEventListener('load', checkAuth);
 
 const supabaseClient = getSupabaseClient();
 if (supabaseClient) {
@@ -331,16 +370,6 @@ if (supabaseClient) {
         }
     });
 }
-
-setTimeout(() => {
-    if (!_authInitialCheckDone) {
-        _authInitialCheckDone = true;
-        if (document.body) {
-            document.body.classList.remove('auth-loading');
-            document.body.classList.add('auth-ready');
-        }
-    }
-}, 3000);
 
 window.yaziyoAuth = { checkAuth, getSupabaseClient };
 
