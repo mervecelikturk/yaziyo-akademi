@@ -1,13 +1,19 @@
 /**
  * YAZİYO — Ana sayfa platform istatistikleri (Supabase)
  */
-import { supabase } from './supabase.js';
+import { getSupabaseClient, initSupabaseClient } from './supabase.js';
+
+async function getClient() {
+    await initSupabaseClient();
+    return getSupabaseClient();
+}
 
 /**
  * Kayıtlı kullanıcı (aday) sayısını döndürür.
  * Önce public RPC dener; yoksa doğrudan tablo sayımına düşer.
  */
 export async function fetchPlatformUserCount() {
+    const supabase = await getClient();
     if (!supabase) return null;
 
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_kullanici_sayisi');
@@ -30,6 +36,7 @@ export async function fetchPlatformUserCount() {
  * Yayında (aktif) mülakat sorusu sayısını döndürür.
  */
 export async function fetchPlatformMulakatSoruCount() {
+    const supabase = await getClient();
     if (!supabase) return null;
 
     const { data: rpcData, error: rpcError } = await supabase.rpc('get_mulakat_soru_sayisi');

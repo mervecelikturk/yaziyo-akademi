@@ -3,6 +3,7 @@
  */
 import { supabase } from './lib/supabase.js';
 import { requireAdminAccess } from './lib/adminAuth.js';
+import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 
 let allMessages = [];
 let showUnreadOnly = false;
@@ -145,6 +146,7 @@ function renderTable() {
                 </td>
             </tr>
         `;
+        refreshAdminMobileTables();
         return;
     }
 
@@ -170,6 +172,7 @@ function renderTable() {
             </tr>
         `;
     }).join('');
+    refreshAdminMobileTables();
 }
 
 export async function fetchMessages() {

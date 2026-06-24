@@ -2,6 +2,7 @@
  * YAZİYO — Admin Sözlü Mülakat (paketler + soru bankası)
  */
 import { requireAdminAccess } from './lib/adminAuth.js';
+import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 import {
     SORU_KATEGORILERI,
     SORU_KAYNAKLARI,
@@ -241,6 +242,7 @@ function renderPaketTable() {
     const list = filterPaketler();
     if (!list.length) {
         els.paketTbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-sm text-light-text-secondary">${paketler.length ? 'Arama sonucu yok.' : 'Henüz mülakat eklenmedi.'}</td></tr>`;
+        refreshAdminMobileTables();
         return;
     }
 
@@ -258,12 +260,14 @@ function renderPaketTable() {
                 </div>
             </td>
         </tr>`).join('');
+    refreshAdminMobileTables();
 }
 
 function renderQuestionTable() {
     const list = filterQuestions();
     if (!list.length) {
         els.questionTbody.innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-sm text-light-text-secondary">${questions.length ? 'Filtreye uygun soru yok.' : 'Henüz soru eklenmedi.'}</td></tr>`;
+        refreshAdminMobileTables();
         return;
     }
 
@@ -282,6 +286,7 @@ function renderQuestionTable() {
                 </div>
             </td>
         </tr>`).join('');
+    refreshAdminMobileTables();
 }
 
 function resetPaketForm() {

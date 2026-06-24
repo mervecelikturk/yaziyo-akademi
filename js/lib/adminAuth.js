@@ -53,13 +53,15 @@ function getAdminLoginUrl() {
         || '../admin-paneli/';
 }
 
-async function resolveAdminSession(client, retries = 2) {
+async function resolveAdminSession(client, retries) {
+    const maxRetries = retries ?? (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches ? 5 : 2);
     let result = await ensureSession(client);
     let attempt = 0;
 
-    while (!result.ok && attempt < retries) {
+    while (!result.ok && attempt < maxRetries) {
         attempt += 1;
-        await new Promise((resolve) => window.setTimeout(resolve, 150 * attempt));
+        const delay = window.matchMedia('(max-width: 1023px)').matches ? 250 * attempt : 150 * attempt;
+        await new Promise((resolve) => window.setTimeout(resolve, delay));
         result = await ensureSession(client);
     }
 

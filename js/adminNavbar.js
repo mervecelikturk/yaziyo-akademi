@@ -274,6 +274,11 @@
         });
     }
 
+    function refreshMobileTables() {
+        enhanceAdminTablesForMobile();
+        requestAnimationFrame(() => enhanceAdminTablesForMobile());
+    }
+
     let adminTableObserver = null;
     function observeAdminTables() {
         enhanceAdminTablesForMobile();
@@ -294,6 +299,7 @@
         syncNavActive,
         closeMobileMenu,
         enhanceAdminTablesForMobile,
+        refreshMobileTables,
     };
 
     patchStaticNavActive();

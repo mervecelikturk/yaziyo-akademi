@@ -3,6 +3,7 @@
  */
 import { supabase } from './lib/supabase.js';
 import { requireAdminAccess } from './lib/adminAuth.js';
+import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 import {
     EGITIM_KATEGORILERI,
     BADGE_OPTIONS,
@@ -120,6 +121,7 @@ function renderTable() {
             <tr><td colspan="6" class="px-6 py-16 text-center text-sm text-light-text-secondary">
                 ${packages.length ? 'Filtreye uygun paket bulunamadı.' : 'Henüz eğitim paketi eklenmedi. Yeni paket ekleyerek başlayın.'}
             </td></tr>`;
+        refreshAdminMobileTables();
         return;
     }
 
@@ -146,6 +148,7 @@ function renderTable() {
                 </td>
             </tr>`;
     }).join('');
+    refreshAdminMobileTables();
 }
 
 function resetForm() {

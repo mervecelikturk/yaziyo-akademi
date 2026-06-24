@@ -1,6 +1,7 @@
 /**
  * Ana sayfa istatistik kartları — gerçek metin, kullanıcı ve mülakat soru sayıları
  */
+import { initSupabaseClient } from './lib/supabase.js';
 import { fetchPlatformUserCount, fetchPlatformMulakatSoruCount } from './lib/platformStatsApi.js';
 
 (function initTextCount() {
@@ -18,6 +19,7 @@ async function initStatCount({ elementId, fetchCount, readyDatasetKey, readyEven
     if (!el) return;
 
     try {
+        await initSupabaseClient();
         const count = await fetchCount();
         if (count != null && count >= 0) {
             el.setAttribute('data-target', String(count));

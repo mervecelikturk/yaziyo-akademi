@@ -3,6 +3,7 @@
  */
 import { supabase } from './lib/supabase.js';
 import { requireAdminAccess } from './lib/adminAuth.js';
+import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 import {
     HABER_CATEGORIES,
     GRADIENT_PRESETS,
@@ -151,6 +152,7 @@ function renderNewsTable() {
     const rows = getFilteredNews();
     if (!rows.length) {
         tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-sm text-light-text-secondary">Kayıt bulunamadı.</td></tr>`;
+        refreshAdminMobileTables();
         return;
     }
 
@@ -182,6 +184,7 @@ function renderNewsTable() {
                 </td>
             </tr>`;
     }).join('');
+    refreshAdminMobileTables();
 }
 
 function renderRgTable() {
@@ -196,6 +199,7 @@ function renderRgTable() {
 
     if (!rows.length) {
         tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-sm text-light-text-secondary">Kayıt bulunamadı.</td></tr>`;
+        refreshAdminMobileTables();
         return;
     }
 
@@ -217,6 +221,7 @@ function renderRgTable() {
                 </td>
             </tr>`;
     }).join('');
+    refreshAdminMobileTables();
 }
 
 function setTab(tab) {

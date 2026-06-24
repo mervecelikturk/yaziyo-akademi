@@ -1,8 +1,9 @@
 /**
  * YAZİYO - Admin kullanıcı yönetimi
  */
-import { supabase } from './lib/supabase.js';
+import { getSupabaseClient, initSupabaseClient } from './lib/supabase.js';
 import { requireAdminAccess } from './lib/adminAuth.js';
+import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 
 let allUsers = [];
 let searchQuery = '';
@@ -82,6 +83,7 @@ function showLoading() {
             </td>
         </tr>
     `;
+    refreshAdminMobileTables();
 }
 
 function showSetupRequired() {
@@ -110,6 +112,7 @@ function showSetupRequired() {
     const summary = document.getElementById('users-count-summary');
     if (summary) summary.textContent = '—';
     loadSetupSql();
+    refreshAdminMobileTables();
 }
 
 async function loadSetupSql() {
@@ -136,6 +139,7 @@ function showError(message) {
             </td>
         </tr>
     `;
+    refreshAdminMobileTables();
 }
 
 function renderTable() {
@@ -184,9 +188,12 @@ function renderTable() {
     }).join('');
 
     attachDeleteHandlers();
+    refreshAdminMobileTables();
 }
 
 export async function fetchUsers() {
+    await initSupabaseClient();
+    const supabase = getSupabaseClient();
     if (!supabase) {
         showError('Sistem bağlantısı kurulamadı.');
         return;
@@ -266,6 +273,7 @@ function closeDeleteUserModal() {
 }
 
 async function confirmDeleteUser() {
+    const supabase = getSupabaseClient();
     if (!pendingDeleteUserId || !supabase) return;
 
     const userId = pendingDeleteUserId;
@@ -372,6 +380,7 @@ function toggleModalPassword(inputId, btn) {
 
 async function createUser(e) {
     e.preventDefault();
+    const supabase = getSupabaseClient();
     if (!supabase) return;
 
     const ad = (document.getElementById('add-user-ad')?.value || '').trim();
@@ -461,6 +470,7 @@ async function createUser(e) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    showLoading();
     if (!(await requireAdminAccess())) return;
 
     fetchUsers();

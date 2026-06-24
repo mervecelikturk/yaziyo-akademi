@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ============================================ */
     /* İSTATİSTİK SAYAÇ ANİMASYONU                */
     /* ============================================ */
-    const statNumbers = document.querySelectorAll('.stat-number');
 
     function animateCounter(element, target, duration = 1500) {
         const startTime = performance.now();
@@ -43,12 +42,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function triggerStatAnimation(card) {
         const numberEl = card.querySelector('.stat-number');
-        if (!numberEl || card.classList.contains('animated')) return;
+        if (!numberEl) return;
 
         const run = () => {
-            if (card.classList.contains('animated')) return;
-            card.classList.add('animated');
             const target = parseInt(numberEl.getAttribute('data-target'), 10) || 0;
+            const lastTarget = card.dataset.animatedTarget;
+            if (lastTarget === String(target) && card.classList.contains('animated')) return;
+
+            card.classList.add('animated');
+            card.dataset.animatedTarget = String(target);
             animateCounter(numberEl, target);
         };
 
@@ -61,6 +63,23 @@ document.addEventListener('DOMContentLoaded', () => {
         run();
     }
 
+    function bindAsyncStatReadyListeners() {
+        Object.entries(ASYNC_STAT_CARDS).forEach(([elementId, config]) => {
+            const onReady = () => {
+                const card = document.getElementById(elementId)?.closest('.stat-card');
+                if (card) triggerStatAnimation(card);
+            };
+
+            document.addEventListener(config.readyEvent, onReady);
+            if (document.documentElement.dataset[config.readyKey] === '1') {
+                onReady();
+            }
+        });
+    }
+
+    bindAsyncStatReadyListeners();
+
+    const isMobileViewport = window.matchMedia('(max-width: 1023px)').matches;
     const statsObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -68,12 +87,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, {
-        threshold: 0.3,
-        rootMargin: '0px 0px -50px 0px',
+        threshold: isMobileViewport ? 0.05 : 0.3,
+        rootMargin: isMobileViewport ? '0px' : '0px 0px -50px 0px',
     });
 
     document.querySelectorAll('.stat-card').forEach(card => {
         statsObserver.observe(card);
+        if (isMobileViewport && card.getBoundingClientRect().top < window.innerHeight) {
+            triggerStatAnimation(card);
+        }
     });
 
     /* ============================================ */

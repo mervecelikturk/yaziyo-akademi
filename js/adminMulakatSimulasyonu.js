@@ -2,6 +2,7 @@
  * YAZİYO — Admin Mülakat Simülasyon Paketleri
  */
 import { requireAdminAccess } from './lib/adminAuth.js';
+import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 import { fetchAllSorularAdmin, getCategoryLabel } from './lib/sozluMulakatApi.js';
 import {
     ORAL_QUESTION_COUNT,
@@ -143,6 +144,7 @@ function renderTable() {
     const list = filterList();
     if (!list.length) {
         els.tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-sm text-light-text-secondary">${simulations.length ? 'Filtreye uygun kayıt yok.' : 'Henüz simülasyon eklenmedi.'}</td></tr>`;
+        refreshAdminMobileTables();
         return;
     }
     els.tbody.innerHTML = list.map((s) => `
@@ -161,6 +163,7 @@ function renderTable() {
                 </div>
             </td>
         </tr>`).join('');
+    refreshAdminMobileTables();
 }
 
 function resetForm() {
