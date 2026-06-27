@@ -8,6 +8,7 @@
     const PAGES = [
         { id: 'anasayfa', label: 'Ana Sayfa', href: 'index.html', defaultActive: true },
         { id: 'profil', label: 'Profil', href: 'profil.html', defaultActive: true },
+        { id: 'dersler', label: 'Dersler', navLabel: 'Dersler', href: 'dersler.html', defaultActive: true },
         { id: 'hiz-testi', label: 'Hız Testi', href: 'hizTesti.html', defaultActive: true },
         { id: 'klavye-calismasi', label: 'Klavye Çalışması', href: 'klavyeCalismasi.html', defaultActive: true },
         { id: 'ozel-metin-calismasi', label: 'Özel Metin Çalışması', href: 'ozelMetinCalismasi.html', defaultActive: true },
