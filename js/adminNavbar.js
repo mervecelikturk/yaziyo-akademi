@@ -140,7 +140,8 @@
         link.blur();
 
         if (link.closest('#mobile-menu')) {
-            closeMobileMenu();
+            // Mobilde menüyü hemen kapatmak navigasyonu iptal edebilir — geciktir
+            setTimeout(() => closeMobileMenu(), 300);
         }
     }
 
@@ -148,7 +149,7 @@
     function bindNavClickHandler() {
         if (navClickBound) return;
         navClickBound = true;
-        document.addEventListener('click', handleNavClick, true);
+        document.addEventListener('click', handleNavClick, false);
     }
 
     function buildAdminHeader(active) {
@@ -239,6 +240,10 @@
         header.classList.add('w-full', 'bg-light-bg/95', 'dark:bg-dark-bg/95', 'backdrop-blur-md', 'sticky', 'top-0', 'z-50', 'transition-colors', 'duration-300');
         applyNavActive(active);
         bindNavClickHandler();
+        refreshMobileTables();
+        if (window.YaziyoMobileMenu?.init) {
+            window.YaziyoMobileMenu.init();
+        }
         return true;
     }
 

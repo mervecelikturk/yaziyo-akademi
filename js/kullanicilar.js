@@ -160,6 +160,7 @@ function renderTable() {
                 </td>
             </tr>
         `;
+        refreshAdminMobileTables();
         return;
     }
 

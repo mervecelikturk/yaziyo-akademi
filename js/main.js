@@ -3,6 +3,96 @@
 /* Zabıt Katipliği Çalışma Platformu            */
 /* ============================================ */
 
+function closeMobileMenuUi() {
+    if (window.YaziyoSiteNavbar?.closeMobileMenu) {
+        window.YaziyoSiteNavbar.closeMobileMenu();
+        return;
+    }
+    if (window.YaziyoAdminNavbar?.closeMobileMenu) {
+        window.YaziyoAdminNavbar.closeMobileMenu();
+        return;
+    }
+    const mobileMenu = document.getElementById('mobile-menu');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+    if (!mobileMenu) return;
+    mobileMenu.classList.remove('open');
+    mobileMenu.classList.add('hidden');
+    hamburgerIcon?.classList.remove('fa-xmark');
+    hamburgerIcon?.classList.add('fa-bars');
+}
+
+function openMobileMenuUi() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+    if (!mobileMenu) return;
+
+    if (window.YaziyoSiteNavbar?.syncNavActive) {
+        window.YaziyoSiteNavbar.syncNavActive();
+    } else if (window.YaziyoAdminNavbar?.syncNavActive) {
+        window.YaziyoAdminNavbar.syncNavActive();
+    }
+
+    mobileMenu.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        mobileMenu.classList.add('open');
+    });
+    hamburgerIcon?.classList.remove('fa-bars');
+    hamburgerIcon?.classList.add('fa-xmark');
+}
+
+let mobileMenuUiBound = false;
+
+function initMobileMenuUi() {
+    if (mobileMenuUiBound) return;
+    mobileMenuUiBound = true;
+
+    document.addEventListener('click', (e) => {
+        const hamburgerBtn = e.target.closest('#hamburger-btn');
+        if (hamburgerBtn) {
+            e.stopPropagation();
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (!mobileMenu) return;
+
+            if (mobileMenu.classList.contains('open')) {
+                closeMobileMenuUi();
+            } else {
+                openMobileMenuUi();
+            }
+            return;
+        }
+
+        const trigger = e.target.closest('.mobile-dropdown-trigger');
+        if (trigger) {
+            e.stopPropagation();
+            const menu = trigger.nextElementSibling;
+            if (!menu) return;
+            const isOpen = menu.classList.contains('open');
+
+            document.querySelectorAll('.mobile-dropdown-menu.open').forEach((m) => {
+                m.classList.remove('open');
+                m.previousElementSibling?.classList.remove('open');
+            });
+
+            if (!isOpen) {
+                menu.classList.add('open');
+                trigger.classList.add('open');
+            }
+            return;
+        }
+
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenu?.classList.contains('open') && !mobileMenu.contains(e.target)) {
+            closeMobileMenuUi();
+        }
+    });
+}
+
+window.YaziyoMobileMenu = {
+    init: initMobileMenuUi,
+    close: closeMobileMenuUi,
+    open: openMobileMenuUi,
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 
     if (window.YaziyoAdminNavbar) {
@@ -13,79 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.YaziyoSiteNavbar.boot();
     }
 
-    /* ============================================ */
-    /* MOBİL HAMBURGER MENÜ KONTROLÜ               */
-    /* ============================================ */
-    function closeMobileMenuUi() {
-        if (window.YaziyoSiteNavbar?.closeMobileMenu) {
-            window.YaziyoSiteNavbar.closeMobileMenu();
-            return;
-        }
-        if (window.YaziyoAdminNavbar?.closeMobileMenu) {
-            window.YaziyoAdminNavbar.closeMobileMenu();
-            return;
-        }
-        const mobileMenu = document.getElementById('mobile-menu');
-        const hamburgerIcon = document.getElementById('hamburger-icon');
-        if (!mobileMenu) return;
-        mobileMenu.classList.remove('open');
-        mobileMenu.classList.add('hidden');
-        hamburgerIcon?.classList.remove('fa-xmark');
-        hamburgerIcon?.classList.add('fa-bars');
-    }
-
-    const hamburgerBtn = document.getElementById('hamburger-btn');
-    const hamburgerIcon = document.getElementById('hamburger-icon');
-    const mobileMenu = document.getElementById('mobile-menu');
-
-    if (hamburgerBtn && mobileMenu) {
-        hamburgerBtn.addEventListener('click', () => {
-            const isOpen = mobileMenu.classList.contains('open');
-
-            if (isOpen) {
-                closeMobileMenuUi();
-            } else {
-                if (window.YaziyoSiteNavbar?.syncNavActive) {
-                    window.YaziyoSiteNavbar.syncNavActive();
-                } else if (window.YaziyoAdminNavbar?.syncNavActive) {
-                    window.YaziyoAdminNavbar.syncNavActive();
-                }
-                mobileMenu.classList.remove('hidden');
-                requestAnimationFrame(() => {
-                    mobileMenu.classList.add('open');
-                });
-                hamburgerIcon.classList.remove('fa-bars');
-                hamburgerIcon.classList.add('fa-xmark');
-            }
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!mobileMenu.classList.contains('open')) return;
-            if (hamburgerBtn.contains(e.target) || mobileMenu.contains(e.target)) return;
-            closeMobileMenuUi();
-        });
-    }
-
-    /* ============================================ */
-    /* MOBİL DROPDOWN ACCORDION KONTROLÜ           */
-    /* ============================================ */
-    document.querySelectorAll('.mobile-dropdown-trigger').forEach(trigger => {
-        trigger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const menu = trigger.nextElementSibling;
-            const isOpen = menu.classList.contains('open');
-
-            document.querySelectorAll('.mobile-dropdown-menu.open').forEach(m => {
-                m.classList.remove('open');
-                m.previousElementSibling.classList.remove('open');
-            });
-
-            if (!isOpen) {
-                menu.classList.add('open');
-                trigger.classList.add('open');
-            }
-        });
-    });
+    initMobileMenuUi();
 
     /* ============================================ */
     /* GECE/GÜNDÜZ MODU KONTROLÜ                   */

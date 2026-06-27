@@ -840,20 +840,37 @@ document.addEventListener('DOMContentLoaded', () => {
         return audioCtx;
     }
 
-    function playBeep(freq, duration) {
-        ensureAudioCtx().then((ctx) => {
-            if (!ctx || ctx.state !== 'running') return;
-            const oscillator = ctx.createOscillator();
-            const gainNode = ctx.createGain();
-            oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
-            gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
-            oscillator.connect(gainNode);
-            gainNode.connect(ctx.destination);
-            oscillator.start();
-            oscillator.stop(ctx.currentTime + duration / 1000);
-        }).catch(() => {});
+    async function playBeep(freq, duration) {
+        const ctx = await ensureAudioCtx();
+        if (!ctx || ctx.state !== 'running') return;
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+        gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + duration / 1000);
+    }
+
+    async function primeBackgroundAudio() {
+        const selectedSound = document.getElementById('sound-select')?.value;
+        if (!selectedSound || selectedSound === 'none' || !soundFiles[selectedSound]) return;
+
+        bgAudio.src = soundFiles[selectedSound];
+        const prevVolume = bgAudio.volume;
+        bgAudio.volume = 0.01;
+        try {
+            await bgAudio.play();
+            bgAudio.pause();
+            bgAudio.currentTime = 0;
+        } catch (_) {
+            /* mobilde sessiz başlatma engellenirse geri sayım sonrası tekrar denenecek */
+        } finally {
+            bgAudio.volume = prevVolume || 1;
+        }
     }
 
     let bgAudio = new Audio();
@@ -986,6 +1003,7 @@ document.addEventListener('DOMContentLoaded', () => {
             audioCtx.resume();
         }
         await ensureAudioCtx();
+        await primeBackgroundAudio();
 
         const category = categorySelect.value;
         const group = groupSelect.value;
@@ -1069,27 +1087,32 @@ document.addEventListener('DOMContentLoaded', () => {
             countdownOverlay.classList.add('opacity-100');
         }
 
-        let count = 3;
-        countdownNumber.textContent = count;
+        countdownNumber.textContent = '3';
         countdownNumber.classList.remove('is-start');
         playBeep(440, 150);
 
-        const countInterval = setInterval(() => {
-            count--;
-            if (count > 0) {
-                countdownNumber.textContent = count;
-                countdownNumber.classList.remove('is-start');
-                playBeep(440, 150);
-            } else if (count === 0) {
-                countdownNumber.textContent = "BAŞLA!";
-                countdownNumber.classList.add('is-start', 'text-green-500');
-                countdownNumber.classList.remove('text-yaziyo-gold');
-                playBeep(880, 400);
-            } else {
-                clearInterval(countInterval);
-                finishCountdown();
-            }
+        setTimeout(() => {
+            countdownNumber.textContent = '2';
+            countdownNumber.classList.remove('is-start');
+            playBeep(440, 150);
         }, 1000);
+
+        setTimeout(() => {
+            countdownNumber.textContent = '1';
+            countdownNumber.classList.remove('is-start');
+            playBeep(440, 150);
+        }, 2000);
+
+        setTimeout(() => {
+            countdownNumber.textContent = 'BAŞLA!';
+            countdownNumber.classList.add('is-start', 'text-green-500');
+            countdownNumber.classList.remove('text-yaziyo-gold');
+            playBeep(880, 400);
+        }, 3000);
+
+        setTimeout(() => {
+            finishCountdown();
+        }, 4000);
     }
 
     function finishCountdown() {
@@ -1117,7 +1140,9 @@ document.addEventListener('DOMContentLoaded', () => {
         timerInterval = setInterval(handleTick, 1000);
         const selectedSound = document.getElementById('sound-select').value;
         if (selectedSound !== 'none' && soundFiles[selectedSound]) {
-            bgAudio.src = soundFiles[selectedSound];
+            if (!bgAudio.src) {
+                bgAudio.src = soundFiles[selectedSound];
+            }
             bgAudio.play().catch(e => console.error("Ses çalınamadı:", e));
         }
     }

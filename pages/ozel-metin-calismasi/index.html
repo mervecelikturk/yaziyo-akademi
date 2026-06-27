@@ -902,19 +902,51 @@
         /* GERİ SAYIM SESİ (Web Audio bip)             */
         /* ============================================ */
         let audioCtx = null;
-        function playBeep(freq, duration) {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+
+        async function ensureAudioCtx() {
+            if (!audioCtx) {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                if (Ctx) audioCtx = new Ctx();
+            }
+            if (audioCtx?.state === 'suspended') {
+                try {
+                    await audioCtx.resume();
+                } catch (_) {}
+            }
+            return audioCtx;
+        }
+
+        async function playBeep(freq, duration) {
+            const ctx = await ensureAudioCtx();
+            if (!ctx || ctx.state !== 'running') return;
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
+            oscillator.frequency.setValueAtTime(freq, ctx.currentTime);
+            gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration / 1000);
             oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            gainNode.connect(ctx.destination);
             oscillator.start();
-            oscillator.stop(audioCtx.currentTime + duration / 1000);
+            oscillator.stop(ctx.currentTime + duration / 1000);
+        }
+
+        async function primeBackgroundAudio() {
+            const selectedSound = soundSelect ? soundSelect.value : 'none';
+            if (!selectedSound || selectedSound === 'none' || !soundFiles[selectedSound]) return;
+
+            bgAudio.src = soundFiles[selectedSound];
+            const prevVolume = bgAudio.volume;
+            bgAudio.volume = 0.01;
+            try {
+                await bgAudio.play();
+                bgAudio.pause();
+                bgAudio.currentTime = 0;
+            } catch (_) {
+                /* mobilde sessiz başlatma engellenirse geri sayım sonrası tekrar denenecek */
+            } finally {
+                bgAudio.volume = prevVolume || 1;
+            }
         }
 
         let bgAudio = new Audio();
@@ -991,29 +1023,30 @@
             countdownOverlay.style.opacity = '1';
             countdownOverlay.classList.remove('hidden');
 
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            let count = 3;
-            countdownNumber.textContent = count;
+            countdownNumber.textContent = '3';
             countdownNumber.className = 'text-[150px] font-poppins font-extrabold text-yaziyo-gold countdown-text';
             playBeep(440, 150);
 
-            const countInterval = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    countdownNumber.textContent = count;
-                    playBeep(440, 150);
-                } else if (count === 0) {
-                    countdownNumber.textContent = 'BAŞLA!';
-                    countdownNumber.classList.remove('text-yaziyo-gold');
-                    countdownNumber.classList.add('text-green-500');
-                    playBeep(880, 400);
-                } else {
-                    clearInterval(countInterval);
-                    finishCountdown();
-                }
+            setTimeout(() => {
+                countdownNumber.textContent = '2';
+                playBeep(440, 150);
             }, 1000);
+
+            setTimeout(() => {
+                countdownNumber.textContent = '1';
+                playBeep(440, 150);
+            }, 2000);
+
+            setTimeout(() => {
+                countdownNumber.textContent = 'BAŞLA!';
+                countdownNumber.classList.remove('text-yaziyo-gold');
+                countdownNumber.classList.add('text-green-500');
+                playBeep(880, 400);
+            }, 3000);
+
+            setTimeout(() => {
+                finishCountdown();
+            }, 4000);
         }
 
         function finishCountdown() {
@@ -1029,7 +1062,7 @@
             userInput.focus();
             isTestRunning = true;
 
-            import('../js/lib/keyPressTracker.js').then(({ startKeyPressSession }) => {
+            import('../../js/lib/keyPressTracker.js').then(({ startKeyPressSession }) => {
                 const kbType = document.getElementById('keyboard-type-select')?.value || 'q';
                 startKeyPressSession(kbType);
             });
@@ -1039,7 +1072,9 @@
 
             const selectedSound = soundSelect ? soundSelect.value : 'none';
             if (selectedSound !== 'none' && soundFiles[selectedSound]) {
-                bgAudio.src = soundFiles[selectedSound];
+                if (!bgAudio.src) {
+                    bgAudio.src = soundFiles[selectedSound];
+                }
                 bgAudio.play().catch((e) => console.error('Ses çalınamadı:', e));
             }
         }
@@ -1099,7 +1134,7 @@
         /* ============================================ */
         /* BAŞLA BUTONU                               */
         /* ============================================ */
-        startBtn.addEventListener('click', () => {
+        startBtn.addEventListener('click', async () => {
             const rawText = sourceTextInput.value.trim();
 
             bgAudio.pause();
@@ -1110,6 +1145,9 @@
                 showWarningModal();
                 return;
             }
+
+            await ensureAudioCtx();
+            await primeBackgroundAudio();
 
             // Temayı kaydet ve light mode'a zorla
             savedThemeBeforeTest = localStorage.getItem('yaziyo-theme') || 'light';

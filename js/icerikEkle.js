@@ -3,6 +3,7 @@
 /* ============================================ */
 
 import { requireAdminAccess } from './lib/adminAuth.js';
+import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
     if (!(await requireAdminAccess())) return;
@@ -31,6 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
         tbody.appendChild(row);
     });
+
+    refreshAdminMobileTables();
 
     tbody.addEventListener('click', (e) => {
         const btn = e.target.closest('.status-toggle-btn');
