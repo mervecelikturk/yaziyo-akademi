@@ -1451,7 +1451,7 @@
             const { data: { user } } = await state.supabase.auth.getUser();
             if (user) {
                 state.userId = user.id;
-                state.userName = user.user_metadata?.full_name || 'Oyuncu';
+                state.userName = user.user_metadata?.site_full_name || user.user_metadata?.full_name || 'Oyuncu';
                 state.avatarUrl = user.user_metadata?.avatar_url || null;
                 return true;
             }

@@ -61,7 +61,7 @@ export async function submitDeleteRequest() {
     }
 
     const user = session.user;
-    const { ad, soyad } = parseUserName(user.user_metadata?.full_name);
+    const { ad, soyad } = parseUserName(user.user_metadata?.site_full_name || user.user_metadata?.full_name);
     const eposta = user.email || '';
     const mesaj = `${HESAP_SIL_PREFIX}\n\n${reason}`;
 

@@ -14,6 +14,8 @@
     const SLUG_TO_ACTIVE = {
         profil: 'profil',
         'hiz-testi': 'klavye-calismalari',
+        'dersler': 'klavye-calismalari',
+        'ders-oyunu': 'klavye-calismalari',
         'klavye-calismasi': 'klavye-calismalari',
         'ozel-metin-calismasi': 'klavye-calismalari',
         'klavye-sinavi': 'klavye-calismalari',
@@ -217,6 +219,7 @@
                     <li class="nav-dropdown">
                         <button type="button" class="nav-link nav-dropdown-trigger${ac(active, 'klavye-calismalari')}" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">
+                            <li><a href="${paths.pageHref('dersler.html')}" class="nav-dropdown-item">Dersler</a></li>
                             <li><a href="${paths.pageHref('hizTesti.html')}" class="nav-dropdown-item">Hız Testi</a></li>
                             <li><a href="${paths.pageHref('klavyeCalismasi.html')}" class="nav-dropdown-item">Klavye Çalışması</a></li>
                             <li><a href="${paths.pageHref('ozelMetinCalismasi.html')}" class="nav-dropdown-item">Özel Metin Çalışması</a></li>
@@ -257,6 +260,7 @@
                         <li class="mobile-dropdown${mobOpen(active, 'klavye-calismalari')}">
                             <button type="button" class="mobile-nav-link mobile-dropdown-trigger${ac(active, 'klavye-calismalari')} w-full text-left flex items-center justify-between" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
                             <ul class="mobile-dropdown-menu${mobOpen(active, 'klavye-calismalari')} flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="${paths.pageHref('dersler.html')}" class="mobile-nav-link text-[0.8em]">Dersler</a></li>
                                 <li><a href="${paths.pageHref('hizTesti.html')}" class="mobile-nav-link text-[0.8em]">Hız Testi</a></li>
                                 <li><a href="${paths.pageHref('klavyeCalismasi.html')}" class="mobile-nav-link text-[0.8em]">Klavye Çalışması</a></li>
                                 <li><a href="${paths.pageHref('ozelMetinCalismasi.html')}" class="mobile-nav-link text-[0.8em]">Özel Metin Çalışması</a></li>

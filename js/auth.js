@@ -96,9 +96,13 @@ function updateUIElements(user) {
     syncAuthNavButtons(user);
 
     if (user) {
-        const name = user.user_metadata?.full_name || 'Kullanıcı';
-        const avatarUrl = user.user_metadata?.avatar_url;
-        const resolvedAvatar = window.YaziyoPaths?.resolveAssetUrl?.(avatarUrl) || avatarUrl;
+        // site_full_name: kullanıcının siteden kaydettiği isim (Google OAuth'un full_name'ini ezmez)
+        const name = user.user_metadata?.site_full_name || user.user_metadata?.full_name || 'Kullanıcı';
+        // site_avatar_url: kullanıcının siteden seçtiği avatar (Google OAuth'un avatar_url'ini ezmez)
+        const siteAvatarUrl = user.user_metadata?.site_avatar_url;
+        const resolvedAvatar = siteAvatarUrl
+            ? (window.YaziyoPaths?.resolveAssetUrl?.(siteAvatarUrl) || siteAvatarUrl)
+            : null;
 
         if (document.getElementById('user-name')) document.getElementById('user-name').innerText = name;
         if (document.getElementById('kpss-user-name')) document.getElementById('kpss-user-name').innerText = name;

@@ -404,6 +404,7 @@
                     <li class="nav-dropdown">
                         <button class="nav-link nav-dropdown-trigger" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">
+                            <li><a href="../dersler/" class="nav-dropdown-item">Dersler</a></li>
                             <li><a href="../hiz-testi/" class="nav-dropdown-item">Hız Testi</a></li>
                             <li><a href="../klavye-calismasi/" class="nav-dropdown-item">Klavye Çalışması</a></li>
                             <li><a href="../ozel-metin-calismasi/" class="nav-dropdown-item">Özel Metin Çalışması</a></li>
@@ -453,6 +454,7 @@
                         <li class="mobile-dropdown">
                             <button class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
                             <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="../dersler/" class="mobile-nav-link text-[0.8em]">Dersler</a></li>
                                 <li><a href="../hiz-testi/" class="mobile-nav-link text-[0.8em]">Hız Testi</a></li>
                                 <li><a href="../klavye-calismasi/" class="mobile-nav-link text-[0.8em]">Klavye Çalışması</a></li>
                                 <li><a href="../ozel-metin-calismasi/" class="mobile-nav-link text-[0.8em]">Özel Metin Çalışması</a></li>
@@ -2220,7 +2222,7 @@
                 await getLoggedInUser();
 
                 const { error: dbError } = await window.yaziyoSupabase.auth.updateUser({
-                    data: { avatar_url: selectedAvatarSrc },
+                    data: { site_avatar_url: selectedAvatarSrc },
                 });
                 if (dbError) throw dbError;
 
@@ -2332,13 +2334,15 @@
                 const joinDateEl = document.getElementById('user-join-date');
                 if (joinDateEl) joinDateEl.textContent = formatProfileJoinDate(user.created_at);
                 const meta = user.user_metadata || {};
-                if (meta.full_name) {
+                const displayName = meta.site_full_name || meta.full_name;
+                if (displayName) {
                     const userNameEl = document.getElementById('user-name');
-                    if (userNameEl) userNameEl.textContent = meta.full_name;
+                    if (userNameEl) userNameEl.textContent = displayName;
                 }
-                if (meta.avatar_url) {
+                const siteAvatar = meta.site_avatar_url;
+                if (siteAvatar) {
                     const avatarContainer = document.getElementById('profile-avatar');
-                    const avatarSrc = window.YaziyoPaths?.resolveAssetUrl?.(meta.avatar_url) || meta.avatar_url;
+                    const avatarSrc = window.YaziyoPaths?.resolveAssetUrl?.(siteAvatar) || siteAvatar;
                     if (avatarContainer) {
                         avatarContainer.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover rounded-full">`;
                     }
@@ -2379,12 +2383,13 @@
                     // 2. User Metadata'dan Veri Çekme
                     const meta = user.user_metadata || {};
                     
-                    if (meta.full_name) {
+                    const displayName2 = meta.site_full_name || meta.full_name;
+                    if (displayName2) {
                         const userNameEl = document.getElementById('user-name');
-                        if (userNameEl) userNameEl.textContent = meta.full_name;
+                        if (userNameEl) userNameEl.textContent = displayName2;
                         
                         // "Bilgilerimi Düzenle" formuna ad soyadı doldur
-                        const names = meta.full_name.split(' ');
+                        const names = displayName2.split(' ');
                         const lastName = names.pop() || '';
                         const firstName = names.join(' ') || '';
                         
@@ -2394,9 +2399,10 @@
                         if (editSoyad) editSoyad.value = lastName;
                     }
 
-                    if (meta.avatar_url) {
+                    const siteAvatar2 = meta.site_avatar_url;
+                    if (siteAvatar2) {
                         const avatarContainer = document.getElementById('profile-avatar');
-                        const avatarSrc = window.YaziyoPaths?.resolveAssetUrl?.(meta.avatar_url) || meta.avatar_url;
+                        const avatarSrc = window.YaziyoPaths?.resolveAssetUrl?.(siteAvatar2) || siteAvatar2;
                         if (avatarContainer) {
                             avatarContainer.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover rounded-full">`;
                         }

@@ -26,7 +26,7 @@ function forceProfileVisible(user) {
     }
 
     if (user) {
-        const name = user.user_metadata?.full_name || user.email || 'Kullanıcı';
+        const name = user.user_metadata?.site_full_name || user.user_metadata?.full_name || user.email || 'Kullanıcı';
         const email = user.email || '';
         const userName = document.getElementById('user-name');
         const userEmail = document.getElementById('user-email');

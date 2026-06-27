@@ -20,6 +20,8 @@
         'iletisim.html': 'iletisim',
         'kelimeEvi.html': 'kelime-evi',
         'klavyeCalismasi.html': 'klavye-calismasi',
+        'dersler.html': 'dersler',
+        'dersOyunu.html': 'ders-oyunu',
         'klavyeDuellosu.html': 'klavye-duellosu',
         'klavyeSinavi.html': 'klavye-sinavi',
         'kpssCalismasi.html': 'kpss-calismasi',

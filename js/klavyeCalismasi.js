@@ -858,17 +858,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let bgAudio = new Audio();
     bgAudio.loop = true;
+    const soundUrl = (file) =>
+        window.YaziyoPaths?.assetHref?.(`sound effect/${file}`)
+        ?? `../../sound effect/${file}`;
     const soundFiles = {
-        'keyboard1': '../sound effect/keyboard1.mp3',
-        'keyboard2': '../sound effect/keyboard2.mp3',
-        'bird': '../sound effect/bird.mp3',
-        'clock': '../sound effect/clock.mp3',
-        'rain': '../sound effect/rain.mp3',
-        'steps': '../sound effect/steps.mp3',
-        'waves': '../sound effect/waves.mp3',
-        'kafe': '../sound effect/kafe.mp3',
-        'somine': '../sound effect/somine.mp3',
-        'odak': '../sound effect/odak.mp3',
+        'keyboard1': soundUrl('keyboard1.mp3'),
+        'keyboard2': soundUrl('keyboard2.mp3'),
+        'bird': soundUrl('bird.mp3'),
+        'clock': soundUrl('clock.mp3'),
+        'rain': soundUrl('rain.mp3'),
+        'steps': soundUrl('steps.mp3'),
+        'waves': soundUrl('waves.mp3'),
+        'kafe': soundUrl('kafe.mp3'),
+        'somine': soundUrl('somine.mp3'),
+        'odak': soundUrl('odak.mp3'),
     };
 
     // Modal

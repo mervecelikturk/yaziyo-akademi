@@ -121,7 +121,7 @@ const F_FINGER_MAP = {
     '8': 'right_middle', 'i': 'right_middle', 'o': 'right_middle',
     '9': 'right_ring', 'q': 'right_ring', 'w': 'right_ring',
     '0': 'right_pinky', '/': 'right_pinky', '-': 'right_pinky', ',': 'right_pinky',
-    'u': 'left_middle', 'ı': 'left_middle', 'a': 'left_middle', 'e': 'left_middle',
+    'u': 'left_middle', 'ı': 'left_middle', 'a': 'left_index', 'e': 'left_middle',
     't': 'right_index', 'k': 'right_index', 'm': 'right_index', 'l': 'right_index', 'y': 'right_index', 'ü': 'right_index', 'z': 'right_index', 's': 'right_index',
     'p': 'right_pinky', 'ğ': 'right_pinky',
     ' ': 'thumb',

@@ -292,7 +292,7 @@ export async function deleteSoru(id, client = supabase) {
 export async function reportSoruToAdmin({ question, user, note = '' }, client = supabase) {
     if (!client || !question) return { error: new Error('Geçersiz istek') };
 
-    const fullName = (user?.user_metadata?.full_name || user?.email || 'Kullanıcı').trim();
+    const fullName = (user?.user_metadata?.site_full_name || user?.user_metadata?.full_name || user?.email || 'Kullanıcı').trim();
     const parts = fullName.split(/\s+/).filter(Boolean);
     const ad = parts[0] || 'Kullanıcı';
     const soyad = parts.length > 1 ? parts.slice(1).join(' ') : '-';
