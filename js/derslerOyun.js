@@ -389,7 +389,7 @@ function startLesson(no) {
 
 function computeResult() {
     const C = core();
-    const alignment = C.evaluateExamText(wordsArray, els.input.value, true, {
+    const alignment = C.evaluateExamText(wordsArray, els.input.value, false, {
         incompleteLastWord: true,
     });
     const total = wordsArray.length;

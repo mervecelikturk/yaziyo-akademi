@@ -193,20 +193,23 @@
             const normE = normalizeForComparison(expected, isImlasiz);
 
             if (o + 1 < originalWords.length) {
-                const mergedNorm = normE + normalizeForComparison(originalWords[o + 1], isImlasiz);
-                if (normT === mergedNorm) {
-                    origStatus[o] = 'wrong';
-                    origStatus[o + 1] = 'wrong';
-                    wrong++;
-                    mistakes.push({
-                        user: typed,
-                        original: expected + ' ' + originalWords[o + 1],
-                        errorType: ERROR_LABELS.MERGE
-                    });
-                    steps.push({ type: 'merge', typed, original: expected, originalNext: originalWords[o + 1] });
-                    o += 2;
-                    t++;
-                    continue;
+                const nextNorm = normalizeForComparison(originalWords[o + 1], isImlasiz);
+                if (nextNorm) {
+                    const mergedNorm = normE + nextNorm;
+                    if (mergedNorm !== normE && normT === mergedNorm) {
+                        origStatus[o] = 'wrong';
+                        origStatus[o + 1] = 'wrong';
+                        wrong++;
+                        mistakes.push({
+                            user: typed,
+                            original: expected + ' ' + originalWords[o + 1],
+                            errorType: ERROR_LABELS.MERGE
+                        });
+                        steps.push({ type: 'merge', typed, original: expected, originalNext: originalWords[o + 1] });
+                        o += 2;
+                        t++;
+                        continue;
+                    }
                 }
             }
 
