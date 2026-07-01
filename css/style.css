@@ -39,6 +39,11 @@ body {
 }
 
 @media (max-width: 767px) {
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-card,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll {
+        overflow: visible !important;
+    }
+
     #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll {
         overflow-x: visible;
     }
@@ -48,26 +53,21 @@ body {
         min-width: 0 !important;
         width: 100%;
         border-collapse: separate;
+        border-spacing: 0;
     }
 
     #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table thead {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
+        display: none;
     }
 
     #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody {
         display: block;
+        width: 100%;
     }
 
     #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody tr {
         display: block;
+        width: 100%;
         margin-bottom: 0.75rem;
         padding: 0.875rem 1rem;
         border: 1px solid rgb(var(--yaziyo-border-rgb));
@@ -79,12 +79,11 @@ body {
         margin-bottom: 0;
     }
 
+    /* Safari: table hücrelerinde grid kullanılmaz — içerik kaybolabiliyor */
     #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td {
-        display: grid;
-        grid-template-columns: minmax(6.5rem, 38%) 1fr;
-        gap: 0.35rem 0.75rem;
-        align-items: start;
-        padding: 0.45rem 0;
+        display: block;
+        width: 100%;
+        padding: 0.4rem 0;
         border: none;
         font-size: 0.8125rem;
         color: rgb(var(--yaziyo-text-rgb));
@@ -95,6 +94,8 @@ body {
 
     #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td::before {
         content: attr(data-label);
+        display: block;
+        margin-bottom: 0.2rem;
         font-size: 0.625rem;
         font-weight: 700;
         font-family: 'Poppins', sans-serif;
@@ -110,10 +111,6 @@ body {
     }
 
     #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td[colspan]::before {
-        display: none;
-    }
-
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td:empty:not([colspan]) {
         display: none;
     }
 }

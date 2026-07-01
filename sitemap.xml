@@ -2,97 +2,103 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://yaziyoakademi.com/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://yaziyoakademi.com/pages/dersler/</loc>
+    <lastmod>2026-07-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://yaziyoakademi.com/pages/hiz-testi/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/klavye-calismasi/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/ozel-metin-calismasi/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/klavye-sinavi/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/klavye-duellosu/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/kelime-evi/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/araba-yarisi/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/sozlu-mulakat/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/mulakat-simulasyonu/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/becayis/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/egitim-paketleri/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/haberler/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/kpss-calismasi/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/iletisim/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://yaziyoakademi.com/pages/giris-kayit/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-07-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>

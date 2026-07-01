@@ -2,7 +2,9 @@
  * YAZİYO - Hız testi günlük liderlik tablosu (podyum + tüm liste)
  */
 
-import { supabase } from './lib/supabase.js';
+import { initSupabaseClient, supabase } from './lib/supabase.js';
+
+const EMPTY_LEADERBOARD_MSG = 'Hadi, günün ilk testini sen yap!';
 
 function getClient() {
     return window.yaziyoSupabase || supabase;
@@ -116,7 +118,7 @@ function renderPodium(liste) {
         podium.innerHTML = `
             <div class="w-full text-center py-10 border border-dashed border-yaziyo-border rounded-2xl bg-yaziyo-bg/40">
                 <i class="fa-solid fa-trophy text-4xl text-yaziyo-gold/40 mb-3"></i>
-                <p class="text-yaziyo-text-secondary font-inter">Bugün henüz sonuç yok. İlk sırayı sen kap!</p>
+                <p class="text-yaziyo-text-secondary font-inter">${EMPTY_LEADERBOARD_MSG}</p>
             </div>
         `;
         return;
@@ -202,8 +204,8 @@ function renderTable(liste) {
     if (!liste.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="px-6 py-10 text-center text-yaziyo-text-secondary italic">
-                    Bugün henüz kayıtlı sonuç yok. İlk sırayı sen kap!
+                <td colspan="5" class="px-6 py-10 text-center text-yaziyo-text-secondary font-inter">
+                    ${EMPTY_LEADERBOARD_MSG}
                 </td>
             </tr>
         `;
@@ -213,34 +215,19 @@ function renderTable(liste) {
     tbody.innerHTML = liste.map((entry, idx) => tableRow(entry, entry.sira || idx + 1)).join('');
 }
 
-function renderLoading() {
-    const tbody = document.getElementById('hiz-leaderboard-tbody');
-    if (tbody) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="px-6 py-10 text-center text-yaziyo-text-secondary italic">
-                    <i class="fa-solid fa-circle-notch fa-spin text-yaziyo-gold mr-2"></i>Yükleniyor…
-                </td>
-            </tr>
-        `;
-    }
-}
-
 export async function loadAndRenderHizSiralama() {
     const tbody = document.getElementById('hiz-leaderboard-tbody');
     const podium = document.getElementById('hiz-podium');
     if (!tbody && !podium) return;
 
-    const client = getClient();
-    if (!client) {
-        renderPodium([]);
-        renderTable([]);
-        return;
-    }
-
-    renderLoading();
-
     try {
+        const client = (await initSupabaseClient()) || getClient();
+        if (!client) {
+            renderPodium([]);
+            renderTable([]);
+            return;
+        }
+
         const { data, error } = await client.rpc('get_gunluk_hiz_siralama', { p_limit: 50 });
         if (error) throw error;
         const liste = Array.isArray(data?.liste) ? data.liste : [];
@@ -253,5 +240,15 @@ export async function loadAndRenderHizSiralama() {
     }
 }
 
+function bootHizSiralama() {
+    renderPodium([]);
+    renderTable([]);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadAndRenderHizSiralama);
+    } else {
+        loadAndRenderHizSiralama();
+    }
+}
+
 window.refreshHizSiralama = loadAndRenderHizSiralama;
-document.addEventListener('DOMContentLoaded', loadAndRenderHizSiralama);
+bootHizSiralama();

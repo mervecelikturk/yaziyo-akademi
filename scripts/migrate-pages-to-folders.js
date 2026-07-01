@@ -111,11 +111,9 @@ for (const file of Object.keys(PAGE_FOLDER_MAP)) {
 
     const transformed = transformContent(raw, slug);
 
-    fs.writeFileSync(path.join(destDir, file), transformed, 'utf8');
     fs.writeFileSync(path.join(destDir, 'index.html'), transformed, 'utf8');
-    fs.writeFileSync(path.join(PAGES_DIR, file), createRedirectStub(slug), 'utf8');
 
-    console.log(`OK: ${file} → pages/${slug}/`);
+    console.log(`OK: ${file} → pages/${slug}/index.html`);
 }
 
 console.log('Migration complete.');

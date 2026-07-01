@@ -301,7 +301,11 @@
             }
 
             setTimeout(() => {
-                window.location.replace('adminGiris.html?cikis=1');
+                const base = window.YaziyoAdminPaths?.getAdminLoginRedirectUrl?.()
+                    || window.YaziyoPaths?.pageHref?.('adminGiris.html')
+                    || '../admin-paneli/';
+                const sep = base.includes('?') ? '&' : '?';
+                window.location.replace(`${base}${sep}cikis=1`);
             }, 800);
         }
 

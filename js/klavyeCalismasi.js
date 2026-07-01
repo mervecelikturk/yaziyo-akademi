@@ -338,7 +338,8 @@ function evaluateExamText(originalWords, userInput, isImlasiz, options = {}) {
                     mistakes.push({
                         user: part,
                         original: ERROR_LABELS.MIXED,
-                        errorType: ERROR_LABELS.MIXED
+                        errorType: ERROR_LABELS.MIXED,
+                        expected,
                     });
                 });
                 steps.push({ type: 'split_wrong', parts: splitResult.parts, original: expected });
@@ -804,13 +805,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleTimerBtn = document.getElementById('toggle-timer-btn');
     const timerToggleIcon = document.getElementById('timer-toggle-icon');
     const timerContainer = document.getElementById('timer-container');
+    const finishWorkspaceBtn = document.getElementById('finish-workspace-btn');
+    const closeWorkspaceBtn = document.getElementById('close-workspace-btn');
+    const workspaceTitle = document.getElementById('workspace-title');
+    const defaultInputPlaceholder = userInput?.getAttribute('placeholder') || 'Yazmaya başlayın...';
 
     let isTestRunning = false;
     let timerInterval = null;
     let timeRemaining = 0;
     let initialTimeVal = 0; // Testin başladığı süre (saniye cinsinden)
+    let countdownTimeoutIds = [];
+    let workspaceSessionId = 0;
     let currentActiveText = ""; // Kıyaslama (Diff) için asıl metin
-    let currentMode = "app"; // app, exam, practice
+    let currentMode = "app"; // app, exam, exam2, practice
+
+    function isExamLikeMode(mode = currentMode) {
+        return mode === 'exam' || mode === 'exam2';
+    }
+
+    function applyWorkspaceModeUI() {
+        workspaceScreen.classList.remove('practice-mode', 'exam2-mode');
+        if (liveStats) liveStats.classList.add('hidden');
+        if (workspaceTitle) workspaceTitle.classList.remove('hidden');
+        toggleTimerBtn?.classList.add('hidden');
+        timerContainer?.classList.remove('hidden');
+        finishWorkspaceBtn?.classList.add('hidden');
+        closeWorkspaceBtn?.classList.remove('hidden');
+        if (userInput) {
+            userInput.placeholder = defaultInputPlaceholder;
+        }
+        if (timerToggleIcon) {
+            timerToggleIcon.classList.remove('fa-eye-slash');
+            timerToggleIcon.classList.add('fa-eye');
+        }
+
+        if (currentMode === 'exam') {
+            if (workspaceTitle) workspaceTitle.classList.add('hidden');
+        }
+
+        if (currentMode === 'exam2') {
+            workspaceScreen.classList.add('exam2-mode');
+            if (workspaceTitle) workspaceTitle.classList.add('hidden');
+            toggleTimerBtn?.classList.remove('hidden');
+            finishWorkspaceBtn?.classList.remove('hidden');
+            closeWorkspaceBtn?.classList.add('hidden');
+            if (userInput) userInput.placeholder = '';
+        }
+
+        if (currentMode === 'practice' || currentMode === 'app') {
+            if (currentMode === 'practice') workspaceScreen.classList.add('practice-mode');
+            if (liveStats) liveStats.classList.remove('hidden');
+            toggleTimerBtn?.classList.remove('hidden');
+            updateLiveStats();
+        }
+    }
 
     // Strict Match Variables
     let wordsArray = [];
@@ -878,6 +926,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let bgAudio = new Audio();
     bgAudio.loop = true;
+
+    function stopBackgroundAudio() {
+        bgAudio.pause();
+        bgAudio.currentTime = 0;
+    }
+
+    function clearCountdownTimers() {
+        countdownTimeoutIds.forEach(clearTimeout);
+        countdownTimeoutIds = [];
+    }
+
+    function scheduleCountdownStep(fn, delayMs, sessionId) {
+        const id = setTimeout(() => {
+            if (sessionId !== workspaceSessionId) return;
+            if (workspaceScreen.classList.contains('hidden')) return;
+            fn();
+        }, delayMs);
+        countdownTimeoutIds.push(id);
+    }
+
+    function resetCountdownUI() {
+        clearCountdownTimers();
+        countdownOverlay?.classList.add('hidden');
+        if (countdownOverlay?.classList.contains('opacity-100')) {
+            countdownOverlay.classList.replace('opacity-100', 'opacity-0');
+        } else {
+            countdownOverlay?.classList.add('opacity-0');
+        }
+        countdownNumber?.classList.remove('text-green-500', 'is-start');
+        countdownNumber?.classList.add('text-yaziyo-gold');
+        document.getElementById('workspace-content')?.classList.remove('hidden');
+    }
+
+    /** Süre bitmeden çıkış — sonuç ekranı göstermez, sesi ve zamanlayıcıları durdurur */
+    function cancelWorkspaceSession() {
+        workspaceSessionId++;
+        clearInterval(timerInterval);
+        timerInterval = null;
+        isTestRunning = false;
+        stopBackgroundAudio();
+        resetCountdownUI();
+        userInput.readOnly = true;
+        workspaceScreen.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    function closeWorkspace() {
+        if (isTestRunning) {
+            endTest();
+        } else {
+            cancelWorkspaceSession();
+        }
+    }
     const soundUrl = (file) =>
         window.YaziyoPaths?.assetHref?.(`sound effect/${file}`)
         ?? `../../sound effect/${file}`;
@@ -967,11 +1068,16 @@ document.addEventListener('DOMContentLoaded', () => {
         let processedText = rawText.trim().replace(/\s+/g, " ");
         wordsArray = processedText.split(' ').filter(w => w.length > 0);
 
-        let domHtml = '';
-        wordsArray.forEach((w, idx) => {
-            domHtml += '<span id="word-' + idx + '" class="inline-block transition-all duration-200">' + w + '</span> ';
-        });
-        textContentDiv.innerHTML = domHtml;
+        if (currentMode === 'exam2') {
+            textContentDiv.textContent = processedText;
+        } else {
+            let domHtml = '';
+            wordsArray.forEach((w, idx) => {
+                domHtml += '<span id="word-' + idx + '" class="inline-block transition-all duration-200">' + w + '</span> ';
+            });
+            textContentDiv.innerHTML = domHtml;
+        }
+
         window.YaziyoTypingScroll?.resetTypingPanels({
             referenceEl: textContentDiv,
             userInputEl: userInput,
@@ -1052,25 +1158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initialTimeVal = timeVal;
         updateTimerDisplay();
 
-        // Mod bazlı hazırlıklar
-        const workspaceTitle = document.getElementById('workspace-title');
-        workspaceScreen.classList.remove('practice-mode');
-        if(liveStats) liveStats.classList.add('hidden');
-        if(workspaceTitle) workspaceTitle.classList.remove('hidden');
-        toggleTimerBtn.classList.add('hidden');
-        timerContainer.classList.remove('hidden');
-
-        if (currentMode === 'exam') {
-            if(workspaceTitle) workspaceTitle.classList.add('hidden');
-        }
-
-        if (currentMode === 'practice' || currentMode === 'app') {
-            // === ÇALIŞMA VE UYGULAMA MODU EKRANI ===
-            if (currentMode === 'practice') workspaceScreen.classList.add('practice-mode');
-            if(liveStats) liveStats.classList.remove('hidden');
-            toggleTimerBtn.classList.remove('hidden');
-            updateLiveStats();
-        }
+        applyWorkspaceModeUI();
 
         workspaceScreen.classList.remove('hidden');
         document.body.style.overflow = "hidden";
@@ -1080,6 +1168,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /** 3-2-1 Geri Sayımı */
     function startCountdown() {
+        const sessionId = ++workspaceSessionId;
+        clearCountdownTimers();
+
         countdownOverlay.classList.remove('hidden');
         const workspaceContent = document.getElementById('workspace-content');
         if (workspaceContent) workspaceContent.classList.add('hidden');
@@ -1094,31 +1185,33 @@ document.addEventListener('DOMContentLoaded', () => {
         countdownNumber.classList.remove('is-start');
         playBeep(440, 150);
 
-        setTimeout(() => {
+        scheduleCountdownStep(() => {
             countdownNumber.textContent = '2';
             countdownNumber.classList.remove('is-start');
             playBeep(440, 150);
-        }, 1000);
+        }, 1000, sessionId);
 
-        setTimeout(() => {
+        scheduleCountdownStep(() => {
             countdownNumber.textContent = '1';
             countdownNumber.classList.remove('is-start');
             playBeep(440, 150);
-        }, 2000);
+        }, 2000, sessionId);
 
-        setTimeout(() => {
+        scheduleCountdownStep(() => {
             countdownNumber.textContent = 'BAŞLA!';
             countdownNumber.classList.add('is-start', 'text-green-500');
             countdownNumber.classList.remove('text-yaziyo-gold');
             playBeep(880, 400);
-        }, 3000);
+        }, 3000, sessionId);
 
-        setTimeout(() => {
-            finishCountdown();
-        }, 4000);
+        scheduleCountdownStep(() => {
+            finishCountdown(sessionId);
+        }, 4000, sessionId);
     }
 
-    function finishCountdown() {
+    function finishCountdown(sessionId) {
+        if (sessionId !== workspaceSessionId) return;
+        if (workspaceScreen.classList.contains('hidden')) return;
         countdownOverlay.classList.replace('opacity-100', 'opacity-0');
         setTimeout(() => countdownOverlay.classList.add('hidden'), 300);
         countdownNumber.classList.add('text-yaziyo-gold');
@@ -1238,14 +1331,14 @@ document.addEventListener('DOMContentLoaded', () => {
         wrongKeys = stats.wrongKeys;
     });
 
-    /** Sınav modu: referans metin + yazım alanı kaydırma (renklendirme yok) */
+    /** Sınav modları: referans metin + yazım alanı kaydırma (renklendirme yok) */
     userInput.addEventListener('input', () => {
-        if (!isTestRunning || currentMode === 'practice' || currentMode === 'app') return;
+        if (!isTestRunning || !isExamLikeMode()) return;
         syncTypingScroll();
     });
 
-    /** SÜREYİ GİZLE/GÖSTER (Çalışma Modu) */
-    toggleTimerBtn.addEventListener('click', () => {
+    /** SÜREYİ GİZLE/GÖSTER (Çalışma / Sınav Ekranı 2) */
+    toggleTimerBtn?.addEventListener('click', () => {
         if (timerContainer.classList.contains('hidden')) {
             timerContainer.classList.remove('hidden');
             timerToggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
@@ -1258,12 +1351,14 @@ document.addEventListener('DOMContentLoaded', () => {
     /** TESTİ BİTİRMEK VE SONUÇ EKRANI */
     function endTest() {
         if (!isTestRunning) return;
+        workspaceSessionId++;
+        clearCountdownTimers();
         isTestRunning = false;
         clearInterval(timerInterval);
+        timerInterval = null;
         userInput.readOnly = true;
 
-        bgAudio.pause();
-        bgAudio.currentTime = 0;
+        stopBackgroundAudio();
 
         const timeElapsedSecond = initialTimeVal - timeRemaining;
         const timeElapsedMinute = timeElapsedSecond / 60;
@@ -1519,28 +1614,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Kapatma butonu ESC ile aynı işi yapar
-    const closeWorkspaceBtn = document.getElementById('close-workspace-btn');
+    // Kapatma / bitir butonları ESC ile aynı işi yapar
     if (closeWorkspaceBtn) {
-        closeWorkspaceBtn.addEventListener('click', () => {
-            if (isTestRunning) {
-                endTest();
-            } else {
-                workspaceScreen.classList.add('hidden');
-                document.body.style.overflow = "auto";
-            }
-        });
+        closeWorkspaceBtn.addEventListener('click', closeWorkspace);
+    }
+
+    if (finishWorkspaceBtn) {
+        finishWorkspaceBtn.addEventListener('click', closeWorkspace);
     }
 
     // ESC Tuşu ile herhangi bir durumda çıkış (Global listener)
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !workspaceScreen.classList.contains('hidden')) {
-            if (isTestRunning) {
-                endTest();
-            } else {
-                workspaceScreen.classList.add('hidden');
-                document.body.style.overflow = "auto";
-            }
+            closeWorkspace();
         }
     });
 });

@@ -251,12 +251,20 @@
         return mountAdminHeader();
     }
 
+    function getAdminMain() {
+        const header = document.getElementById('main-header');
+        if (!header) return null;
+        const next = header.nextElementSibling;
+        if (next?.tagName === 'MAIN') return next;
+        return document.querySelector('#main-header[data-yaziyo-admin-header="1"] ~ main');
+    }
+
     function enhanceAdminTablesForMobile() {
         const header = document.getElementById('main-header');
         if (!header || header.dataset.yaziyoAdminHeader !== '1') return;
 
-        const main = header.nextElementSibling;
-        if (!main || main.tagName !== 'MAIN') return;
+        const main = getAdminMain();
+        if (!main) return;
 
         main.querySelectorAll('table').forEach((table) => {
             if (table.closest('[data-admin-table-skip]')) return;
@@ -275,8 +283,19 @@
             });
 
             table.classList.add('admin-responsive-table');
-            table.closest('.overflow-x-auto')?.classList.add('admin-table-scroll');
+            const scrollWrap = table.closest('.overflow-x-auto');
+            scrollWrap?.classList.add('admin-table-scroll');
+            table.closest('.overflow-hidden')?.classList.add('admin-table-card');
         });
+    }
+
+    let refreshTablesTimer = null;
+    function scheduleRefreshMobileTables() {
+        if (refreshTablesTimer) window.clearTimeout(refreshTablesTimer);
+        refreshTablesTimer = window.setTimeout(() => {
+            refreshTablesTimer = null;
+            refreshMobileTables();
+        }, 50);
     }
 
     function refreshMobileTables() {
@@ -287,12 +306,11 @@
     let adminTableObserver = null;
     function observeAdminTables() {
         enhanceAdminTablesForMobile();
-        const header = document.getElementById('main-header');
-        const main = header?.nextElementSibling;
-        if (!main || main.tagName !== 'MAIN') return;
+        const main = getAdminMain();
+        if (!main) return;
 
         if (adminTableObserver) adminTableObserver.disconnect();
-        adminTableObserver = new MutationObserver(() => enhanceAdminTablesForMobile());
+        adminTableObserver = new MutationObserver(() => scheduleRefreshMobileTables());
         adminTableObserver.observe(main, { childList: true, subtree: true });
     }
 
@@ -312,7 +330,10 @@
 
     global.addEventListener('pageshow', (e) => {
         if (e.persisted) syncNavActive();
+        scheduleRefreshMobileTables();
     });
+
+    global.addEventListener('resize', scheduleRefreshMobileTables, { passive: true });
 
     if (document.getElementById('main-header') && isAdminPage()) {
         boot();

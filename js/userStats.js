@@ -683,21 +683,26 @@ function isMistakeErrorLabel(value) {
     return MISTAKE_ERROR_LABELS.has(trimmed);
 }
 
-/** Kayıtlı yanlış kelime girdisinden metinde olması gereken doğru kelimeyi döndürür */
-function getCorrectWordFromMistake(m) {
-    if (typeof m === 'string') {
-        const s = m.trim();
-        return isMistakeErrorLabel(s) ? '' : s;
-    }
+/** Yanlış yazılan kelimenin metinde olması gereken doğru halini döndürür (kullanıcının yazdığı değil) */
+function getExpectedWordFromMistake(m) {
     if (!m || typeof m !== 'object') return '';
 
-    if (m.expected && !isMistakeErrorLabel(m.expected)) {
-        return String(m.expected).trim();
-    }
-    if (m.original && !isMistakeErrorLabel(m.original)) {
-        return String(m.original).trim();
+    for (const field of ['expected', 'original']) {
+        const value = m[field] != null ? String(m[field]).trim() : '';
+        if (value && !isMistakeErrorLabel(value)) {
+            return value;
+        }
     }
     return '';
+}
+
+function formatExpectedWordsFromMistakes(mistakes) {
+    if (!Array.isArray(mistakes)) return '—';
+    const words = mistakes
+        .map(getExpectedWordFromMistake)
+        .filter(Boolean);
+    const unique = [...new Set(words)];
+    return unique.length ? unique.join(', ') : '—';
 }
 
 /**
@@ -718,10 +723,7 @@ export function renderSonKlavyeCalismalari(kayitlar) {
             day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
         });
         const yanlisListe = Array.isArray(k.yanlis_kelimeler) ? k.yanlis_kelimeler : [];
-        const yanlisMetin = yanlisListe
-            .map(getCorrectWordFromMistake)
-            .filter(Boolean)
-            .join(', ') || '—';
+        const dogruKelimeMetin = formatExpectedWordsFromMistakes(yanlisListe);
         const wrongId = `wrong-words-${k.id || idx}`;
         const isOzelMetin = k.kategori === 'Özel Metin';
         const metinBadge = k.kategori
@@ -740,8 +742,8 @@ export function renderSonKlavyeCalismalari(kayitlar) {
             <td class="px-6 py-4 text-red-500 font-bold">${k.yanlis_kelime}</td>
             <td class="px-6 py-4">
                 <div class="flex items-center gap-2 min-w-[220px] bg-light-bg/50 dark:bg-dark-bg/30 px-3 py-1.5 rounded-lg border border-light-border dark:border-dark-border group">
-                    <span class="text-xs text-light-text-secondary dark:text-dark-text-secondary truncate italic" id="${wrongId}">${escapeHtmlStat(yanlisMetin)}</span>
-                    ${yanlisMetin !== '—' ? `<button onclick="copyMistypedWords('${wrongId}', this)" class="shrink-0 text-light-text-secondary hover:text-yaziyo-gold transition-colors" title="Kopyala"><i class="fa-regular fa-copy"></i></button>` : ''}
+                    <span class="text-xs text-yaziyo-green font-medium truncate" id="${wrongId}">${escapeHtmlStat(dogruKelimeMetin)}</span>
+                    ${dogruKelimeMetin !== '—' ? `<button onclick="copyMistypedWords('${wrongId}', this)" class="shrink-0 text-light-text-secondary hover:text-yaziyo-gold transition-colors" title="Doğru kelimeleri kopyala"><i class="fa-regular fa-copy"></i></button>` : ''}
                 </div>
             </td>
             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">${formatPracticeDuration(k.sure_saniye)}</td>
