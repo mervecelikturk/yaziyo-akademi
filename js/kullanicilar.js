@@ -189,8 +189,8 @@ function renderTable() {
         `;
     }).join('');
 
-    attachDeleteHandlers();
     refreshAdminMobileTables();
+    attachDeleteHandlers();
 }
 
 export async function fetchUsers() {

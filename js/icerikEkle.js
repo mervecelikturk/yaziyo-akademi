@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         setPageActive(pageId, nextActive);
         updateToggleButton(btn, nextActive);
+        window.YaziyoAdminNavbar?.refreshMobileTables?.();
         window.YaziyoPageStatus.applyToNavbar();
     });
 });

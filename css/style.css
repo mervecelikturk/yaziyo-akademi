@@ -39,63 +39,57 @@ body {
 }
 
 @media (max-width: 767px) {
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-card,
+    /* Mobilde gerçek tabloyu gizle — kart listesi JS ile üretilir */
     #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll {
+        display: none !important;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-card {
         overflow: visible !important;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll {
-        overflow-x: visible;
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 0.75rem;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table {
-        display: block;
-        min-width: 0 !important;
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table thead {
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-list:empty {
         display: none;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody {
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-card {
         display: block;
         width: 100%;
-    }
-
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody tr {
-        display: block;
-        width: 100%;
-        margin-bottom: 0.75rem;
         padding: 0.875rem 1rem;
         border: 1px solid rgb(var(--yaziyo-border-rgb));
         border-radius: 0.875rem;
         background: rgb(var(--yaziyo-card-rgb));
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody tr:last-child {
-        margin-bottom: 0;
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-card--full {
+        padding: 1.25rem 1rem;
+        text-align: center;
     }
 
-    /* Safari: table hücrelerinde grid kullanılmaz — içerik kaybolabiliyor */
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td {
-        display: block;
-        width: 100%;
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field {
         padding: 0.4rem 0;
-        border: none;
-        font-size: 0.8125rem;
-        color: rgb(var(--yaziyo-text-rgb));
-        text-align: left !important;
-        white-space: normal;
-        word-break: break-word;
+        border-bottom: 1px solid rgb(var(--yaziyo-border-rgb) / 0.45);
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td::before {
-        content: attr(data-label);
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field:first-child {
+        padding-top: 0;
+    }
+
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field-label {
         display: block;
-        margin-bottom: 0.2rem;
+        margin-bottom: 0.25rem;
         font-size: 0.625rem;
         font-weight: 700;
         font-family: 'Poppins', sans-serif;
@@ -104,14 +98,21 @@ body {
         color: rgb(var(--yaziyo-text-secondary-rgb));
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td[colspan] {
-        display: block;
-        padding: 1.25rem 0.5rem;
-        text-align: center !important;
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field-value {
+        font-size: 0.8125rem;
+        color: rgb(var(--yaziyo-text-rgb));
+        word-break: break-word;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-responsive-table tbody td[colspan]::before {
-        display: none;
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field-value .delete-btn,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field-value .status-toggle-btn {
+        pointer-events: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-list {
+        display: none !important;
     }
 }
 

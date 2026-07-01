@@ -259,6 +259,120 @@
         return document.querySelector('#main-header[data-yaziyo-admin-header="1"] ~ main');
     }
 
+    function escapeMobileHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function getTableCardWrap(table) {
+        const scrollWrap = table.closest('.overflow-x-auto') || table.parentElement;
+        const card = scrollWrap?.parentElement || null;
+        return { scrollWrap, card };
+    }
+
+    function ensureMobileListHost(table) {
+        const { scrollWrap, card } = getTableCardWrap(table);
+        if (!card) return null;
+
+        scrollWrap?.classList.add('admin-table-scroll');
+        card.classList.add('admin-table-card');
+        table.classList.add('admin-data-table');
+
+        let host = card.querySelector('.admin-mobile-list');
+        if (!host) {
+            host = document.createElement('div');
+            host.className = 'admin-mobile-list';
+            host.setAttribute('aria-live', 'polite');
+            card.appendChild(host);
+        }
+        return host;
+    }
+
+    function bindMobileListActions(host, table) {
+        if (host.dataset.actionsBound === '1') return;
+        host.dataset.actionsBound = '1';
+
+        host.addEventListener('click', (e) => {
+            const interactive = e.target.closest('button, a[href], input, select, label');
+            if (!interactive) return;
+
+            const card = interactive.closest('.admin-mobile-card');
+            if (!card) return;
+
+            const rowIndex = Number(card.dataset.rowIndex);
+            if (Number.isNaN(rowIndex)) return;
+
+            const tr = table.querySelectorAll('tbody tr')[rowIndex];
+            if (!tr) return;
+
+            if (interactive.classList.contains('delete-btn')) {
+                e.preventDefault();
+                tr.querySelector('.delete-btn')?.click();
+                return;
+            }
+
+            if (interactive.classList.contains('status-toggle-btn')) {
+                e.preventDefault();
+                tr.querySelector('.status-toggle-btn')?.click();
+                scheduleRefreshMobileTables();
+                return;
+            }
+
+            const tag = interactive.tagName.toLowerCase();
+            const real = tr.querySelector(`${tag}${interactive.id ? `#${interactive.id}` : ''}.${[...interactive.classList].join('.')}`);
+            if (real && real !== interactive) {
+                e.preventDefault();
+                real.click();
+            }
+        });
+    }
+
+    function buildMobileCardsForTable(table) {
+        const host = ensureMobileListHost(table);
+        if (!host) return;
+
+        const headers = [...table.querySelectorAll('thead th')].map((th) =>
+            th.textContent.replace(/\s+/g, ' ').trim(),
+        );
+        const rows = [...table.querySelectorAll('tbody tr')];
+
+        if (!rows.length) {
+            host.innerHTML = '';
+            return;
+        }
+
+        host.innerHTML = rows.map((tr, rowIndex) => {
+            const cells = [...tr.querySelectorAll(':scope > td')];
+            const rowDataAttrs = [...tr.attributes]
+                .filter((attr) => attr.name.startsWith('data-'))
+                .map((attr) => ` ${attr.name}="${escapeMobileHtml(attr.value)}"`)
+                .join('');
+
+            if (cells.length === 1 && cells[0].colSpan > 1) {
+                return `<div class="admin-mobile-card admin-mobile-card--full" data-row-index="${rowIndex}"${rowDataAttrs}>${cells[0].innerHTML}</div>`;
+            }
+
+            const fields = cells.map((td, i) => {
+                const label = headers[i] || td.dataset.label || '';
+                const valueHtml = td.innerHTML.trim();
+                if (!label && !valueHtml) return '';
+
+                return `
+                    <div class="admin-mobile-field">
+                        ${label ? `<span class="admin-mobile-field-label">${escapeMobileHtml(label)}</span>` : ''}
+                        <div class="admin-mobile-field-value">${td.innerHTML}</div>
+                    </div>`;
+            }).filter(Boolean).join('');
+
+            return `<div class="admin-mobile-card" data-row-index="${rowIndex}"${rowDataAttrs}>${fields}</div>`;
+        }).join('');
+
+        bindMobileListActions(host, table);
+    }
+
     function enhanceAdminTablesForMobile() {
         const header = document.getElementById('main-header');
         if (!header || header.dataset.yaziyoAdminHeader !== '1') return;
@@ -268,24 +382,7 @@
 
         main.querySelectorAll('table').forEach((table) => {
             if (table.closest('[data-admin-table-skip]')) return;
-
-            const headers = [...table.querySelectorAll('thead th')].map((th) =>
-                th.textContent.replace(/\s+/g, ' ').trim(),
-            );
-
-            table.querySelectorAll('tbody tr').forEach((tr) => {
-                tr.querySelectorAll('td').forEach((td, i) => {
-                    if (td.colSpan > 1) return;
-                    if (!td.dataset.label && headers[i]) {
-                        td.dataset.label = headers[i];
-                    }
-                });
-            });
-
-            table.classList.add('admin-responsive-table');
-            const scrollWrap = table.closest('.overflow-x-auto');
-            scrollWrap?.classList.add('admin-table-scroll');
-            table.closest('.overflow-hidden')?.classList.add('admin-table-card');
+            buildMobileCardsForTable(table);
         });
     }
 
