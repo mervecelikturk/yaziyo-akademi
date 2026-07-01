@@ -4,6 +4,7 @@
 import { getSupabaseClient, initSupabaseClient } from './lib/supabase.js';
 import { requireAdminAccess } from './lib/adminAuth.js';
 import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
+import { bindNameInput, validateNameFields } from './lib/nameValidation.js';
 
 let allUsers = [];
 let searchQuery = '';
@@ -394,8 +395,14 @@ async function createUser(e) {
 
     setAddUserFeedback();
 
-    if (!ad || !soyad || !email) {
-        setAddUserFeedback({ error: 'Ad, soyad ve e-posta zorunludur.' });
+    const nameError = validateNameFields(ad, soyad);
+    if (nameError) {
+        setAddUserFeedback({ error: nameError });
+        return;
+    }
+
+    if (!email) {
+        setAddUserFeedback({ error: 'E-posta zorunludur.' });
         return;
     }
 
@@ -492,6 +499,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     document.getElementById('add-user-form')?.addEventListener('submit', createUser);
+    bindNameInput(document.getElementById('add-user-ad'));
+    bindNameInput(document.getElementById('add-user-soyad'));
 
     document.getElementById('add-user-backdrop')?.addEventListener('click', closeAddUserModal);
     document.querySelectorAll('[data-close-add-user-modal]').forEach((btn) => {

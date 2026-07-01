@@ -24,6 +24,7 @@ import {
     forceAuthCleanup,
     signInWithGoogle,
 } from './authVerification.js';
+import { bindNameInput, validateNameFields } from './lib/nameValidation.js';
 
 const { homeHref } = window.YaziyoPaths || { homeHref: () => '../index.html' };
 
@@ -384,6 +385,12 @@ export async function handleRegister(e) {
     const password = document.getElementById('reg-password')?.value;
     const confirm = document.getElementById('reg-password-confirm')?.value;
 
+    const nameError = validateNameFields(name, surname);
+    if (nameError) {
+        showToast(nameError, 'warning');
+        return;
+    }
+
     if (password !== confirm) {
         showToast('Şifreler uyuşmuyor.', 'error');
         return;
@@ -534,6 +541,8 @@ function initAuthFormsPage() {
     bindGoogleSignInButton();
     initRememberMeCheckbox();
     initTermsModal();
+    bindNameInput(document.getElementById('reg-name'));
+    bindNameInput(document.getElementById('reg-surname'));
 
     handleEmailConfirmationFromUrl().then((handled) => {
         if (handled) return;
