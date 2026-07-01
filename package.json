@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "build:css": "tailwindcss -i ./css/tailwind.input.css -o ./css/tailwind.css --minify",
-    "update:text-count": "node scripts/update-text-count.js"
+    "update:text-count": "node scripts/update-text-count.js",
+    "generate:favicon": "node scripts/generate-favicon.js"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.21",

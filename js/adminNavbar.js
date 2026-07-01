@@ -247,7 +247,32 @@
         return true;
     }
 
+    function injectAdminMobileTableFix() {
+        if (document.getElementById('yaziyo-admin-mobile-table-fix')) return;
+        const style = document.createElement('style');
+        style.id = 'yaziyo-admin-mobile-table-fix';
+        style.textContent = `
+@media (max-width: 767px) {
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-card { overflow: visible !important; }
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto {
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll > table,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto > table {
+        display: table !important;
+        min-width: 42rem;
+        width: max-content !important;
+    }
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-list { display: none !important; }
+}`;
+        document.head.appendChild(style);
+    }
+
     function boot() {
+        injectAdminMobileTableFix();
         return mountAdminHeader();
     }
 
@@ -259,118 +284,18 @@
         return document.querySelector('#main-header[data-yaziyo-admin-header="1"] ~ main');
     }
 
-    function escapeMobileHtml(str) {
-        return String(str ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
-
     function getTableCardWrap(table) {
         const scrollWrap = table.closest('.overflow-x-auto') || table.parentElement;
         const card = scrollWrap?.parentElement || null;
         return { scrollWrap, card };
     }
 
-    function ensureMobileListHost(table) {
+    function tagAdminTable(table) {
         const { scrollWrap, card } = getTableCardWrap(table);
-        if (!card) return null;
-
         scrollWrap?.classList.add('admin-table-scroll');
-        card.classList.add('admin-table-card');
+        card?.classList.add('admin-table-card');
         table.classList.add('admin-data-table');
-
-        let host = card.querySelector('.admin-mobile-list');
-        if (!host) {
-            host = document.createElement('div');
-            host.className = 'admin-mobile-list';
-            host.setAttribute('aria-live', 'polite');
-            card.appendChild(host);
-        }
-        return host;
-    }
-
-    function bindMobileListActions(host, table) {
-        if (host.dataset.actionsBound === '1') return;
-        host.dataset.actionsBound = '1';
-
-        host.addEventListener('click', (e) => {
-            const interactive = e.target.closest('button, a[href], input, select, label');
-            if (!interactive) return;
-
-            const card = interactive.closest('.admin-mobile-card');
-            if (!card) return;
-
-            const rowIndex = Number(card.dataset.rowIndex);
-            if (Number.isNaN(rowIndex)) return;
-
-            const tr = table.querySelectorAll('tbody tr')[rowIndex];
-            if (!tr) return;
-
-            if (interactive.classList.contains('delete-btn')) {
-                e.preventDefault();
-                tr.querySelector('.delete-btn')?.click();
-                return;
-            }
-
-            if (interactive.classList.contains('status-toggle-btn')) {
-                e.preventDefault();
-                tr.querySelector('.status-toggle-btn')?.click();
-                scheduleRefreshMobileTables();
-                return;
-            }
-
-            const tag = interactive.tagName.toLowerCase();
-            const real = tr.querySelector(`${tag}${interactive.id ? `#${interactive.id}` : ''}.${[...interactive.classList].join('.')}`);
-            if (real && real !== interactive) {
-                e.preventDefault();
-                real.click();
-            }
-        });
-    }
-
-    function buildMobileCardsForTable(table) {
-        const host = ensureMobileListHost(table);
-        if (!host) return;
-
-        const headers = [...table.querySelectorAll('thead th')].map((th) =>
-            th.textContent.replace(/\s+/g, ' ').trim(),
-        );
-        const rows = [...table.querySelectorAll('tbody tr')];
-
-        if (!rows.length) {
-            host.innerHTML = '';
-            return;
-        }
-
-        host.innerHTML = rows.map((tr, rowIndex) => {
-            const cells = [...tr.querySelectorAll(':scope > td')];
-            const rowDataAttrs = [...tr.attributes]
-                .filter((attr) => attr.name.startsWith('data-'))
-                .map((attr) => ` ${attr.name}="${escapeMobileHtml(attr.value)}"`)
-                .join('');
-
-            if (cells.length === 1 && cells[0].colSpan > 1) {
-                return `<div class="admin-mobile-card admin-mobile-card--full" data-row-index="${rowIndex}"${rowDataAttrs}>${cells[0].innerHTML}</div>`;
-            }
-
-            const fields = cells.map((td, i) => {
-                const label = headers[i] || td.dataset.label || '';
-                const valueHtml = td.innerHTML.trim();
-                if (!label && !valueHtml) return '';
-
-                return `
-                    <div class="admin-mobile-field">
-                        ${label ? `<span class="admin-mobile-field-label">${escapeMobileHtml(label)}</span>` : ''}
-                        <div class="admin-mobile-field-value">${td.innerHTML}</div>
-                    </div>`;
-            }).filter(Boolean).join('');
-
-            return `<div class="admin-mobile-card" data-row-index="${rowIndex}"${rowDataAttrs}>${fields}</div>`;
-        }).join('');
-
-        bindMobileListActions(host, table);
+        card?.querySelector('.admin-mobile-list')?.remove();
     }
 
     function enhanceAdminTablesForMobile() {
@@ -382,7 +307,7 @@
 
         main.querySelectorAll('table').forEach((table) => {
             if (table.closest('[data-admin-table-skip]')) return;
-            buildMobileCardsForTable(table);
+            tagAdminTable(table);
         });
     }
 
@@ -398,6 +323,8 @@
     function refreshMobileTables() {
         enhanceAdminTablesForMobile();
         requestAnimationFrame(() => enhanceAdminTablesForMobile());
+        /* iPhone: veri geç gelince bir kez daha etiketle */
+        window.setTimeout(() => enhanceAdminTablesForMobile(), 400);
     }
 
     let adminTableObserver = null;
@@ -433,14 +360,17 @@
     global.addEventListener('resize', scheduleRefreshMobileTables, { passive: true });
 
     if (document.getElementById('main-header') && isAdminPage()) {
+        injectAdminMobileTableFix();
         boot();
         observeAdminTables();
     } else if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
+            injectAdminMobileTableFix();
             boot();
             observeAdminTables();
         });
     } else {
+        injectAdminMobileTableFix();
         observeAdminTables();
     }
 }(window));

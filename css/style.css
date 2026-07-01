@@ -39,74 +39,76 @@ body {
 }
 
 @media (max-width: 767px) {
-    /* Mobilde gerçek tabloyu gizle — kart listesi JS ile üretilir */
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll {
-        display: none !important;
-    }
-
     #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-card {
         overflow: visible !important;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        padding: 0.75rem;
-    }
-
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-list:empty {
-        display: none;
-    }
-
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-card {
-        display: block;
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto {
+        display: block !important;
+        overflow-x: auto !important;
+        overflow-y: visible !important;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
         width: 100%;
-        padding: 0.875rem 1rem;
-        border: 1px solid rgb(var(--yaziyo-border-rgb));
-        border-radius: 0.875rem;
-        background: rgb(var(--yaziyo-card-rgb));
+        max-width: 100%;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-card--full {
-        padding: 1.25rem 1rem;
-        text-align: center;
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll > table,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto > table,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-data-table {
+        display: table !important;
+        width: max-content !important;
+        min-width: 42rem;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field {
-        padding: 0.4rem 0;
-        border-bottom: 1px solid rgb(var(--yaziyo-border-rgb) / 0.45);
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll thead,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto thead {
+        display: table-header-group !important;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll tbody,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto tbody {
+        display: table-row-group !important;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field:first-child {
-        padding-top: 0;
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll tr,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto tr {
+        display: table-row !important;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field-label {
-        display: block;
-        margin-bottom: 0.25rem;
-        font-size: 0.625rem;
-        font-weight: 700;
-        font-family: 'Poppins', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: rgb(var(--yaziyo-text-secondary-rgb));
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll th,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll td,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto th,
+    #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto td {
+        display: table-cell !important;
     }
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field-value {
-        font-size: 0.8125rem;
-        color: rgb(var(--yaziyo-text-rgb));
-        word-break: break-word;
+    /* Kart listesi iPhone Safari'de güvenilir değil — yatay kaydırma kullan */
+    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-list {
+        display: none !important;
     }
+}
 
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field-value .delete-btn,
-    #main-header[data-yaziyo-admin-header="1"] ~ main .admin-mobile-field-value .status-toggle-btn {
-        pointer-events: auto;
+/* iPhone Safari: overflow-hidden tablo alanını çökertebiliyor */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 767px) {
+        #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-card {
+            overflow: visible !important;
+            contain: none !important;
+        }
+
+        #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll,
+        #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto {
+            min-height: 10rem;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
+
+        #main-header[data-yaziyo-admin-header="1"] ~ main .admin-table-scroll > table,
+        #main-header[data-yaziyo-admin-header="1"] ~ main .overflow-x-auto > table {
+            min-width: 42rem;
+        }
     }
 }
 
