@@ -12,6 +12,8 @@ import { fetchPlatformUserCount, fetchPlatformMulakatSoruCount } from './lib/pla
     if (count > 0) {
         el.setAttribute('data-target', String(count));
     }
+    document.documentElement.dataset.metinSayisiReady = '1';
+    document.dispatchEvent(new CustomEvent('yaziyo:metin-sayisi-ready'));
 })();
 
 async function initStatCount({ elementId, fetchCount, readyDatasetKey, readyEvent }) {

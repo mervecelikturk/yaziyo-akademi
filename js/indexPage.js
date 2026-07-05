@@ -6,11 +6,26 @@
 document.addEventListener('DOMContentLoaded', () => {
     /* ============================================ */
     /* İSTATİSTİK SAYAÇ ANİMASYONU                */
+    /* Üç kart aynı anda başlar ve aynı anda biter */
     /* ============================================ */
 
-    function animateCounter(element, target, duration = 1500) {
-        const startTime = performance.now();
+    const STAT_ANIMATION_DURATION = 1500;
+    let statsAnimationStarted = false;
+    let statsSectionVisible = false;
 
+    const REQUIRED_STATS = [
+        { readyKey: 'metinSayisiReady', readyEvent: 'yaziyo:metin-sayisi-ready' },
+        { readyKey: 'adaySayisiReady', readyEvent: 'yaziyo:aday-sayisi-ready' },
+        { readyKey: 'mulakatSoruSayisiReady', readyEvent: 'yaziyo:mulakat-soru-sayisi-ready' },
+    ];
+
+    function areAllStatsReady() {
+        return REQUIRED_STATS.every(
+            (stat) => document.documentElement.dataset[stat.readyKey] === '1',
+        );
+    }
+
+    function animateCounter(element, target, duration, startTime) {
         function updateCount(currentTime) {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
@@ -29,74 +44,58 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(updateCount);
     }
 
-    const ASYNC_STAT_CARDS = {
-        'aday-sayisi-gosterge': {
-            readyKey: 'adaySayisiReady',
-            readyEvent: 'yaziyo:aday-sayisi-ready',
-        },
-        'mulakat-soru-sayisi-gosterge': {
-            readyKey: 'mulakatSoruSayisiReady',
-            readyEvent: 'yaziyo:mulakat-soru-sayisi-ready',
-        },
-    };
+    function startAllStatAnimations() {
+        if (statsAnimationStarted || !statsSectionVisible || !areAllStatsReady()) return;
 
-    function triggerStatAnimation(card) {
-        const numberEl = card.querySelector('.stat-number');
-        if (!numberEl) return;
+        statsAnimationStarted = true;
+        const startTime = performance.now();
 
-        const run = () => {
+        document.querySelectorAll('.stat-card .stat-number').forEach((numberEl) => {
             const target = parseInt(numberEl.getAttribute('data-target'), 10) || 0;
-            const lastTarget = card.dataset.animatedTarget;
-            if (lastTarget === String(target) && card.classList.contains('animated')) return;
-
-            card.classList.add('animated');
-            card.dataset.animatedTarget = String(target);
-            animateCounter(numberEl, target);
-        };
-
-        const asyncStat = ASYNC_STAT_CARDS[numberEl.id];
-        if (asyncStat && document.documentElement.dataset[asyncStat.readyKey] !== '1') {
-            document.addEventListener(asyncStat.readyEvent, run, { once: true });
-            return;
-        }
-
-        run();
-    }
-
-    function bindAsyncStatReadyListeners() {
-        Object.entries(ASYNC_STAT_CARDS).forEach(([elementId, config]) => {
-            const onReady = () => {
-                const card = document.getElementById(elementId)?.closest('.stat-card');
-                if (card) triggerStatAnimation(card);
-            };
-
-            document.addEventListener(config.readyEvent, onReady);
-            if (document.documentElement.dataset[config.readyKey] === '1') {
-                onReady();
-            }
+            numberEl.closest('.stat-card')?.classList.add('animated');
+            animateCounter(numberEl, target, STAT_ANIMATION_DURATION, startTime);
         });
     }
 
-    bindAsyncStatReadyListeners();
+    function tryStartStatsAnimations() {
+        startAllStatAnimations();
+    }
 
-    const isMobileViewport = window.matchMedia('(max-width: 1023px)').matches;
-    const statsObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                triggerStatAnimation(entry.target);
-            }
-        });
-    }, {
-        threshold: isMobileViewport ? 0.05 : 0.3,
-        rootMargin: isMobileViewport ? '0px' : '0px 0px -50px 0px',
-    });
+    function markStatsSectionVisible() {
+        statsSectionVisible = true;
+        tryStartStatsAnimations();
+    }
 
-    document.querySelectorAll('.stat-card').forEach(card => {
-        statsObserver.observe(card);
-        if (isMobileViewport && card.getBoundingClientRect().top < window.innerHeight) {
-            triggerStatAnimation(card);
+    REQUIRED_STATS.forEach(({ readyEvent, readyKey }) => {
+        document.addEventListener(readyEvent, tryStartStatsAnimations);
+        if (document.documentElement.dataset[readyKey] === '1') {
+            tryStartStatsAnimations();
         }
     });
+
+    const statsSection = document.getElementById('stats-section');
+    if (statsSection) {
+        const statsSectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    markStatsSectionVisible();
+                    statsSectionObserver.disconnect();
+                }
+            });
+        }, {
+            threshold: 0.12,
+            rootMargin: '0px',
+        });
+
+        statsSectionObserver.observe(statsSection);
+
+        requestAnimationFrame(() => {
+            const rect = statsSection.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                markStatsSectionVisible();
+            }
+        });
+    }
 
     /* ============================================ */
     /* HERO SLIDER (Otomatik Görsel Geçişi)        */

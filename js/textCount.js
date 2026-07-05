@@ -3,7 +3,7 @@
  * metinlerDB güncellenince: npm run update:text-count
  */
 (function (global) {
-    const TOTAL_TEXT_COUNT = 89;
+    const TOTAL_TEXT_COUNT = 339;
 
     function getTotalTextCount() {
         return TOTAL_TEXT_COUNT;
