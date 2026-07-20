@@ -27,17 +27,17 @@
             { id: 'renkler', label: 'Renkler' }, { id: 'hayvanlar', label: 'Hayvanlar' },
             { id: 'isimler', label: 'İsimler' }, { id: 'bitkiler', label: 'Bitkiler' } ] },
         zabit: { label: 'Zabıt Katipliği', groups: [
-            { id: '2025', label: '2025' }, { id: '2023', label: '2023' }, { id: '2022', label: '2022' },
+            { id: '2026', label: '2026' }, { id: '2025', label: '2025' }, { id: '2023', label: '2023' }, { id: '2022', label: '2022' },
             { id: '2021', label: '2021' }, { id: '2019', label: '2019' }, { id: '2018', label: '2018' },
             { id: '2017_kasim', label: '2017 Kasım' }, { id: '2017_eylul', label: '2017 Eylül' },
             { id: '2016', label: '2016' }, { id: '2015_gys', label: '2015 GYS' }, { id: '2015', label: '2015' },
             { id: '2014', label: '2014' } ] },
         icra: { label: 'İcra Katipliği', groups: [
-            { id: '2021', label: '2021' }, { id: '2019', label: '2019' }, { id: '2018', label: '2018' },
+            { id: '2026', label: '2026' }, { id: '2021', label: '2021' }, { id: '2019', label: '2019' }, { id: '2018', label: '2018' },
             { id: '2017', label: '2017' }, { id: '2016', label: '2016' }, { id: '2015', label: '2015' },
             { id: '2014', label: '2014' } ] },
         cte: { label: 'CTE Katipliği', groups: [
-            { id: '2021', label: '2021' }, { id: '2019', label: '2019' }, { id: '2018', label: '2018' },
+            { id: '2026', label: '2026' }, { id: '2021', label: '2021' }, { id: '2019', label: '2019' }, { id: '2018', label: '2018' },
             { id: '2015', label: '2015' } ] },
         yargitay: { label: 'Yargıtay Metinleri', groups: [{ id: 'yargitay_metni', label: 'Yargıtay Metni' }] },
         danistay: { label: 'Danıştay Metinleri', groups: [{ id: 'danistay_metni', label: 'Danıştay Metni' }] },

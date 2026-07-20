@@ -17,6 +17,7 @@ const turIsimleri = {
     "hayvanlar": "Hayvanlar",
     "isimler": "İsimler",
     "bitkiler": "Bitkiler",
+    "2026": "2026 Yılı",
     "2025": "2025 Yılı",
     "2024": "2024 Yılı",
     "2023": "2023 Yılı",
@@ -532,6 +533,7 @@ const CATEGORIES = {
     "zabit": {
         label: "Zabıt Katipliği",
         groups: [
+            { id: "2026", label: "2026" },
             { id: "2025", label: "2025" },
             { id: "2023", label: "2023" },
             { id: "2022", label: "2022" },
@@ -549,6 +551,7 @@ const CATEGORIES = {
     "icra": {
         label: "İcra Katipliği",
         groups: [
+            { id: "2026", label: "2026" },
             { id: "2021", label: "2021" },
             { id: "2019", label: "2019" },
             { id: "2018", label: "2018" },
@@ -561,6 +564,7 @@ const CATEGORIES = {
     "cte": {
         label: "CTE Katipliği",
         groups: [
+            { id: "2026", label: "2026" },
             { id: "2021", label: "2021" },
             { id: "2019", label: "2019" },
             { id: "2018", label: "2018" },
