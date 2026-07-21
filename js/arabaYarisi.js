@@ -24,10 +24,11 @@
     // Süreye göre bitiş hedefi (kelime) — arcade hissi için ulaşılabilir mesafe
     const DURATION_TARGET = { 60: 45, 180: 120, 300: 190 };
     const IMLASIZ_IGNORE = /[.,\/#!$%\^&\*;:{}=\-_~()'’"“”\d]/g;
-    /** Presence track/reconnect leave olaylarını gerçek çıkıştan ayırmak için */
     const PRESENCE_LEAVE_DEBOUNCE_MS = 1800;
-    /** Maç sırasında progress gelmeye devam ediyorsa ayrılma sayma */
+    /** Maç sırasında progress/heartbeat gelmeye devam ediyorsa ayrılma sayma */
     const RIVAL_ALIVE_GRACE_MS = 10000;
+    const HEARTBEAT_MS = 2500;
+    const MATCH_DISCONNECT_MS = 12000;
     const RECONNECT_MS = 2500;
 
     const SOUND_CAR = '../sound effect/car.mp3';
@@ -86,6 +87,7 @@
         combo: 0,
         maxCombo: 0,
         committedCount: 0,
+        wordResults: [],
         rivalCorrect: 0,
         running: false,
         startedAt: 0,
@@ -116,6 +118,8 @@
         lastRivalProgressAt: 0,
         ignoreLeaveUntil: 0,
         reconnectTimer: null,
+        heartbeatTimer: null,
+        matchActive: false,
         cleanedUp: false,
     };
 
@@ -658,6 +662,57 @@
         return null;
     }
 
+    function isInMatch() {
+        return !!(state.matchActive || state.running || isCountdownOpen());
+    }
+
+    function markRivalAlive() {
+        cancelLeaveConfirm();
+        state.rivalPresent = true;
+        state.lastRivalProgressAt = Date.now();
+    }
+
+    function sendHeartbeat() {
+        if (!state.channel || state.cleanedUp) return;
+        try {
+            state.channel.send({
+                type: 'broadcast',
+                event: 'heartbeat',
+                payload: { userId: state.userId, t: Date.now() },
+            });
+        } catch (e) {}
+    }
+
+    function stopHeartbeat() {
+        if (state.heartbeatTimer) {
+            clearInterval(state.heartbeatTimer);
+            state.heartbeatTimer = null;
+        }
+    }
+
+    function startHeartbeat() {
+        stopHeartbeat();
+        state.lastRivalProgressAt = Date.now();
+        sendHeartbeat();
+        state.heartbeatTimer = setInterval(() => {
+            if (!isInMatch() || state.resolved || state.cleanedUp) {
+                stopHeartbeat();
+                return;
+            }
+            sendHeartbeat();
+            if (state.lastRivalProgressAt && (Date.now() - state.lastRivalProgressAt) > MATCH_DISCONNECT_MS) {
+                state.rivalPresent = false;
+                state.rivalReady = false;
+                handleRivalLeft();
+            }
+        }, HEARTBEAT_MS);
+    }
+
+    function onHeartbeatMsg(payload) {
+        if (!payload || payload.userId === state.userId) return;
+        markRivalAlive();
+    }
+
     function cancelLeaveConfirm() {
         if (state.leaveConfirmTimer) {
             clearTimeout(state.leaveConfirmTimer);
@@ -666,6 +721,7 @@
     }
 
     function scheduleRivalLeaveConfirm() {
+        if (isInMatch()) return;
         if (Date.now() < state.ignoreLeaveUntil) return;
         if (state.resolved || state.cleanedUp) return;
         cancelLeaveConfirm();
@@ -685,6 +741,8 @@
 
     function confirmRivalLeft() {
         if (state.resolved || state.cleanedUp) return;
+        if (isInMatch()) return;
+
         const rival = findRivalPresence(state.channel);
         if (rival) {
             applyRivalPresenceMeta(rival);
@@ -695,18 +753,11 @@
             return;
         }
 
-        const inMatch = state.running || isCountdownOpen();
-        if (inMatch && state.lastRivalProgressAt && (Date.now() - state.lastRivalProgressAt) < RIVAL_ALIVE_GRACE_MS) {
-            scheduleRivalLeaveConfirm();
-            return;
-        }
-
         state.rivalPresent = false;
         state.rivalReady = false;
         const lbl = qs('[data-label="rival"]');
         if (lbl) lbl.textContent = 'Rakip';
         if (state.screen === 'room') updateSlots();
-        if (inMatch) handleRivalLeft();
     }
 
     function joinRoomChannel() {
@@ -734,6 +785,7 @@
           .on('broadcast', { event: 'start' }, ({ payload }) => onStartMsg(payload))
           .on('broadcast', { event: 'progress' }, ({ payload }) => onProgressMsg(payload))
           .on('broadcast', { event: 'finish' }, ({ payload }) => onFinishMsg(payload))
+          .on('broadcast', { event: 'heartbeat' }, ({ payload }) => onHeartbeatMsg(payload))
           .on('broadcast', { event: 'resync' }, ({ payload }) => onResyncMsg(payload))
           .on('broadcast', { event: 'rematch-request' }, () => onRematchRequest())
           .on('broadcast', { event: 'rematch-accept' }, () => onRematchAccept())
@@ -749,6 +801,9 @@
                       });
                   } catch (e) {}
               } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                  if (isInMatch()) {
+                      state.ignoreLeaveUntil = Date.now() + RECONNECT_MS + PRESENCE_LEAVE_DEBOUNCE_MS;
+                  }
                   scheduleReconnect();
               }
           });
@@ -770,7 +825,7 @@
         if (rival) {
             cancelLeaveConfirm();
             applyRivalPresenceMeta(rival);
-        } else if (state.rivalPresent) {
+        } else if (state.rivalPresent && !isInMatch()) {
             scheduleRivalLeaveConfirm();
         }
 
@@ -787,6 +842,7 @@
         const left = (leftPresences || []).some((p) => p.userId && p.userId !== state.userId);
         if (!left) return;
         if (Date.now() < state.ignoreLeaveUntil) return;
+        if (isInMatch()) return;
         scheduleRivalLeaveConfirm();
     }
 
@@ -798,6 +854,8 @@
     function handleRivalLeft() {
         if (state.resolved) return;
         cancelLeaveConfirm();
+        state.matchActive = false;
+        stopHeartbeat();
         stopTimers();
         const msg = $('yr-left-msg');
         if (state.running || isCountdownOpen()) {
@@ -870,10 +928,13 @@
 
     /* ---------------- YARIŞ AKIŞI ---------------- */
     function beginRaceSequence() {
-        if (state.running || isCountdownOpen()) return;
+        if (state.running || isCountdownOpen() || state.matchActive) return;
+        cancelLeaveConfirm();
+        state.matchActive = true;
         prepareRace();
         openWorkspace();
         runCountdown(() => startRace());
+        startHeartbeat();
     }
 
     function prepareRace() {
@@ -886,6 +947,7 @@
         state.combo = 0;
         state.maxCombo = 0;
         state.committedCount = 0;
+        state.wordResults = [];
         state.rivalCorrect = 0;
         state.prevLeadSign = 0;
         state.selfFinal = null;
@@ -1025,15 +1087,8 @@
     function onInput() {
         if (!state.running) return;
         const val = $('yr-input').value;
-        // Sonunda boşluk olan (tamamlanmış) kelimeleri yakala
         const committed = val.match(/\S+(?=\s)/g) || [];
-        if (committed.length > state.committedCount) {
-            for (let i = state.committedCount; i < committed.length; i++) {
-                evaluateWord(i, committed[i]);
-            }
-            state.committedCount = committed.length;
-        }
-        // Aktif kelime vurgusu
+        syncCommittedWords(committed);
         highlightWord(state.committedCount);
         syncTypingScroll();
     }
@@ -1052,33 +1107,75 @@
         });
     }
 
-    function evaluateWord(index, typed) {
-        if (index >= state.words.length) return; // metin bitti
-        const expected = state.words[index];
-        const ok = normalizeWord(typed) === normalizeWord(expected);
+    function clearWordStyle(index) {
         const span = qs(`[data-w="${index}"]`);
+        if (!span) return;
+        span.classList.remove('yr-word-correct', 'yr-word-wrong');
+    }
 
-        if (ok) {
-            state.correctWords++;
-            state.combo++;
-            if (state.combo > state.maxCombo) state.maxCombo = state.combo;
-            if (span) { span.classList.add('yr-word-correct'); span.classList.remove('yr-word-wrong'); }
-            carBoost('self', state.combo % COMBO_TURBO_STEP === 0);
-            beep(660, 45, 0.05);
-            if (state.combo % COMBO_TURBO_STEP === 0) beep(990, 90, 0.08);
-        } else {
-            state.wrongWords++;
-            state.combo = 0;
-            if (span) { span.classList.add('yr-word-wrong'); span.classList.remove('yr-word-correct'); }
+    function syncCommittedWords(committed) {
+        const prevResults = state.wordResults || [];
+        const prevCommitted = state.committedCount;
+        const prevCorrect = state.correctWords;
+        const newResults = [];
+        let correct = 0;
+        let wrong = 0;
+        let combo = 0;
+        let newlyWrongIndex = -1;
+        let newlyCorrectIndex = -1;
+
+        const limit = Math.min(committed.length, state.words.length);
+        for (let i = 0; i < limit; i++) {
+            const expected = state.words[i];
+            const typed = committed[i];
+            const ok = normalizeWord(typed) === normalizeWord(expected);
+            newResults[i] = ok;
+            const span = qs(`[data-w="${i}"]`);
+
+            if (ok) {
+                correct++;
+                combo++;
+                if (combo > state.maxCombo) state.maxCombo = combo;
+                if (span) {
+                    span.classList.add('yr-word-correct');
+                    span.classList.remove('yr-word-wrong');
+                }
+                if (prevResults[i] === false) newlyCorrectIndex = i;
+            } else {
+                wrong++;
+                combo = 0;
+                if (span) {
+                    span.classList.add('yr-word-wrong');
+                    span.classList.remove('yr-word-correct');
+                }
+                if (prevResults[i] !== false) newlyWrongIndex = i;
+            }
+        }
+
+        for (let i = limit; i < prevCommitted; i++) {
+            clearWordStyle(i);
+        }
+
+        state.wordResults = newResults;
+        state.correctWords = correct;
+        state.wrongWords = wrong;
+        state.combo = combo;
+        state.committedCount = limit;
+
+        if (newlyWrongIndex >= 0) {
             carError('self');
             beep(180, 90, 0.06);
+        } else if (newlyCorrectIndex >= 0 || (limit > prevCommitted && correct > prevCorrect)) {
+            // Yeni doğru commit veya düzeltme
+            carBoost('self', state.combo > 0 && state.combo % COMBO_TURBO_STEP === 0);
+            beep(660, 45, 0.05);
+            if (state.combo > 0 && state.combo % COMBO_TURBO_STEP === 0) beep(990, 90, 0.08);
         }
 
         positionCar('self', state.correctWords);
         updateHUD();
         broadcastProgress();
 
-        // Bitiş hedefine ulaşıldı mı?
         if (state.correctWords >= state.targetWords) {
             finishRace(true);
         }
@@ -1172,9 +1269,7 @@
 
     function onProgressMsg(payload) {
         if (!payload || payload.userId === state.userId) return;
-        cancelLeaveConfirm();
-        state.rivalPresent = true;
-        state.lastRivalProgressAt = Date.now();
+        markRivalAlive();
         state.rivalCorrect = payload.correct || 0;
         positionCar('rival', state.rivalCorrect);
         // Rakip geçti sesi
@@ -1191,6 +1286,8 @@
     function finishRace(completed) {
         if (!state.running) return;
         state.running = false;
+        state.matchActive = false;
+        stopHeartbeat();
         stopTimers();
         $('yr-input').readOnly = true;
         $('yr-hud-time').classList.remove('animate-pulse');
@@ -1223,9 +1320,7 @@
 
     function onFinishMsg(payload) {
         if (!payload || payload.userId === state.userId) return;
-        cancelLeaveConfirm();
-        state.rivalPresent = true;
-        state.lastRivalProgressAt = Date.now();
+        markRivalAlive();
         state.rivalFinal = {
             correct: payload.correct || 0, wrong: payload.wrong || 0,
             wpm: payload.wpm || 0, acc: payload.acc || 0, combo: payload.combo || 0,
@@ -1474,6 +1569,8 @@
         const room = state.room;
         if (state.reconnectTimer) { clearTimeout(state.reconnectTimer); state.reconnectTimer = null; }
         cancelLeaveConfirm();
+        stopHeartbeat();
+        state.matchActive = false;
         state.ignoreLeaveUntil = 0;
         state.lastRivalProgressAt = 0;
         if (state.channel) {
@@ -1496,6 +1593,8 @@
     function cleanupOnExit() {
         if (state.cleanedUp) return;
         state.cleanedUp = true;
+        state.matchActive = false;
+        stopHeartbeat();
         try { if (state.channel) state.channel.untrack(); } catch (e) {}
         try { if (state.channel) state.supabase.removeChannel(state.channel); } catch (e) {}
         try { if (state.lobbyChannel) state.supabase.removeChannel(state.lobbyChannel); } catch (e) {}
@@ -1564,8 +1663,11 @@
 
         // Sayfa kapanışı / gizlenme temizliği
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && state.channel && state.room) {
-                state.channel.track(getPresencePayload());
+            if (document.visibilityState === 'visible' && state.channel && state.room && !isInMatch()) {
+                try {
+                    const trackPromise = state.channel.track(getPresencePayload());
+                    if (trackPromise && typeof trackPromise.catch === 'function') trackPromise.catch(() => {});
+                } catch (e) {}
             }
         });
 

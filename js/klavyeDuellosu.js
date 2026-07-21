@@ -14,11 +14,13 @@
     const FINISH_WAIT_MS = 4000;
     const COMBO_GLOW_STEP = 5;
     const IDLE_MS = 3000;
-    const RECONNECT_MS = 2500;
     /** Presence track/reconnect leave olaylarını gerçek çıkıştan ayırmak için */
     const PRESENCE_LEAVE_DEBOUNCE_MS = 1800;
-    /** Maç sırasında progress gelmeye devam ediyorsa ayrılma sayma */
+    /** Maç sırasında progress/heartbeat gelmeye devam ediyorsa ayrılma sayma */
     const RIVAL_ALIVE_GRACE_MS = 10000;
+    const HEARTBEAT_MS = 2500;
+    const MATCH_DISCONNECT_MS = 12000;
+    const RECONNECT_MS = 2500;
     const SOUND_STORAGE_KEY = 'yaziyo-kd-sound';
     const IMLASIZ_IGNORE = /[.,\/#!$%\^&\*;:{}=\-_~()'’"“”\d]/g;
 
@@ -77,6 +79,7 @@
         combo: 0,
         maxCombo: 0,
         committedCount: 0,
+        wordResults: [],
         running: false,
         startedAt: 0,
         durationSec: 60,
@@ -104,6 +107,8 @@
         leaveConfirmTimer: null,
         lastRivalProgressAt: 0,
         ignoreLeaveUntil: 0,
+        heartbeatTimer: null,
+        matchActive: false,
         cleanedUp: false,
     };
 
@@ -612,6 +617,57 @@
         return null;
     }
 
+    function isInMatch() {
+        return !!(state.matchActive || state.running || isCountdownOpen());
+    }
+
+    function markRivalAlive() {
+        cancelLeaveConfirm();
+        state.rivalPresent = true;
+        state.lastRivalProgressAt = Date.now();
+    }
+
+    function sendHeartbeat() {
+        if (!state.channel || state.cleanedUp) return;
+        try {
+            state.channel.send({
+                type: 'broadcast',
+                event: 'heartbeat',
+                payload: { userId: state.userId, t: Date.now() },
+            });
+        } catch (e) {}
+    }
+
+    function stopHeartbeat() {
+        if (state.heartbeatTimer) {
+            clearInterval(state.heartbeatTimer);
+            state.heartbeatTimer = null;
+        }
+    }
+
+    function startHeartbeat() {
+        stopHeartbeat();
+        state.lastRivalProgressAt = Date.now();
+        sendHeartbeat();
+        state.heartbeatTimer = setInterval(() => {
+            if (!isInMatch() || state.resolved || state.cleanedUp) {
+                stopHeartbeat();
+                return;
+            }
+            sendHeartbeat();
+            if (state.lastRivalProgressAt && (Date.now() - state.lastRivalProgressAt) > MATCH_DISCONNECT_MS) {
+                state.rivalPresent = false;
+                state.rivalReady = false;
+                handleRivalLeft();
+            }
+        }, HEARTBEAT_MS);
+    }
+
+    function onHeartbeatMsg(payload) {
+        if (!payload || payload.userId === state.userId) return;
+        markRivalAlive();
+    }
+
     function cancelLeaveConfirm() {
         if (state.leaveConfirmTimer) {
             clearTimeout(state.leaveConfirmTimer);
@@ -620,6 +676,8 @@
     }
 
     function scheduleRivalLeaveConfirm() {
+        // Maç/geri sayımda presence leave'e güvenme — heartbeat karar verir
+        if (isInMatch()) return;
         if (Date.now() < state.ignoreLeaveUntil) return;
         if (state.resolved || state.cleanedUp) return;
         cancelLeaveConfirm();
@@ -640,6 +698,9 @@
 
     function confirmRivalLeft() {
         if (state.resolved || state.cleanedUp) return;
+        // Maç sırasında presence tabanlı çıkış yok
+        if (isInMatch()) return;
+
         const rival = findRivalPresence(state.channel);
         if (rival) {
             applyRivalPresenceMeta(rival);
@@ -649,16 +710,9 @@
             return;
         }
 
-        const inMatch = state.running || isCountdownOpen();
-        if (inMatch && state.lastRivalProgressAt && (Date.now() - state.lastRivalProgressAt) < RIVAL_ALIVE_GRACE_MS) {
-            scheduleRivalLeaveConfirm();
-            return;
-        }
-
         state.rivalPresent = false;
         state.rivalReady = false;
         if (state.screen === 'room') updateSlots();
-        if (inMatch) handleRivalLeft();
     }
 
     function joinRoomChannel() {
@@ -686,6 +740,7 @@
           .on('broadcast', { event: 'start' }, () => onStartMsg())
           .on('broadcast', { event: 'progress' }, ({ payload }) => onProgressMsg(payload))
           .on('broadcast', { event: 'finish' }, ({ payload }) => onFinishMsg(payload))
+          .on('broadcast', { event: 'heartbeat' }, ({ payload }) => onHeartbeatMsg(payload))
           .on('broadcast', { event: 'resync' }, ({ payload }) => onResyncMsg(payload))
           .on('broadcast', { event: 'rematch-request' }, () => onRematchRequest())
           .on('broadcast', { event: 'rematch-accept' }, () => onRematchAccept())
@@ -701,6 +756,10 @@
                       });
                   } catch (e) {}
               } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                  // Maç sırasında kanal kopması presence leave zinciri başlatmasın
+                  if (isInMatch()) {
+                      state.ignoreLeaveUntil = Date.now() + RECONNECT_MS + PRESENCE_LEAVE_DEBOUNCE_MS;
+                  }
                   scheduleReconnect();
               }
           });
@@ -722,8 +781,8 @@
         if (rival) {
             cancelLeaveConfirm();
             applyRivalPresenceMeta(rival);
-        } else if (state.rivalPresent) {
-            // Anlık boş sync = gerçek çıkış demek değil; doğrula
+        } else if (state.rivalPresent && !isInMatch()) {
+            // Anlık boş sync = gerçek çıkış demek değil; lobide doğrula
             scheduleRivalLeaveConfirm();
         }
         if (state.screen === 'room') updateSlots();
@@ -735,7 +794,7 @@
         const left = (leftPresences || []).some((p) => p.userId && p.userId !== state.userId);
         if (!left) return;
         if (Date.now() < state.ignoreLeaveUntil) return;
-        // track()/reconnect leave metasını anında çıkış sayma
+        if (isInMatch()) return; // maçta presence leave yok say
         scheduleRivalLeaveConfirm();
     }
 
@@ -747,6 +806,8 @@
     function handleRivalLeft() {
         if (state.resolved) return;
         cancelLeaveConfirm();
+        state.matchActive = false;
+        stopHeartbeat();
         stopTimers();
         const msg = $('kd-left-msg');
         if (state.running || isCountdownOpen()) {
@@ -818,10 +879,13 @@
 
     /* ---------------- DÜELLO AKIŞI ---------------- */
     function beginDuelSequence() {
-        if (state.running || isCountdownOpen()) return;
+        if (state.running || isCountdownOpen() || state.matchActive) return;
+        cancelLeaveConfirm();
+        state.matchActive = true;
         prepareDuel();
         openWorkspace();
         runCountdown(() => startDuel());
+        startHeartbeat();
     }
 
     function prepareDuel() {
@@ -834,6 +898,7 @@
         state.combo = 0;
         state.maxCombo = 0;
         state.committedCount = 0;
+        state.wordResults = [];
         state.replayLog = [];
         state.replaySaved = false;
         state.prevLeadSign = 0;
@@ -966,12 +1031,7 @@
 
         const val = $('kd-input').value;
         const committed = val.match(/\S+(?=\s)/g) || [];
-        if (committed.length > state.committedCount) {
-            for (let i = state.committedCount; i < committed.length; i++) {
-                evaluateWord(i, committed[i]);
-            }
-            state.committedCount = committed.length;
-        }
+        syncCommittedWords(committed);
         highlightWord(state.committedCount);
         syncTypingScroll();
         broadcastProgress();
@@ -991,36 +1051,79 @@
         });
     }
 
-    function evaluateWord(index, typed) {
-        if (index >= state.words.length) return;
-        const expected = state.words[index];
-        const ok = normalizeWord(typed) === normalizeWord(expected);
+    function clearWordStyle(index) {
         const span = qs(`[data-w="${index}"]`);
-        const ts = Date.now() - state.startedAt;
+        if (!span) return;
+        span.classList.remove('kd-word-correct', 'kd-word-wrong');
+    }
 
-        state.replayLog.push({ word: typed, expected, ts, correct: ok });
+    function syncCommittedWords(committed) {
+        const prevResults = state.wordResults || [];
+        const prevCommitted = state.committedCount;
+        const newResults = [];
+        let correct = 0;
+        let wrong = 0;
+        let combo = 0;
+        let newlyWrong = false;
 
-        if (ok) {
-            state.correctWords++;
-            state.combo++;
-            if (state.combo > state.maxCombo) state.maxCombo = state.combo;
-            if (span) { span.classList.add('kd-word-correct'); span.classList.remove('kd-word-wrong'); }
-        } else {
-            state.wrongWords++;
-            state.errorCount++;
-            state.combo = 0;
-            if (span) { span.classList.add('kd-word-wrong'); span.classList.remove('kd-word-correct'); }
-            state.lastBroadcast = 0;
-            if (state.channel && state.running) {
-                const p = getProgressPayload();
-                p.status = 'error';
-                state.channel.send({ type: 'broadcast', event: 'progress', payload: p });
+        const limit = Math.min(committed.length, state.words.length);
+        for (let i = 0; i < limit; i++) {
+            const expected = state.words[i];
+            const typed = committed[i];
+            const ok = normalizeWord(typed) === normalizeWord(expected);
+            newResults[i] = ok;
+            const span = qs(`[data-w="${i}"]`);
+
+            if (ok) {
+                correct++;
+                combo++;
+                if (combo > state.maxCombo) state.maxCombo = combo;
+                if (span) {
+                    span.classList.add('kd-word-correct');
+                    span.classList.remove('kd-word-wrong');
+                }
+            } else {
+                wrong++;
+                combo = 0;
+                if (span) {
+                    span.classList.add('kd-word-wrong');
+                    span.classList.remove('kd-word-correct');
+                }
+                if (prevResults[i] !== false) newlyWrong = true;
             }
+
+            // Yeni commit veya düzeltme kaydı
+            if (i >= prevCommitted || prevResults[i] !== ok) {
+                state.replayLog.push({
+                    word: typed,
+                    expected,
+                    ts: Date.now() - state.startedAt,
+                    correct: ok,
+                });
+            }
+        }
+
+        // Artık commit edilmeyen kelimelerin stilini temizle
+        for (let i = limit; i < prevCommitted; i++) {
+            clearWordStyle(i);
+        }
+
+        state.wordResults = newResults;
+        state.correctWords = correct;
+        state.wrongWords = wrong;
+        state.errorCount = wrong;
+        state.combo = combo;
+        state.committedCount = limit;
+
+        if (newlyWrong && state.channel && state.running) {
+            state.lastBroadcast = 0;
+            const p = getProgressPayload();
+            p.status = 'error';
+            try { state.channel.send({ type: 'broadcast', event: 'progress', payload: p }); } catch (e) {}
         }
 
         updateProgressBars();
         updateHUD();
-        broadcastProgress();
     }
 
     function highlightWord(index) {
@@ -1127,9 +1230,7 @@
 
     function onProgressMsg(payload) {
         if (!payload || payload.userId === state.userId) return;
-        cancelLeaveConfirm();
-        state.rivalPresent = true;
-        state.lastRivalProgressAt = Date.now();
+        markRivalAlive();
         const prevWrong = state.rivalStats.wrong || 0;
         if ((payload.wrong || 0) > prevWrong) payload.status = 'error';
         if (payload.avatarUrl) state.rivalAvatar = payload.avatarUrl;
@@ -1167,6 +1268,8 @@
     function finishDuel() {
         if (!state.running) return;
         state.running = false;
+        state.matchActive = false;
+        stopHeartbeat();
         stopTimers();
         $('kd-input').readOnly = true;
         $('kd-hud-time').classList.remove('animate-pulse');
@@ -1200,9 +1303,7 @@
 
     function onFinishMsg(payload) {
         if (!payload || payload.userId === state.userId) return;
-        cancelLeaveConfirm();
-        state.rivalPresent = true;
-        state.lastRivalProgressAt = Date.now();
+        markRivalAlive();
         state.rivalFinal = {
             correct: payload.correct || 0,
             wrong: payload.wrong || 0,
@@ -1433,6 +1534,8 @@
         const room = state.room;
         if (state.reconnectTimer) { clearTimeout(state.reconnectTimer); state.reconnectTimer = null; }
         cancelLeaveConfirm();
+        stopHeartbeat();
+        state.matchActive = false;
         state.ignoreLeaveUntil = 0;
         state.lastRivalProgressAt = 0;
         if (state.channel) {
@@ -1455,6 +1558,8 @@
     function cleanupOnExit() {
         if (state.cleanedUp) return;
         state.cleanedUp = true;
+        state.matchActive = false;
+        stopHeartbeat();
         try { if (state.channel) state.channel.untrack(); } catch (e) {}
         try { if (state.channel) state.supabase.removeChannel(state.channel); } catch (e) {}
         try { if (state.lobbyChannel) state.supabase.removeChannel(state.lobbyChannel); } catch (e) {}
@@ -1522,8 +1627,11 @@
         $('kd-rematch-decline').addEventListener('click', declineRematch);
 
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && state.channel && state.room) {
-                state.channel.track(getPresencePayload());
+            if (document.visibilityState === 'visible' && state.channel && state.room && !isInMatch()) {
+                try {
+                    const trackPromise = state.channel.track(getPresencePayload());
+                    if (trackPromise && typeof trackPromise.catch === 'function') trackPromise.catch(() => {});
+                } catch (e) {}
             }
         });
 
