@@ -28,7 +28,8 @@
         ANIM_MAX: 0.55,
     };
 
-    const SOUND_BIRD = '../sound effect/bird.mp3';
+    const SOUND_BIRD = window.YaziyoPaths?.assetHref?.('sound effect/bird.mp3')
+        ?? '../../sound effect/bird.mp3';
     const FLOOR_DROP_PX = 72;
 
     const FLOWER_EMOJI = ['🌸', '🌼', '🌷', '🌻', '🪻'];
@@ -130,6 +131,48 @@
         return toggle?.getAttribute('aria-checked') === 'true';
     }
 
+    function ensureBgAudio() {
+        if (!state.bgAudio) {
+            state.bgAudio = new Audio();
+            state.bgAudio.loop = true;
+            state.bgAudio.preload = 'auto';
+        }
+        return state.bgAudio;
+    }
+
+    function stopBackgroundAudio() {
+        if (!state.bgAudio) return;
+        state.bgAudio.pause();
+        state.bgAudio.currentTime = 0;
+    }
+
+    async function primeBackgroundAudio() {
+        if (!isSoundOn()) return;
+        const audio = ensureBgAudio();
+        audio.src = SOUND_BIRD;
+        const prevVolume = audio.volume;
+        audio.volume = 0.01;
+        try {
+            await audio.play();
+            audio.pause();
+            audio.currentTime = 0;
+        } catch (_) {
+            /* mobilde sessiz başlatma engellenirse geri sayım sonrası tekrar denenecek */
+        } finally {
+            audio.volume = prevVolume || 1;
+        }
+    }
+
+    function startBackgroundAudio() {
+        if (!isSoundOn()) return;
+        const audio = ensureBgAudio();
+        if (!audio.src || !audio.src.includes('bird.mp3')) {
+            audio.src = SOUND_BIRD;
+        }
+        audio.loop = true;
+        audio.play().catch((e) => console.error('Arka plan sesi çalınamadı:', e));
+    }
+
     function initSoundToggle() {
         const toggle = $('ke-sound-toggle');
         const status = $('ke-sound-status');
@@ -140,6 +183,10 @@
             if (status) {
                 status.textContent = on ? 'Açık' : 'Kapalı';
                 status.classList.toggle('is-on', on);
+            }
+            if (state.running) {
+                if (on) startBackgroundAudio();
+                else stopBackgroundAudio();
             }
         };
 
@@ -743,19 +790,14 @@
         els.userInput.focus();
         state.timerId = setInterval(handleTick, 1000);
 
-        if (isSoundOn()) {
-            if (!state.bgAudio) state.bgAudio = new Audio();
-            state.bgAudio.loop = true;
-            state.bgAudio.src = SOUND_BIRD;
-            state.bgAudio.play().catch(() => {});
-        }
+        startBackgroundAudio();
 
         initSky();
         ensureGroundFloor();
         updateHud();
     }
 
-    function startSession() {
+    async function startSession() {
         cacheEls();
         const category = $('category-select').value;
         const group = $('group-select').value;
@@ -771,6 +813,15 @@
             alert('Lütfen geçerli bir metin seçiniz.');
             return;
         }
+
+        if (!state.audioCtx) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (Ctx) state.audioCtx = new Ctx();
+        }
+        if (state.audioCtx?.state === 'suspended') {
+            try { await state.audioCtx.resume(); } catch (_) { /* ignore */ }
+        }
+        await primeBackgroundAudio();
 
         const rawText = metinlerDB[category][group][textIndex].text;
         state.originalWords = rawText.trim().split(/\s+/).filter(w => w.length > 0);
@@ -834,10 +885,7 @@
         state.running = false;
         clearInterval(state.timerId);
         els.userInput.readOnly = true;
-        if (state.bgAudio) {
-            state.bgAudio.pause();
-            state.bgAudio.currentTime = 0;
-        }
+        stopBackgroundAudio();
         stopSky();
 
         const elapsed = state.initialTime - state.timeRemaining;
@@ -1004,10 +1052,7 @@
         els.workspace?.classList.add('hidden');
         document.body.style.overflow = 'auto';
         stopSky();
-        if (state.bgAudio) {
-            state.bgAudio.pause();
-            state.bgAudio.currentTime = 0;
-        }
+        stopBackgroundAudio();
     }
 
     function preventTextCopy(e) {

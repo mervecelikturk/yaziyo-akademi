@@ -15,6 +15,10 @@
     const COMBO_GLOW_STEP = 5;
     const IDLE_MS = 3000;
     const RECONNECT_MS = 2500;
+    /** Presence track/reconnect leave olaylarını gerçek çıkıştan ayırmak için */
+    const PRESENCE_LEAVE_DEBOUNCE_MS = 1800;
+    /** Maç sırasında progress gelmeye devam ediyorsa ayrılma sayma */
+    const RIVAL_ALIVE_GRACE_MS = 10000;
     const SOUND_STORAGE_KEY = 'yaziyo-kd-sound';
     const IMLASIZ_IGNORE = /[.,\/#!$%\^&\*;:{}=\-_~()'’"“”\d]/g;
 
@@ -97,6 +101,9 @@
         form: { time: 60, type: 'acik', category: 'ozel', group: 'hikaye', textIndex: 0 },
         pendingJoinRoom: null,
         reconnectTimer: null,
+        leaveConfirmTimer: null,
+        lastRivalProgressAt: 0,
+        ignoreLeaveUntil: 0,
         cleanedUp: false,
     };
 
@@ -597,9 +604,74 @@
         }
     }
 
+    function findRivalPresence(ch) {
+        const states = (ch || state.channel)?.presenceState?.() || {};
+        for (const key of Object.keys(states)) {
+            if (key !== state.userId && states[key]?.[0]) return states[key][0];
+        }
+        return null;
+    }
+
+    function cancelLeaveConfirm() {
+        if (state.leaveConfirmTimer) {
+            clearTimeout(state.leaveConfirmTimer);
+            state.leaveConfirmTimer = null;
+        }
+    }
+
+    function scheduleRivalLeaveConfirm() {
+        if (Date.now() < state.ignoreLeaveUntil) return;
+        if (state.resolved || state.cleanedUp) return;
+        cancelLeaveConfirm();
+        state.leaveConfirmTimer = setTimeout(() => {
+            state.leaveConfirmTimer = null;
+            confirmRivalLeft();
+        }, PRESENCE_LEAVE_DEBOUNCE_MS);
+    }
+
+    function applyRivalPresenceMeta(rival) {
+        if (!rival) return;
+        state.rivalPresent = true;
+        state.rivalName = rival.name || state.rivalName;
+        state.rivalAvatar = rival.avatarUrl || state.rivalAvatar;
+        // Presence yalnızca ready=true latch eder; false broadcast ile gelir
+        if (rival.ready) state.rivalReady = true;
+    }
+
+    function confirmRivalLeft() {
+        if (state.resolved || state.cleanedUp) return;
+        const rival = findRivalPresence(state.channel);
+        if (rival) {
+            applyRivalPresenceMeta(rival);
+            if (state.screen === 'room') updateSlots();
+            if (state.running || state.screen === 'room') updateRivalPanel();
+            maybeAutoStart();
+            return;
+        }
+
+        const inMatch = state.running || isCountdownOpen();
+        if (inMatch && state.lastRivalProgressAt && (Date.now() - state.lastRivalProgressAt) < RIVAL_ALIVE_GRACE_MS) {
+            scheduleRivalLeaveConfirm();
+            return;
+        }
+
+        state.rivalPresent = false;
+        state.rivalReady = false;
+        if (state.screen === 'room') updateSlots();
+        if (inMatch) handleRivalLeft();
+    }
+
     function joinRoomChannel() {
         const room = state.room;
         if (state.channel) {
+            state.ignoreLeaveUntil = Date.now() + PRESENCE_LEAVE_DEBOUNCE_MS + 500;
+            try {
+                state.channel.send({
+                    type: 'broadcast',
+                    event: 'resync',
+                    payload: { userId: state.userId, ready: state.ready, reconnecting: true },
+                });
+            } catch (e) {}
             try { state.supabase.removeChannel(state.channel); } catch (e) {}
             state.channel = null;
         }
@@ -614,12 +686,20 @@
           .on('broadcast', { event: 'start' }, () => onStartMsg())
           .on('broadcast', { event: 'progress' }, ({ payload }) => onProgressMsg(payload))
           .on('broadcast', { event: 'finish' }, ({ payload }) => onFinishMsg(payload))
+          .on('broadcast', { event: 'resync' }, ({ payload }) => onResyncMsg(payload))
           .on('broadcast', { event: 'rematch-request' }, () => onRematchRequest())
           .on('broadcast', { event: 'rematch-accept' }, () => onRematchAccept())
           .on('broadcast', { event: 'rematch-decline' }, () => onRematchDecline())
           .subscribe(async (status) => {
               if (status === 'SUBSCRIBED') {
                   await ch.track(getPresencePayload());
+                  try {
+                      ch.send({
+                          type: 'broadcast',
+                          event: 'resync',
+                          payload: { userId: state.userId, ready: state.ready },
+                      });
+                  } catch (e) {}
               } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
                   scheduleReconnect();
               }
@@ -630,6 +710,7 @@
 
     function scheduleReconnect() {
         if (state.reconnectTimer || !state.room || state.cleanedUp) return;
+        state.ignoreLeaveUntil = Date.now() + RECONNECT_MS + PRESENCE_LEAVE_DEBOUNCE_MS;
         state.reconnectTimer = setTimeout(() => {
             state.reconnectTimer = null;
             if (state.room && !state.cleanedUp) joinRoomChannel();
@@ -637,35 +718,25 @@
     }
 
     function handlePresenceSync(ch) {
-        const states = ch.presenceState();
-        let rival = null;
-        Object.keys(states).forEach((key) => {
-            if (key !== state.userId && states[key]?.[0]) rival = states[key][0];
-        });
-        const wasPresent = state.rivalPresent;
-        state.rivalPresent = !!rival;
+        const rival = findRivalPresence(ch);
         if (rival) {
-            state.rivalName = rival.name || state.rivalName;
-            state.rivalAvatar = rival.avatarUrl || state.rivalAvatar;
-            state.rivalReady = !!rival.ready;
-        } else {
-            state.rivalReady = false;
+            cancelLeaveConfirm();
+            applyRivalPresenceMeta(rival);
+        } else if (state.rivalPresent) {
+            // Anlık boş sync = gerçek çıkış demek değil; doğrula
+            scheduleRivalLeaveConfirm();
         }
         if (state.screen === 'room') updateSlots();
-        if (state.running || state.screen === 'room' && !state.running) {
-            updateRivalPanel();
-        }
-        if (wasPresent && !state.rivalPresent && (state.running || isCountdownOpen())) handleRivalLeft();
+        if (state.running || state.screen === 'room') updateRivalPanel();
         maybeAutoStart();
     }
 
     function handlePresenceLeave(leftPresences) {
         const left = (leftPresences || []).some((p) => p.userId && p.userId !== state.userId);
         if (!left) return;
-        state.rivalPresent = false;
-        state.rivalReady = false;
-        if (state.screen === 'room') updateSlots();
-        if (state.running || isCountdownOpen()) handleRivalLeft();
+        if (Date.now() < state.ignoreLeaveUntil) return;
+        // track()/reconnect leave metasını anında çıkış sayma
+        scheduleRivalLeaveConfirm();
     }
 
     function isCountdownOpen() {
@@ -675,6 +746,7 @@
 
     function handleRivalLeft() {
         if (state.resolved) return;
+        cancelLeaveConfirm();
         stopTimers();
         const msg = $('kd-left-msg');
         if (state.running || isCountdownOpen()) {
@@ -694,15 +766,30 @@
         state.ready = !state.ready;
         updateSlots();
         if (state.channel) {
-            state.channel.track(getPresencePayload());
             state.channel.send({ type: 'broadcast', event: 'ready', payload: { userId: state.userId, ready: state.ready } });
+            try {
+                const trackPromise = state.channel.track(getPresencePayload());
+                if (trackPromise && typeof trackPromise.catch === 'function') trackPromise.catch(() => {});
+            } catch (e) {}
         }
         maybeAutoStart();
     }
 
     function onReadyMsg(payload) {
         if (!payload || payload.userId === state.userId) return;
+        cancelLeaveConfirm();
+        state.rivalPresent = true;
         state.rivalReady = !!payload.ready;
+        if (state.screen === 'room') updateSlots();
+        maybeAutoStart();
+    }
+
+    function onResyncMsg(payload) {
+        if (!payload || payload.userId === state.userId) return;
+        cancelLeaveConfirm();
+        state.ignoreLeaveUntil = Date.now() + PRESENCE_LEAVE_DEBOUNCE_MS;
+        state.rivalPresent = true;
+        if (typeof payload.ready === 'boolean') state.rivalReady = payload.ready;
         if (state.screen === 'room') updateSlots();
         maybeAutoStart();
     }
@@ -711,10 +798,10 @@
         if (!state.isHost) return;
         if (state.screen !== 'room') return;
         if (state._startScheduled || state.running || isCountdownOpen()) return;
-        if (state.ready && state.rivalReady && state.rivalPresent) {
+        if (state.ready && state.rivalReady && state.rivalPresent && !state.leaveConfirmTimer) {
             state._startScheduled = true;
             setTimeout(() => {
-                if (state.ready && state.rivalReady && state.rivalPresent && !state.running && state.screen === 'room' && !isCountdownOpen()) {
+                if (state.ready && state.rivalReady && state.rivalPresent && !state.leaveConfirmTimer && !state.running && state.screen === 'room' && !isCountdownOpen()) {
                     state.channel.send({ type: 'broadcast', event: 'start', payload: { startAt: Date.now() + START_LEAD_MS } });
                     try { state.supabase.rpc('duello_baslat', { p_oda_id: state.room.id }); } catch (e) {}
                     beginDuelSequence();
@@ -1040,6 +1127,9 @@
 
     function onProgressMsg(payload) {
         if (!payload || payload.userId === state.userId) return;
+        cancelLeaveConfirm();
+        state.rivalPresent = true;
+        state.lastRivalProgressAt = Date.now();
         const prevWrong = state.rivalStats.wrong || 0;
         if ((payload.wrong || 0) > prevWrong) payload.status = 'error';
         if (payload.avatarUrl) state.rivalAvatar = payload.avatarUrl;
@@ -1110,6 +1200,9 @@
 
     function onFinishMsg(payload) {
         if (!payload || payload.userId === state.userId) return;
+        cancelLeaveConfirm();
+        state.rivalPresent = true;
+        state.lastRivalProgressAt = Date.now();
         state.rivalFinal = {
             correct: payload.correct || 0,
             wrong: payload.wrong || 0,
@@ -1339,6 +1432,9 @@
 
         const room = state.room;
         if (state.reconnectTimer) { clearTimeout(state.reconnectTimer); state.reconnectTimer = null; }
+        cancelLeaveConfirm();
+        state.ignoreLeaveUntil = 0;
+        state.lastRivalProgressAt = 0;
         if (state.channel) {
             try { await state.channel.untrack(); } catch (e) {}
             try { state.supabase.removeChannel(state.channel); } catch (e) {}
