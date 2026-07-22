@@ -24,7 +24,8 @@
     const SOUND_STORAGE_KEY = 'yaziyo-kd-sound';
     const IMLASIZ_IGNORE = /[.,\/#!$%\^&\*;:{}=\-_~()'’"“”\d]/g;
 
-    const SOUND_KEYBOARD = '../sound effect/keyboard1.mp3';
+    const SOUND_KEYBOARD = window.YaziyoPaths?.assetHref?.('sound effect/keyboard1.mp3')
+        ?? '../../sound effect/keyboard1.mp3';
 
     const CATEGORIES = {
         ozel: { label: 'Özel Metinler', groups: [
@@ -170,14 +171,31 @@
         });
     }
 
+    function ensureKeyboardAudio() {
+        if (!state.keyboardAudio) {
+            state.keyboardAudio = new Audio(SOUND_KEYBOARD);
+            state.keyboardAudio.preload = 'auto';
+        }
+        return state.keyboardAudio;
+    }
+
+    function primeKeyboardAudio() {
+        try {
+            const base = ensureKeyboardAudio();
+            const clip = base.cloneNode();
+            clip.volume = 0.01;
+            clip.play().then(() => {
+                clip.pause();
+                clip.currentTime = 0;
+            }).catch(() => {});
+        } catch (e) {}
+    }
+
     function playKeyboardSound() {
         if (!state.soundOn) return;
         try {
-            if (!state.keyboardAudio) {
-                state.keyboardAudio = new Audio(SOUND_KEYBOARD);
-                state.keyboardAudio.preload = 'auto';
-            }
-            const clip = state.keyboardAudio.cloneNode();
+            const base = ensureKeyboardAudio();
+            const clip = base.cloneNode();
             clip.volume = 0.28;
             clip.play().catch(() => {});
         } catch (e) {}
@@ -187,6 +205,7 @@
         state.soundOn = on;
         saveSoundPref();
         updateSoundButtons();
+        if (on) primeKeyboardAudio();
     }
 
     /* ---------------- AVATAR ---------------- */

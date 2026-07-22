@@ -152,7 +152,7 @@
                         Sözlü Mülakata Katılmak İçin Giriş Yapın
                     </h1>
                     <p class="text-sm sm:text-base text-light-text-secondary dark:text-dark-text-secondary mb-8 leading-relaxed max-w-md mx-auto">
-                        Mülakat kartlarını görüntülemek ve 5 soruluk mülakat testlerine başlamak için hesabınıza giriş yapın.
+                        Mülakat kartlarını görüntülemek ve 5 veya 10 soruluk mülakat testlerine başlamak için hesabınıza giriş yapın.
                     </p>
                     <div class="flex justify-center">
                         <a href="../giris-kayit/" class="inline-flex items-center justify-center gap-2 px-8 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl hover:shadow-glow-gold hover:scale-105 transition-all">
@@ -170,18 +170,18 @@
                 </div>
                 <h1 class="text-2xl sm:text-3xl lg:text-4xl font-poppins font-bold text-light-text dark:text-dark-text">Sözlü Mülakat</h1>
                 <p class="text-sm sm:text-base text-light-text-secondary dark:text-dark-text-secondary mt-2 max-w-2xl mx-auto">
-                    Bir mülakat seçin, 5 soruyu yanıtlayın. En az 3 doğru cevapla mülakatı geçersiniz. Süre sınırı yoktur; sonuç kaydedilmez.
+                    5 veya 10 soruluk mülakatı seçin; sorular her seferinde rastgele gelir. 5 soruda en az 3, 10 soruda en az 6 doğru gerekir. Süre sınırı yoktur; sonuç kaydedilmez.
                 </p>
             </div>
 
             <div id="sm-setup-banner" class="hidden mb-6 p-4 rounded-xl border border-orange-500/25 bg-orange-500/5 text-sm text-light-text-secondary">
-                <p class="mb-2"><i class="fa-solid fa-database text-orange-500 mr-1"></i> Mülakat paketleri tablosu henüz kurulmamış olabilir.</p>
-                <p class="text-xs mb-3">Supabase SQL Editor'da <code class="text-yaziyo-gold">supabase/migrations/031_sozlu_mulakat_paketleri.sql</code> dosyasını çalıştırın.</p>
+                <p class="mb-2"><i class="fa-solid fa-database text-orange-500 mr-1"></i> Soru bankası tablosu henüz kurulmamış olabilir.</p>
+                <p class="text-xs mb-3">Supabase SQL Editor'da <code class="text-yaziyo-gold">supabase/migrations/024_sozlu_mulakat.sql</code> dosyasını çalıştırın.</p>
                 <button type="button" id="sm-btn-reload" class="sm-action-btn text-xs">Yeniden Dene</button>
             </div>
 
             <p id="sm-empty-msg" class="hidden text-center text-sm text-light-text-secondary bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl py-8 px-4">
-                Henüz yayında mülakat yok. Admin panelinden mülakat eklediğinde kartlar burada görünecek.
+                Henüz yayında soru yok. Admin panelinden soru eklediğinde mülakatlar burada görünecek.
             </p>
 
             <div id="sm-cards-grid" class="sm-cards-grid" role="list"></div>

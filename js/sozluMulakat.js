@@ -1,20 +1,25 @@
 /**
- * YAZİYO — Sözlü Mülakat (kart listesi + 5 soruluk test, kayıt yok)
+ * YAZİYO — Sözlü Mülakat (sabit 5/10 kart + rastgele soru, kayıt yok)
  */
 import {
-    fetchPublishedPaketler,
+    fetchPublishedSorular,
     getSoruKaynagiLabel,
-    MULAKAT_SORU_SAYISI,
-    MULAKAT_MIN_DOGRU,
-    isPaketTableMissingError
+    MULAKAT_MODLARI,
+    getMinDogru,
+    getPreviousQuestionIds,
+    savePreviousQuestionIds,
+    pickRandomSorular,
+    isTableMissingError
 } from './lib/sozluMulakatApi.js';
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E'];
 const CARD_TONE_COUNT = 8;
 
 const state = {
-    paketler: [],
+    pool: [],
     selected: null,
+    questionCount: 5,
+    minCorrect: 3,
     questionIndex: 0,
     answers: [],
     correctCount: 0,
@@ -61,27 +66,35 @@ function escapeHtml(str) {
     return d.innerHTML;
 }
 
-function shuffleQuestions(questions) {
-    return [...questions].sort(() => Math.random() - 0.5);
+function usablePool() {
+    return (state.pool || []).filter((q) => q.active && (q.options || []).length >= 5);
 }
 
 function renderCards() {
     if (!els.cardsGrid) return;
 
-    if (!state.paketler.length) {
+    const pool = usablePool();
+    const modes = MULAKAT_MODLARI.filter((m) => pool.length >= m.questionCount);
+
+    if (!modes.length) {
         els.cardsGrid.innerHTML = '';
         els.emptyMsg?.classList.remove('hidden');
+        if (els.emptyMsg) {
+            els.emptyMsg.textContent = pool.length
+                ? `Mülakat için en az 5 yayında soru gerekli (şu an ${pool.length}).`
+                : 'Henüz yayında soru yok. Admin panelinden soru eklediğinde mülakatlar burada görünecek.';
+        }
         return;
     }
 
     els.emptyMsg?.classList.add('hidden');
-    els.cardsGrid.innerHTML = state.paketler.map((p, i) => `
+    els.cardsGrid.innerHTML = modes.map((m, i) => `
         <article class="sm-mulakat-card sm-mulakat-card-tone-${i % CARD_TONE_COUNT}" role="listitem">
             <p class="sm-card-label">Mülakat</p>
-            <h2 class="sm-card-title">${escapeHtml(p.title)}</h2>
-            <p class="sm-card-topic">${escapeHtml(p.topic || '—')}</p>
-            <span class="sm-card-source"><i class="fa-solid fa-book-open"></i> ${escapeHtml(getSoruKaynagiLabel(p.sourceType))}</span>
-            <button type="button" class="sm-card-start" data-start="${p.id}">
+            <h2 class="sm-card-title">${escapeHtml(m.title)}</h2>
+            <p class="sm-card-topic">${escapeHtml(m.topic)}</p>
+            <span class="sm-card-source"><i class="fa-solid fa-book-open"></i> ${escapeHtml(getSoruKaynagiLabel(m.sourceType))}</span>
+            <button type="button" class="sm-card-start" data-start="${m.id}">
                 <i class="fa-solid fa-play"></i> Başla
             </button>
         </article>
@@ -89,8 +102,8 @@ function renderCards() {
 
     els.cardsGrid.querySelectorAll('[data-start]').forEach((btn) => {
         btn.addEventListener('click', () => {
-            const paket = state.paketler.find((x) => x.id === btn.dataset.start);
-            if (paket) startMulakat(paket);
+            const mode = MULAKAT_MODLARI.find((x) => x.id === btn.dataset.start);
+            if (mode) startMulakat(mode);
         });
     });
 }
@@ -146,11 +159,30 @@ function clearCountdown() {
     }
 }
 
-function startMulakat(paket) {
-    const questions = shuffleQuestions(paket.questions || []);
-    if (questions.length < MULAKAT_SORU_SAYISI) return;
+function startMulakat(mode) {
+    const count = mode.questionCount;
+    const previousIds = getPreviousQuestionIds(mode.id);
+    const { questions, error } = pickRandomSorular(usablePool(), count, previousIds);
 
-    state.selected = { ...paket, questions: questions.slice(0, MULAKAT_SORU_SAYISI) };
+    if (error || !questions.length) {
+        if (els.emptyMsg) {
+            els.emptyMsg.classList.remove('hidden');
+            els.emptyMsg.textContent = error?.message || 'Soru seçilemedi.';
+        }
+        return;
+    }
+
+    savePreviousQuestionIds(mode.id, questions.map((q) => q.id));
+
+    state.selected = {
+        id: mode.id,
+        title: mode.title,
+        topic: mode.topic,
+        sourceType: mode.sourceType,
+        questions
+    };
+    state.questionCount = count;
+    state.minCorrect = mode.minCorrect ?? getMinDogru(count);
     state.questionIndex = 0;
     state.answers = [];
     state.correctCount = 0;
@@ -165,13 +197,13 @@ function startMulakat(paket) {
     }
     playCountdownSound('tick');
 
-    let count = 3;
+    let n = 3;
     state.countdownTimer = setInterval(() => {
-        count -= 1;
-        if (count > 0) {
-            if (els.countdownNum) els.countdownNum.textContent = String(count);
+        n -= 1;
+        if (n > 0) {
+            if (els.countdownNum) els.countdownNum.textContent = String(n);
             playCountdownSound('tick');
-        } else if (count === 0) {
+        } else if (n === 0) {
             if (els.countdownNum) {
                 els.countdownNum.textContent = 'BAŞLA!';
                 els.countdownNum.style.color = 'rgb(var(--yaziyo-green-rgb))';
@@ -198,7 +230,7 @@ function showQuestion() {
     els.quizNext?.classList.add('hidden');
 
     if (els.quizProgress) {
-        els.quizProgress.textContent = `Soru ${state.questionIndex + 1} / ${MULAKAT_SORU_SAYISI}`;
+        els.quizProgress.textContent = `Soru ${state.questionIndex + 1} / ${state.questionCount}`;
     }
     if (els.quizQuestion) els.quizQuestion.textContent = q.question;
 
@@ -233,7 +265,7 @@ function answerQuestion(selectedIndex) {
 
     if (els.quizNext) {
         els.quizNext.classList.remove('hidden');
-        els.quizNext.textContent = state.questionIndex >= MULAKAT_SORU_SAYISI - 1
+        els.quizNext.textContent = state.questionIndex >= state.questionCount - 1
             ? 'Sonucu Gör'
             : 'Sonraki Soru';
     }
@@ -242,7 +274,7 @@ function answerQuestion(selectedIndex) {
 function nextQuestion() {
     if (state.answers[state.questionIndex] === undefined) return;
     state.questionIndex += 1;
-    if (state.questionIndex >= MULAKAT_SORU_SAYISI) {
+    if (state.questionIndex >= state.questionCount) {
         showResult();
         return;
     }
@@ -253,14 +285,14 @@ function showResult() {
     els.quizPanel?.classList.add('hidden');
     els.resultPanel?.classList.remove('hidden');
 
-    const passed = state.correctCount >= MULAKAT_MIN_DOGRU;
+    const passed = state.correctCount >= state.minCorrect;
 
     if (els.resultBadge) {
         els.resultBadge.className = `sm-result-badge ${passed ? 'success' : 'fail'}`;
         els.resultBadge.textContent = passed ? 'Mülakat Başarılı' : 'Mülakat Başarısız';
     }
     if (els.resultSummary) {
-        els.resultSummary.textContent = `${state.correctCount} / ${MULAKAT_SORU_SAYISI} doğru cevap · Geçmek için en az ${MULAKAT_MIN_DOGRU} doğru gerekir`;
+        els.resultSummary.textContent = `${state.correctCount} / ${state.questionCount} doğru cevap · Geçmek için en az ${state.minCorrect} doğru gerekir`;
     }
 
     if (els.resultAnswers) {
@@ -285,19 +317,20 @@ function showResult() {
 }
 
 function retryMulakat() {
-    if (state.selected) startMulakat(state.selected);
+    const mode = MULAKAT_MODLARI.find((m) => m.id === state.selected?.id);
+    if (mode) startMulakat(mode);
 }
 
 function backToCards() {
     closeExamRoot();
 }
 
-async function loadPaketler() {
-    const { data, error } = await fetchPublishedPaketler();
+async function loadPool() {
+    const { data, error } = await fetchPublishedSorular();
     if (error) {
-        console.error('Mülakat paketleri yüklenemedi:', error);
-        state.paketler = [];
-        if (isPaketTableMissingError(error)) {
+        console.error('Soru bankası yüklenemedi:', error);
+        state.pool = [];
+        if (isTableMissingError(error)) {
             els.loadBanner?.classList.remove('hidden');
         }
         renderCards();
@@ -305,7 +338,7 @@ async function loadPaketler() {
     }
 
     els.loadBanner?.classList.add('hidden');
-    state.paketler = data || [];
+    state.pool = data || [];
     renderCards();
 }
 
@@ -313,7 +346,7 @@ function bindEvents() {
     els.quizNext?.addEventListener('click', nextQuestion);
     els.btnRetry?.addEventListener('click', retryMulakat);
     els.btnBack?.addEventListener('click', backToCards);
-    els.btnReload?.addEventListener('click', () => loadPaketler());
+    els.btnReload?.addEventListener('click', () => loadPool());
     els.examExit?.addEventListener('click', exitExam);
 }
 
@@ -343,7 +376,7 @@ async function init() {
     if (document.getElementById('mulakat-content')?.dataset.initialized) return;
     cacheElements();
     bindEvents();
-    await loadPaketler();
+    await loadPool();
     document.getElementById('mulakat-content').dataset.initialized = '1';
 }
 

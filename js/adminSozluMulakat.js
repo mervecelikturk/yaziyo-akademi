@@ -1,38 +1,25 @@
 /**
- * YAZİYO — Admin Sözlü Mülakat (paketler + soru bankası)
+ * YAZİYO — Admin Sözlü Mülakat (soru bankası)
+ * Kullanıcı sayfasında sabit 5/10 kartlar vardır; admin yalnızca soru ekler.
  */
 import { requireAdminAccess } from './lib/adminAuth.js';
 import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 import {
     SORU_KATEGORILERI,
-    SORU_KAYNAKLARI,
-    MULAKAT_SORU_SAYISI,
     getCategoryLabel,
-    getSoruKaynagiLabel,
     fetchAllSorularAdmin,
-    fetchAllPaketlerAdmin,
     upsertSoru,
-    upsertPaket,
     deleteSoru,
-    deletePaket,
-    isTableMissingError,
-    isPaketTableMissingError
+    isTableMissingError
 } from './lib/sozluMulakatApi.js';
 
 let questions = [];
-let paketler = [];
 let editingQuestionId = null;
-let editingPaketId = null;
 let deleteTarget = null;
-let deleteType = null;
-let activeTab = 'paketler';
-let selectedQuestionIds = new Set();
 
 let questionSearch = '';
 let questionCatFilter = 'all';
 let questionStatusFilter = 'all';
-let paketSearch = '';
-let paketQuestionSearch = '';
 
 const els = {};
 const MAX_OPTIONS = 5;
@@ -84,15 +71,6 @@ function closeModal(modalEl) {
     }, 280);
 }
 
-function switchTab(tab) {
-    activeTab = tab;
-    document.querySelectorAll('[data-tab]').forEach((btn) => {
-        btn.classList.toggle('admin-tab-active', btn.dataset.tab === tab);
-    });
-    els.panelPaket?.classList.toggle('hidden', tab !== 'paketler');
-    els.panelSorular?.classList.toggle('hidden', tab !== 'sorular');
-}
-
 function populateSelects() {
     const catOpts = SORU_KATEGORILERI.map((c) =>
         `<option value="${c.id}">${escapeHtml(c.label)}</option>`).join('');
@@ -100,10 +78,6 @@ function populateSelects() {
     if (els.catFilter) {
         els.catFilter.innerHTML = `<option value="all">Tüm Kategoriler</option>${SORU_KATEGORILERI.map((c) =>
             `<option value="${c.id}">${escapeHtml(c.label)}</option>`).join('')}`;
-    }
-    if (els.fieldPaketSource) {
-        els.fieldPaketSource.innerHTML = SORU_KAYNAKLARI.map((k) =>
-            `<option value="${k.id}">${escapeHtml(k.label)}</option>`).join('');
     }
 }
 
@@ -129,59 +103,6 @@ function refreshCorrectSelect(options) {
     }
 }
 
-function activeQuestionPool() {
-    return questions.filter((q) => q.active && (q.options || []).length >= 5);
-}
-
-function renderQuestionPicker() {
-    if (!els.paketQuestionPicker) return;
-    const q = paketQuestionSearch.toLowerCase().trim();
-    let list = activeQuestionPool();
-    if (q) {
-        list = list.filter((item) =>
-            `${item.question} ${getCategoryLabel(item.category)}`.toLowerCase().includes(q));
-    }
-
-    if (!list.length) {
-        els.paketQuestionPicker.innerHTML = `<p class="text-sm text-light-text-secondary py-4 text-center">Yayında ve 5 şıklı soru yok. Önce Soru Bankası sekmesinden soru ekleyin.</p>`;
-        if (els.paketSelectedCount) els.paketSelectedCount.textContent = String(selectedQuestionIds.size);
-        return;
-    }
-
-    els.paketQuestionPicker.innerHTML = list.map((item) => {
-        const checked = selectedQuestionIds.has(item.id) ? 'checked' : '';
-        const disabled = !selectedQuestionIds.has(item.id) && selectedQuestionIds.size >= MULAKAT_SORU_SAYISI ? 'disabled' : '';
-        return `
-            <label class="flex items-start gap-3 p-3 rounded-xl border border-light-border dark:border-dark-border hover:border-yaziyo-gold/40 cursor-pointer ${disabled ? 'opacity-50' : ''}">
-                <input type="checkbox" class="mt-1 rounded text-yaziyo-gold" data-qid="${item.id}" ${checked} ${disabled} />
-                <span class="text-sm">
-                    <span class="text-[10px] font-bold uppercase text-yaziyo-gold">${escapeHtml(getCategoryLabel(item.category))}</span>
-                    <span class="block mt-0.5">${escapeHtml(item.question.slice(0, 120))}${item.question.length > 120 ? '…' : ''}</span>
-                </span>
-            </label>`;
-    }).join('');
-
-    els.paketQuestionPicker.querySelectorAll('[data-qid]').forEach((input) => {
-        input.addEventListener('change', () => {
-            const id = input.dataset.qid;
-            if (input.checked) {
-                if (selectedQuestionIds.size >= MULAKAT_SORU_SAYISI) {
-                    input.checked = false;
-                    showToast(`En fazla ${MULAKAT_SORU_SAYISI} soru seçilebilir`, 'error');
-                    return;
-                }
-                selectedQuestionIds.add(id);
-            } else {
-                selectedQuestionIds.delete(id);
-            }
-            if (els.paketSelectedCount) els.paketSelectedCount.textContent = String(selectedQuestionIds.size);
-            renderQuestionPicker();
-        });
-    });
-
-    if (els.paketSelectedCount) els.paketSelectedCount.textContent = String(selectedQuestionIds.size);
-}
-
 function filterQuestions() {
     let list = [...questions];
     const q = questionSearch.toLowerCase().trim();
@@ -195,16 +116,6 @@ function filterQuestions() {
     return list;
 }
 
-function filterPaketler() {
-    let list = [...paketler];
-    const q = paketSearch.toLowerCase().trim();
-    if (q) {
-        list = list.filter((p) =>
-            `${p.title} ${p.topic} ${getSoruKaynagiLabel(p.sourceType)}`.toLowerCase().includes(q));
-    }
-    return list;
-}
-
 function updateQuestionStats() {
     if (els.statTotalQ) els.statTotalQ.textContent = String(questions.length);
     if (els.statActiveQ) els.statActiveQ.textContent = String(questions.filter((q) => q.active).length);
@@ -212,23 +123,6 @@ function updateQuestionStats() {
     if (els.statFiveQ) {
         els.statFiveQ.textContent = String(questions.filter((q) => (q.options || []).length === 5).length);
     }
-    if (els.statPoolQ) els.statPoolQ.textContent = String(activeQuestionPool().length);
-}
-
-function updatePaketStats() {
-    if (els.statTotalP) els.statTotalP.textContent = String(paketler.length);
-    if (els.statActiveP) els.statActiveP.textContent = String(paketler.filter((p) => p.active).length);
-    if (els.statReadyP) {
-        els.statReadyP.textContent = String(paketler.filter((p) => p.questionIds.length === MULAKAT_SORU_SAYISI).length);
-    }
-    updateQuestionStats();
-}
-
-function showPaketSetupRequired() {
-    els.paketTbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center">
-        <p class="text-sm text-light-text-secondary mb-2">Mülakat paketleri tablosu kurulmamış.</p>
-        <code class="text-yaziyo-gold text-xs">031_sozlu_mulakat_paketleri.sql</code>
-    </td></tr>`;
 }
 
 function showQuestionSetupRequired() {
@@ -236,31 +130,6 @@ function showQuestionSetupRequired() {
         <p class="text-sm text-light-text-secondary mb-2">Soru tablosu kurulmamış.</p>
         <code class="text-yaziyo-gold text-xs">024_sozlu_mulakat.sql</code>
     </td></tr>`;
-}
-
-function renderPaketTable() {
-    const list = filterPaketler();
-    if (!list.length) {
-        els.paketTbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-sm text-light-text-secondary">${paketler.length ? 'Arama sonucu yok.' : 'Henüz mülakat eklenmedi.'}</td></tr>`;
-        refreshAdminMobileTables();
-        return;
-    }
-
-    els.paketTbody.innerHTML = list.map((p) => `
-        <tr class="hover:bg-light-bg/40 dark:hover:bg-dark-bg/40">
-            <td class="px-6 py-4 font-poppins font-bold text-sm">${escapeHtml(p.title)}</td>
-            <td class="px-6 py-4 text-sm text-light-text-secondary max-w-[200px] line-clamp-2">${escapeHtml(p.topic)}</td>
-            <td class="px-6 py-4 text-xs whitespace-nowrap">${escapeHtml(getSoruKaynagiLabel(p.sourceType))}</td>
-            <td class="px-6 py-4 text-sm text-center">${p.questionIds.length}/${MULAKAT_SORU_SAYISI}</td>
-            <td class="px-6 py-4"><span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase ${p.active ? 'bg-green-500/15 text-green-500' : 'bg-slate-500/15 text-slate-400'}">${p.active ? 'Yayında' : 'Taslak'}</span></td>
-            <td class="px-6 py-4 text-right">
-                <div class="inline-flex gap-2">
-                    <button type="button" class="w-8 h-8 rounded-lg border hover:border-yaziyo-gold" data-edit-paket="${p.id}"><i class="fa-solid fa-pen text-xs"></i></button>
-                    <button type="button" class="w-8 h-8 rounded-lg border border-red-500/30 text-red-500" data-delete-paket="${p.id}"><i class="fa-solid fa-trash text-xs"></i></button>
-                </div>
-            </td>
-        </tr>`).join('');
-    refreshAdminMobileTables();
 }
 
 function renderQuestionTable() {
@@ -289,29 +158,6 @@ function renderQuestionTable() {
     refreshAdminMobileTables();
 }
 
-function resetPaketForm() {
-    editingPaketId = null;
-    selectedQuestionIds = new Set();
-    els.paketForm?.reset();
-    els.fieldPaketActive.checked = true;
-    els.fieldPaketSort.value = '0';
-    els.fieldPaketSource.value = 'cikmis';
-    els.paketModalTitle.textContent = 'Yeni Mülakat';
-    renderQuestionPicker();
-}
-
-function fillPaketForm(p) {
-    editingPaketId = p.id;
-    els.paketModalTitle.textContent = 'Mülakatı Düzenle';
-    els.fieldPaketTitle.value = p.title;
-    els.fieldPaketTopic.value = p.topic;
-    els.fieldPaketSource.value = p.sourceType;
-    els.fieldPaketActive.checked = !!p.active;
-    els.fieldPaketSort.value = String(p.sortOrder || 0);
-    selectedQuestionIds = new Set(p.questionIds || []);
-    renderQuestionPicker();
-}
-
 function resetQuestionForm() {
     editingQuestionId = null;
     els.questionForm?.reset();
@@ -337,6 +183,7 @@ function fillQuestionForm(q) {
 }
 
 async function loadQuestions() {
+    els.questionTbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Yükleniyor...</td></tr>`;
     const { data, error } = await fetchAllSorularAdmin();
     if (error) {
         if (isTableMissingError(error)) showQuestionSetupRequired();
@@ -344,96 +191,13 @@ async function loadQuestions() {
         return false;
     }
     questions = data || [];
+    updateQuestionStats();
     renderQuestionTable();
     return true;
 }
 
-async function loadPaketler() {
-    els.paketTbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-sm"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Yükleniyor...</td></tr>`;
-    const { data, error } = await fetchAllPaketlerAdmin();
-    if (error) {
-        if (isPaketTableMissingError(error)) showPaketSetupRequired();
-        else showToast(error.message || 'Mülakatlar yüklenemedi', 'error');
-        return false;
-    }
-    paketler = data || [];
-    renderPaketTable();
-    return true;
-}
-
-async function loadAll() {
-    await loadQuestions();
-    await loadPaketler();
-    updatePaketStats();
-}
-
 function bindEvents() {
-    document.querySelectorAll('[data-tab]').forEach((btn) => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-    });
-
-    els.btnRefreshAll?.addEventListener('click', loadAll);
-
-    els.paketSearch?.addEventListener('input', (e) => {
-        paketSearch = e.target.value;
-        renderPaketTable();
-    });
-
-    els.paketQuestionSearch?.addEventListener('input', (e) => {
-        paketQuestionSearch = e.target.value;
-        renderQuestionPicker();
-    });
-
-    els.btnAddPaket?.addEventListener('click', () => {
-        resetPaketForm();
-        openModal(els.paketModal);
-    });
-
-    els.paketForm?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const payload = {
-            id: editingPaketId || undefined,
-            title: els.fieldPaketTitle.value,
-            topic: els.fieldPaketTopic.value,
-            sourceType: els.fieldPaketSource.value,
-            questionIds: [...selectedQuestionIds],
-            active: els.fieldPaketActive.checked,
-            sortOrder: els.fieldPaketSort.value
-        };
-        els.btnSavePaket.disabled = true;
-        const { data, error } = await upsertPaket(payload);
-        els.btnSavePaket.disabled = false;
-        if (error) {
-            showToast(error.message || 'Kayıt başarısız', 'error');
-            return;
-        }
-        closeModal(els.paketModal);
-        showToast(editingPaketId ? 'Mülakat güncellendi' : 'Mülakat eklendi');
-        if (editingPaketId) paketler = paketler.map((p) => (p.id === data.id ? data : p));
-        else paketler.unshift(data);
-        updatePaketStats();
-        renderPaketTable();
-        resetPaketForm();
-    });
-
-    els.paketTbody?.addEventListener('click', (e) => {
-        const editBtn = e.target.closest('[data-edit-paket]');
-        const delBtn = e.target.closest('[data-delete-paket]');
-        if (editBtn) {
-            const p = paketler.find((x) => x.id === editBtn.dataset.editPaket);
-            if (p) { fillPaketForm(p); openModal(els.paketModal); }
-            return;
-        }
-        if (delBtn) {
-            const p = paketler.find((x) => x.id === delBtn.dataset.deletePaket);
-            if (!p) return;
-            deleteTarget = p;
-            deleteType = 'paket';
-            els.deleteModalTitle.textContent = 'Mülakatı Sil';
-            els.deleteMessage.textContent = `"${p.title}" mülakatını silmek istediğinize emin misiniz?`;
-            openModal(els.deleteModal);
-        }
-    });
+    els.btnRefreshAll?.addEventListener('click', loadQuestions);
 
     els.btnAddQuestion?.addEventListener('click', () => {
         resetQuestionForm();
@@ -487,9 +251,8 @@ function bindEvents() {
         showToast(editingQuestionId ? 'Soru güncellendi' : 'Soru eklendi');
         if (editingQuestionId) questions = questions.map((q) => (q.id === data.id ? data : q));
         else questions.unshift(data);
-        updatePaketStats();
+        updateQuestionStats();
         renderQuestionTable();
-        await loadPaketler();
         resetQuestionForm();
     });
 
@@ -505,7 +268,6 @@ function bindEvents() {
             const q = questions.find((x) => x.id === delBtn.dataset.deleteQuestion);
             if (!q) return;
             deleteTarget = q;
-            deleteType = 'question';
             els.deleteModalTitle.textContent = 'Soruyu Sil';
             els.deleteMessage.textContent = `Bu soruyu silmek istediğinize emin misiniz?\n"${q.question.slice(0, 80)}…"`;
             openModal(els.deleteModal);
@@ -513,37 +275,22 @@ function bindEvents() {
     });
 
     els.btnConfirmDelete?.addEventListener('click', async () => {
-        if (!deleteTarget || !deleteType) return;
+        if (!deleteTarget) return;
         els.btnConfirmDelete.disabled = true;
-        let error;
-        if (deleteType === 'paket') {
-            ({ error } = await deletePaket(deleteTarget.id));
-        } else {
-            ({ error } = await deleteSoru(deleteTarget.id));
-        }
+        const { error } = await deleteSoru(deleteTarget.id);
         els.btnConfirmDelete.disabled = false;
         if (error) {
             showToast(error.message || 'Silme başarısız', 'error');
             return;
         }
-        if (deleteType === 'paket') {
-            paketler = paketler.filter((p) => p.id !== deleteTarget.id);
-            renderPaketTable();
-        } else {
-            questions = questions.filter((q) => q.id !== deleteTarget.id);
-            renderQuestionTable();
-            await loadPaketler();
-        }
+        questions = questions.filter((q) => q.id !== deleteTarget.id);
         deleteTarget = null;
-        deleteType = null;
         closeModal(els.deleteModal);
         showToast('Silindi');
-        updatePaketStats();
+        updateQuestionStats();
+        renderQuestionTable();
     });
 
-    document.querySelectorAll('[data-close-paket-modal]').forEach((btn) => {
-        btn.addEventListener('click', () => closeModal(els.paketModal));
-    });
     document.querySelectorAll('[data-close-question-modal]').forEach((btn) => {
         btn.addEventListener('click', () => closeModal(els.questionModal));
     });
@@ -553,29 +300,8 @@ function bindEvents() {
 }
 
 function cacheElements() {
-    els.panelPaket = document.getElementById('panel-paketler');
-    els.panelSorular = document.getElementById('panel-sorular');
-    els.paketTbody = document.getElementById('paket-admin-tbody');
     els.questionTbody = document.getElementById('questions-admin-tbody');
-    els.paketSearch = document.getElementById('paket-search');
-    els.btnAddPaket = document.getElementById('btn-add-paket');
     els.btnRefreshAll = document.getElementById('btn-refresh-all');
-    els.paketModal = document.getElementById('paket-modal');
-    els.paketForm = document.getElementById('paket-form');
-    els.paketModalTitle = document.getElementById('paket-modal-title');
-    els.fieldPaketTitle = document.getElementById('field-paket-title');
-    els.fieldPaketTopic = document.getElementById('field-paket-topic');
-    els.fieldPaketSource = document.getElementById('field-paket-source');
-    els.fieldPaketSort = document.getElementById('field-paket-sort');
-    els.fieldPaketActive = document.getElementById('field-paket-active');
-    els.paketQuestionPicker = document.getElementById('paket-question-picker');
-    els.paketQuestionSearch = document.getElementById('paket-question-search');
-    els.paketSelectedCount = document.getElementById('paket-selected-count');
-    els.btnSavePaket = document.getElementById('btn-save-paket');
-    els.statTotalP = document.getElementById('stat-total-paket');
-    els.statActiveP = document.getElementById('stat-active-paket');
-    els.statReadyP = document.getElementById('stat-ready-paket');
-    els.statPoolQ = document.getElementById('stat-pool-questions');
     els.search = document.getElementById('question-search');
     els.catFilter = document.getElementById('question-cat-filter');
     els.statusFilter = document.getElementById('question-status-filter');
@@ -607,9 +333,8 @@ async function init() {
     cacheElements();
     populateSelects();
     bindEvents();
-    resetPaketForm();
     resetQuestionForm();
-    await loadAll();
+    await loadQuestions();
 }
 
 if (document.readyState === 'loading') {

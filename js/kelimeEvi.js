@@ -64,6 +64,8 @@
         tweens: [],
         audioCtx: null,
         bgAudio: null,
+        countdownIv: null,
+        sessionToken: 0,
         sessionMeta: { kategori: '', grup: '', metinAdi: '' },
     };
 
@@ -111,19 +113,32 @@
         return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
     }
 
-    function playBeep(freq, dur) {
-        if (!state.audioCtx) state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (state.audioCtx.state === 'suspended') state.audioCtx.resume();
-        const osc = state.audioCtx.createOscillator();
-        const gain = state.audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, state.audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.08, state.audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, state.audioCtx.currentTime + dur / 1000);
-        osc.connect(gain);
-        gain.connect(state.audioCtx.destination);
-        osc.start();
-        osc.stop(state.audioCtx.currentTime + dur / 1000);
+    async function ensureAudioCtx() {
+        if (!state.audioCtx) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (Ctx) state.audioCtx = new Ctx();
+        }
+        if (state.audioCtx?.state === 'suspended') {
+            try { await state.audioCtx.resume(); } catch (_) { /* ignore */ }
+        }
+        return state.audioCtx;
+    }
+
+    async function playBeep(freq, dur, vol = 0.15) {
+        const ctx = await ensureAudioCtx();
+        if (!ctx || ctx.state !== 'running') return;
+        try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+            gain.gain.setValueAtTime(vol, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur / 1000);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + dur / 1000);
+        } catch (_) { /* ignore */ }
     }
 
     function isSoundOn() {
@@ -142,14 +157,18 @@
 
     function stopBackgroundAudio() {
         if (!state.bgAudio) return;
-        state.bgAudio.pause();
-        state.bgAudio.currentTime = 0;
+        try {
+            state.bgAudio.pause();
+            state.bgAudio.currentTime = 0;
+            state.bgAudio.loop = false;
+        } catch (_) { /* ignore */ }
     }
 
     async function primeBackgroundAudio() {
         if (!isSoundOn()) return;
         const audio = ensureBgAudio();
         audio.src = SOUND_BIRD;
+        audio.loop = true;
         const prevVolume = audio.volume;
         audio.volume = 0.01;
         try {
@@ -759,13 +778,37 @@
         if (state.timeRemaining <= 0) endSession();
     }
 
-    function startCountdown() {
+    function cancelCountdown() {
+        if (state.countdownIv) {
+            clearInterval(state.countdownIv);
+            state.countdownIv = null;
+        }
+        if (els.countdownOverlay) {
+            els.countdownOverlay.classList.add('hidden');
+        }
+        if (els.countdownNumber) {
+            els.countdownNumber.style.color = '';
+        }
+    }
+
+    function isSessionActive(token) {
+        return token === state.sessionToken
+            && els.workspace
+            && !els.workspace.classList.contains('hidden');
+    }
+
+    function startCountdown(sessionToken) {
+        cancelCountdown();
         els.countdownOverlay.classList.remove('hidden');
         let count = CFG.COUNTDOWN_FROM;
         els.countdownNumber.textContent = count;
         playBeep(440, 150);
 
-        const iv = setInterval(() => {
+        state.countdownIv = setInterval(() => {
+            if (!isSessionActive(sessionToken)) {
+                cancelCountdown();
+                return;
+            }
             count--;
             if (count > 0) {
                 els.countdownNumber.textContent = count;
@@ -773,17 +816,19 @@
             } else if (count === 0) {
                 els.countdownNumber.textContent = 'BAŞLA!';
                 els.countdownNumber.style.color = '#15803D';
-                playBeep(880, 400);
+                playBeep(880, 400, 0.2);
             } else {
-                clearInterval(iv);
-                els.countdownOverlay.classList.add('hidden');
-                els.countdownNumber.style.color = '';
-                beginSession();
+                cancelCountdown();
+                if (isSessionActive(sessionToken)) beginSession(sessionToken);
             }
         }, CFG.COUNTDOWN_MS);
     }
 
-    function beginSession() {
+    function beginSession(sessionToken) {
+        if (!isSessionActive(sessionToken)) {
+            stopBackgroundAudio();
+            return;
+        }
         state.running = true;
         state.sessionStart = Date.now();
         els.userInput.readOnly = false;
@@ -814,13 +859,7 @@
             return;
         }
 
-        if (!state.audioCtx) {
-            const Ctx = window.AudioContext || window.webkitAudioContext;
-            if (Ctx) state.audioCtx = new Ctx();
-        }
-        if (state.audioCtx?.state === 'suspended') {
-            try { await state.audioCtx.resume(); } catch (_) { /* ignore */ }
-        }
+        await ensureAudioCtx();
         await primeBackgroundAudio();
 
         const rawText = metinlerDB[category][group][textIndex].text;
@@ -846,9 +885,10 @@
 
         if (els.buildPanel) gsap.set(els.buildPanel, { clearProps: 'transform' });
 
+        const sessionToken = ++state.sessionToken;
         els.workspace.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-        startCountdown();
+        startCountdown(sessionToken);
     }
 
     async function playCompletionAnimation() {
@@ -883,7 +923,10 @@
     function endSession() {
         if (!state.running) return;
         state.running = false;
+        state.sessionToken++;
         clearInterval(state.timerId);
+        state.timerId = null;
+        cancelCountdown();
         els.userInput.readOnly = true;
         stopBackgroundAudio();
         stopSky();
@@ -1045,14 +1088,20 @@
     }
 
     function closeWorkspace() {
+        state.sessionToken++;
+        cancelCountdown();
+        stopBackgroundAudio();
+
         if (state.running) {
             endSession();
             return;
         }
+
+        clearInterval(state.timerId);
+        state.timerId = null;
         els.workspace?.classList.add('hidden');
         document.body.style.overflow = 'auto';
         stopSky();
-        stopBackgroundAudio();
     }
 
     function preventTextCopy(e) {
@@ -1094,6 +1143,15 @@
             if (e.key === 'Escape' && els.workspace && !els.workspace.classList.contains('hidden') && !state.running) {
                 closeWorkspace();
             }
+        });
+
+        window.addEventListener('pagehide', () => {
+            state.sessionToken++;
+            cancelCountdown();
+            stopBackgroundAudio();
+            clearInterval(state.timerId);
+            state.timerId = null;
+            state.running = false;
         });
     }
 

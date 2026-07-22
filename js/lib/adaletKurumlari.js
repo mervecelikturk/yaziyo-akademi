@@ -39,7 +39,9 @@ export function kategoriForKurum(k) {
 
 export async function loadAdaletKurumlari() {
     if (_cache) return _cache;
-    const res = await fetch('../data/adalet-kurumlari.json');
+    const url = window.YaziyoPaths?.assetHref?.('data/adalet-kurumlari.json')
+        ?? new URL('../../data/adalet-kurumlari.json', import.meta.url).href;
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Kurum verisi yüklenemedi');
     _cache = await res.json();
     return _cache;

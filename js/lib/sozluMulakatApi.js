@@ -14,13 +14,104 @@ export const SORU_KATEGORILERI = [
 
 export const SORU_BILDIRIM_PREFIX = '[SORU BİLDİRİMİ]';
 
+/** @deprecated Sabit 5/10 modları için MULAKAT_MODLARI kullanın */
 export const MULAKAT_SORU_SAYISI = 5;
+/** @deprecated getMinDogru(count) kullanın */
 export const MULAKAT_MIN_DOGRU = 3;
+
+/** Sabit mülakat kartları: 5 ve 10 soruluk */
+export const MULAKAT_MODLARI = [
+    {
+        id: '5',
+        title: '5 Soruluk Mülakat',
+        topic: 'Soru bankasından rastgele 5 soru',
+        sourceType: 'rastgele',
+        questionCount: 5,
+        minCorrect: 3
+    },
+    {
+        id: '10',
+        title: '10 Soruluk Mülakat',
+        topic: 'Soru bankasından rastgele 10 soru',
+        sourceType: 'rastgele',
+        questionCount: 10,
+        minCorrect: 6
+    }
+];
+
+const PREV_IDS_STORAGE_KEY = 'yaziyo-sozlu-mulakat-prev-ids';
 
 export const SORU_KAYNAKLARI = [
     { id: 'cikmis', label: 'Çıkmış Sorular' },
-    { id: 'cikabilir', label: 'Çıkabilecek Zor Sorular' }
+    { id: 'cikabilir', label: 'Çıkabilecek Zor Sorular' },
+    { id: 'rastgele', label: 'Rastgele Sorular' }
 ];
+
+export function getMinDogru(questionCount) {
+    const mode = MULAKAT_MODLARI.find((m) => m.questionCount === questionCount);
+    if (mode) return mode.minCorrect;
+    return Math.max(1, Math.ceil(questionCount * 0.6));
+}
+
+export function getPreviousQuestionIds(modeId) {
+    try {
+        const raw = localStorage.getItem(PREV_IDS_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        const ids = parsed?.[String(modeId)];
+        return Array.isArray(ids) ? ids.map(String) : [];
+    } catch {
+        return [];
+    }
+}
+
+export function savePreviousQuestionIds(modeId, ids) {
+    try {
+        const raw = localStorage.getItem(PREV_IDS_STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        const next = (parsed && typeof parsed === 'object') ? parsed : {};
+        next[String(modeId)] = (ids || []).map(String);
+        localStorage.setItem(PREV_IDS_STORAGE_KEY, JSON.stringify(next));
+    } catch { /* ignore */ }
+}
+
+function setKey(ids) {
+    return [...ids].map(String).sort().join(',');
+}
+
+function shuffleArray(items) {
+    const arr = [...items];
+    for (let i = arr.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+/**
+ * Havuzdan rastgele N soru seçer.
+ * Mümkünse bir önceki mülakatla aynı soru setini vermez.
+ */
+export function pickRandomSorular(pool, count, previousIds = []) {
+    const usable = (pool || []).filter((q) => q && q.active !== false && (q.options || []).length >= 5);
+    if (usable.length < count) {
+        return { questions: [], error: new Error(`Yeterli soru yok (en az ${count} yayında soru gerekli)`) };
+    }
+
+    const prevKey = setKey(previousIds || []);
+    const canAvoidSame = usable.length > count || prevKey === '';
+
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+        const picked = shuffleArray(usable).slice(0, count);
+        const ids = picked.map((q) => q.id);
+        if (!canAvoidSame || setKey(ids) !== prevKey) {
+            return { questions: picked, error: null };
+        }
+    }
+
+    // Havuz çok küçükse aynı set kaçınılmaz; en azından sırayı karıştır
+    return { questions: shuffleArray(usable).slice(0, count), error: null };
+}
 
 function parseOptions(value) {
     if (Array.isArray(value)) return value.filter(Boolean).map(String);
