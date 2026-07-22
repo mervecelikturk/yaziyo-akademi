@@ -24,7 +24,7 @@ import {
     forceAuthCleanup,
     signInWithGoogle,
 } from './authVerification.js';
-import { bindNameInput, validateNameFields } from './lib/nameValidation.js';
+import { bindNameInput, normalizeName, validateNameFields } from './lib/nameValidation.js';
 
 const { homeHref } = window.YaziyoPaths || { homeHref: () => '../index.html' };
 
@@ -379,8 +379,12 @@ export async function handleRegister(e) {
     }
 
     const btn = document.getElementById('reg-submit-btn');
-    const name = document.getElementById('reg-name')?.value?.trim();
-    const surname = document.getElementById('reg-surname')?.value?.trim();
+    const nameInput = document.getElementById('reg-name');
+    const surnameInput = document.getElementById('reg-surname');
+    const name = normalizeName(nameInput?.value);
+    const surname = normalizeName(surnameInput?.value);
+    if (nameInput) nameInput.value = name;
+    if (surnameInput) surnameInput.value = surname;
     const email = document.getElementById('reg-email')?.value?.trim().toLowerCase();
     const password = document.getElementById('reg-password')?.value;
     const confirm = document.getElementById('reg-password-confirm')?.value;

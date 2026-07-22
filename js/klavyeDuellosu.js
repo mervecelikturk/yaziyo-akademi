@@ -21,6 +21,8 @@
     const HEARTBEAT_MS = 2500;
     const MATCH_DISCONNECT_MS = 12000;
     const RECONNECT_MS = 2500;
+    /** Odada tek kişi kalıp 5 dk kimse gelmezse oda kapanır */
+    const SOLO_WAIT_MS = 5 * 60 * 1000;
     const SOUND_STORAGE_KEY = 'yaziyo-kd-sound';
     const IMLASIZ_IGNORE = /[.,\/#!$%\^&\*;:{}=\-_~()'’"“”\d]/g;
 
@@ -111,6 +113,7 @@
         heartbeatTimer: null,
         matchActive: false,
         cleanedUp: false,
+        soloWaitTimer: null,
     };
 
     const $ = (id) => document.getElementById(id);
@@ -553,6 +556,33 @@
         showScreen('room');
         renderRoomScreen();
         joinRoomChannel();
+        syncSoloWaitTimer();
+    }
+
+    function clearSoloWaitTimer() {
+        if (state.soloWaitTimer) {
+            clearTimeout(state.soloWaitTimer);
+            state.soloWaitTimer = null;
+        }
+    }
+
+    function startSoloWaitTimer() {
+        if (state.soloWaitTimer) return;
+        if (state.cleanedUp || state.screen !== 'room' || isInMatch() || state.rivalPresent) return;
+        state.soloWaitTimer = setTimeout(() => {
+            state.soloWaitTimer = null;
+            if (state.cleanedUp || state.screen !== 'room' || isInMatch() || state.rivalPresent) return;
+            alert('5 dakika boyunca rakip gelmediği için oda kapatıldı.');
+            leaveRoom('lobby');
+        }, SOLO_WAIT_MS);
+    }
+
+    function syncSoloWaitTimer() {
+        if (state.rivalPresent || isInMatch() || state.screen !== 'room') {
+            clearSoloWaitTimer();
+        } else {
+            startSoloWaitTimer();
+        }
     }
 
     function renderRoomScreen() {
@@ -609,7 +639,7 @@
         }
 
         const hint = $('kd-room-hint');
-        if (!bothPresent) hint.textContent = 'Rakip katılınca hazır olabilirsin.';
+        if (!bothPresent) hint.textContent = 'Rakip katılınca hazır olabilirsin. 5 dakika kimse gelmezse oda kapanır.';
         else if (!myReady || !oppReady) hint.textContent = 'İki oyuncu da hazır olunca düello başlar.';
         else hint.textContent = 'Düello başlıyor…';
     }
@@ -713,6 +743,7 @@
         state.rivalAvatar = rival.avatarUrl || state.rivalAvatar;
         // Presence yalnızca ready=true latch eder; false broadcast ile gelir
         if (rival.ready) state.rivalReady = true;
+        syncSoloWaitTimer();
     }
 
     function confirmRivalLeft() {
@@ -732,6 +763,7 @@
         state.rivalPresent = false;
         state.rivalReady = false;
         if (state.screen === 'room') updateSlots();
+        syncSoloWaitTimer();
     }
 
     function joinRoomChannel() {
@@ -1542,6 +1574,7 @@
 
     /* ---------------- AYRIL / TEMİZLİK ---------------- */
     async function leaveRoom(toScreen = 'lobby') {
+        clearSoloWaitTimer();
         stopTimers();
         hideCountdown();
         state.running = false;
@@ -1578,6 +1611,7 @@
         if (state.cleanedUp) return;
         state.cleanedUp = true;
         state.matchActive = false;
+        clearSoloWaitTimer();
         stopHeartbeat();
         try { if (state.channel) state.channel.untrack(); } catch (e) {}
         try { if (state.channel) state.supabase.removeChannel(state.channel); } catch (e) {}

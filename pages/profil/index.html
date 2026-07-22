@@ -1621,6 +1621,11 @@
     <script type="module" src="../../js/profileAuthGuard.js"></script>
     <script type="module" src="../../js/profilHesapSil.js"></script>
     <script type="module" src="../../js/keyboardHeatmap.js"></script>
+    <script type="module">
+        import { bindNameInput } from '../../js/lib/nameValidation.js';
+        bindNameInput(document.getElementById('edit-ad'));
+        bindNameInput(document.getElementById('edit-soyad'));
+    </script>
     <script>
         function switchPanel(panelId) {
             document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
@@ -2073,24 +2078,58 @@
             const editSoyad = document.getElementById('edit-soyad');
             const errorAd = document.getElementById('error-edit-ad');
             const errorSoyad = document.getElementById('error-edit-soyad');
+            const NV = window.YaziyoNameValidation;
 
-            if (errorAd) errorAd.classList.add('hidden');
-            if (errorSoyad) errorSoyad.classList.add('hidden');
+            if (errorAd) {
+                errorAd.classList.add('hidden');
+                errorAd.textContent = 'Lütfen bu alanı doldurunuz.';
+            }
+            if (errorSoyad) {
+                errorSoyad.classList.add('hidden');
+                errorSoyad.textContent = 'Lütfen bu alanı doldurunuz.';
+            }
             editAd.classList.remove('border-red-500');
             editSoyad.classList.remove('border-red-500');
 
+            const ad = NV ? NV.normalizeName(editAd.value) : editAd.value.trim();
+            const soyad = NV ? NV.normalizeName(editSoyad.value) : editSoyad.value.trim();
+            editAd.value = ad;
+            editSoyad.value = soyad;
+
+            if (NV) {
+                const adErr = NV.validateNamePart(ad, 'Ad');
+                if (adErr) {
+                    editAd.classList.add('border-red-500');
+                    if (errorAd) {
+                        errorAd.textContent = adErr;
+                        errorAd.classList.remove('hidden');
+                    }
+                    return null;
+                }
+                const soyadErr = NV.validateNamePart(soyad, 'Soyad');
+                if (soyadErr) {
+                    editSoyad.classList.add('border-red-500');
+                    if (errorSoyad) {
+                        errorSoyad.textContent = soyadErr;
+                        errorSoyad.classList.remove('hidden');
+                    }
+                    return null;
+                }
+                return { ad, soyad };
+            }
+
             let isValid = true;
-            if (!editAd.value.trim()) {
+            if (!ad) {
                 editAd.classList.add('border-red-500');
                 if (errorAd) errorAd.classList.remove('hidden');
                 isValid = false;
             }
-            if (!editSoyad.value.trim()) {
+            if (!soyad) {
                 editSoyad.classList.add('border-red-500');
                 if (errorSoyad) errorSoyad.classList.remove('hidden');
                 isValid = false;
             }
-            return isValid ? { ad: editAd.value.trim(), soyad: editSoyad.value.trim() } : null;
+            return isValid ? { ad, soyad } : null;
         }
 
         async function savePersonalInfo() {

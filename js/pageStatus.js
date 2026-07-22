@@ -3,7 +3,8 @@
 /* ============================================ */
 
 (function (global) {
-    const STORAGE_KEY = 'yaziyo-page-status';
+    /** v2: eski kayıtlarda kelime-evi yanlışlıkla pasif kalmasın diye sürüm yükseltildi */
+    const STORAGE_KEY = 'yaziyo-page-status-v2';
 
     const PAGES = [
         { id: 'anasayfa', label: 'Ana Sayfa', href: 'index.html', defaultActive: true },
@@ -14,7 +15,7 @@
         { id: 'ozel-metin-calismasi', label: 'Özel Metin Çalışması', href: 'ozelMetinCalismasi.html', defaultActive: true },
         { id: 'klavye-sinavi', label: 'Klavye Sınavı', navLabel: 'Klavye Sınavı', href: 'klavyeSinavi.html', defaultActive: false },
         { id: 'klavye-duellosu', label: 'Klavye Düellosu', navLabel: 'Klavye Düellosu', href: 'klavyeDuellosu.html', defaultActive: true },
-        { id: 'kelime-evi', label: 'Kelime Evi', navLabel: 'Kelime Evi', href: 'kelimeEvi.html', defaultActive: false },
+        { id: 'kelime-evi', label: 'Kelime Evi', navLabel: 'Kelime Evi', href: 'kelimeEvi.html', defaultActive: true },
         { id: 'araba-yarisi', label: 'Araba Yarışı', navLabel: 'Araba Yarışı', href: 'arabaYarisi.html', defaultActive: true },
         { id: 'sozlu-mulakat', label: 'Sözlü Mülakat', navLabel: 'Sözlü Mülakat', href: 'sozluMulakat.html', defaultActive: true },
         { id: 'mulakat-simulasyonu', label: 'Mülakat Simülasyonu', navLabel: 'Mülakat Simülasyonu', href: 'mulakatSimulasyonu.html', defaultActive: true },
@@ -109,26 +110,41 @@
         });
     }
 
+    function isUsableHref(href) {
+        return !!(href && !href.startsWith('javascript') && href !== '#' && href !== '');
+    }
+
     function disableLink(link) {
         if (!link.dataset.originalHref) {
             const href = link.getAttribute('href');
-            if (href && !href.startsWith('javascript')) {
+            if (isUsableHref(href)) {
                 link.dataset.originalHref = href;
             }
         }
         link.setAttribute('href', 'javascript:void(0)');
         link.classList.add('disabled', 'cursor-not-allowed');
+        link.setAttribute('aria-disabled', 'true');
     }
 
     function enableLink(link, targetHref) {
-        const href = targetHref || link.dataset.originalHref;
-        if (href && !href.startsWith('javascript')) {
+        // Mevcut doğru yolu koru; yalnızca javascript:void ise hedefi kullan
+        const current = link.getAttribute('href');
+        const stored = link.dataset.originalHref;
+        let href = null;
+
+        if (isUsableHref(stored)) href = stored;
+        else if (isUsableHref(targetHref)) href = targetHref;
+        else if (isUsableHref(current)) href = current;
+
+        if (href) {
             link.dataset.originalHref = href;
             link.setAttribute('href', href);
             link.classList.remove('disabled', 'cursor-not-allowed');
+            link.removeAttribute('aria-disabled');
         } else {
             link.setAttribute('href', 'javascript:void(0)');
             link.classList.add('disabled', 'cursor-not-allowed');
+            link.setAttribute('aria-disabled', 'true');
         }
     }
 
@@ -138,9 +154,9 @@
         document.querySelectorAll('#main-navbar a').forEach((link) => {
             if (isProtectedAdminNavLink(link)) return;
             const current = link.dataset.originalHref || link.getAttribute('href') || '';
-            if (hrefMatchesPage(current, href)) {
-                if (!link.dataset.originalHref && !current.startsWith('javascript')) {
-                    link.dataset.originalHref = href;
+            if (hrefMatchesPage(current, href) || hrefMatchesPage(link.getAttribute('href') || '', href)) {
+                if (!link.dataset.originalHref && isUsableHref(current)) {
+                    link.dataset.originalHref = current;
                 }
                 if (active) {
                     enableLink(link, href);
@@ -160,9 +176,9 @@
 
             if (!link.dataset.originalHref) {
                 const current = link.getAttribute('href');
-                link.dataset.originalHref = current && !current.startsWith('javascript')
+                link.dataset.originalHref = isUsableHref(current)
                     ? current
-                    : (href || 'javascript:void(0)');
+                    : (isUsableHref(href) ? href : '');
             }
 
             if (active) {
@@ -177,7 +193,9 @@
         document.querySelectorAll(`#main-navbar [data-page="${pageId}"]`).forEach((el) => {
             if (el.tagName !== 'A') return;
             if (isProtectedAdminNavLink(el)) return;
-            if (href) el.dataset.originalHref = href;
+            if (isUsableHref(href) && !el.dataset.originalHref) {
+                el.dataset.originalHref = href;
+            }
             if (active) {
                 enableLink(el, href);
             } else {

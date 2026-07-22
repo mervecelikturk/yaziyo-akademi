@@ -345,6 +345,45 @@
             </div>
         </div>
     </div>
+
+    <!-- KULLANICIYA MESAJ MODALI -->
+    <div id="message-user-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4">
+        <div id="message-user-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div id="message-user-content" class="relative w-full max-w-lg bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-2xl p-6 sm:p-8 transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh] overflow-y-auto">
+
+            <button type="button" data-close-message-user-modal class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-light-bg dark:hover:bg-dark-bg text-light-text-secondary dark:text-dark-text-secondary transition-all" aria-label="Kapat">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="w-14 h-14 rounded-full bg-yaziyo-gold/10 flex items-center justify-center text-yaziyo-gold text-xl mb-4 mx-auto border border-yaziyo-gold/20">
+                <i class="fa-solid fa-envelope"></i>
+            </div>
+
+            <h3 class="text-xl font-poppins font-bold text-light-text dark:text-dark-text text-center mb-1">Kullanıcıya Mesaj</h3>
+            <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary text-center mb-5">
+                <span id="message-user-name" class="font-bold text-yaziyo-gold"></span> kullanıcısının bildirim paneline gönderilir.
+            </p>
+
+            <label for="message-user-title" class="block text-[11px] font-bold text-yaziyo-gold uppercase tracking-widest mb-2">Başlık <span class="font-medium text-light-text-secondary normal-case tracking-normal">(opsiyonel)</span></label>
+            <input id="message-user-title" type="text" maxlength="120" placeholder="Yönetici mesajı" class="w-full mb-4 px-4 py-3 rounded-xl border border-light-border dark:border-dark-border bg-light-bg/50 dark:bg-dark-bg/50 text-sm font-inter focus:outline-none focus:border-yaziyo-gold transition-colors">
+
+            <label for="message-user-text" class="block text-[11px] font-bold text-yaziyo-gold uppercase tracking-widest mb-2">Mesaj *</label>
+            <textarea id="message-user-text" rows="5" maxlength="2000" placeholder="Kullanıcıya iletilecek mesajı yazın..." class="w-full mb-2 px-4 py-3 rounded-xl border border-light-border dark:border-dark-border bg-light-bg/50 dark:bg-dark-bg/50 text-sm font-inter resize-y min-h-[120px] focus:outline-none focus:border-yaziyo-gold transition-colors"></textarea>
+            <p id="message-user-char-count" class="text-[10px] text-light-text-secondary dark:text-dark-text-secondary text-right mb-4">0 / 2000</p>
+
+            <p id="message-user-error" class="hidden text-xs text-red-500 text-center mb-3"></p>
+            <p id="message-user-success" class="hidden text-xs text-green-600 dark:text-green-400 text-center mb-3"></p>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button type="button" data-close-message-user-modal class="flex-1 py-3 rounded-xl border border-light-border dark:border-dark-border font-poppins font-bold text-sm hover:bg-light-bg dark:hover:bg-dark-bg transition-all">
+                    İptal
+                </button>
+                <button type="button" id="message-user-send-btn" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm hover:shadow-glow-gold transition-all disabled:opacity-50 disabled:pointer-events-none">
+                    <span class="message-send-label">Gönder</span>
+                </button>
+            </div>
+        </div>
+    </div>
 <!-- ============================================ -->
     <!-- BİLDİRİM MODALI -->
     <!-- ============================================ -->

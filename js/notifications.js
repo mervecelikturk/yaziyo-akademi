@@ -204,7 +204,9 @@ export function renderNotificationPanel(notifications) {
                 ? 'fa-envelope text-yaziyo-gold'
                 : n.tur === 'becayis'
                     ? 'fa-right-left text-yaziyo-gold'
-                    : 'fa-bell text-yaziyo-gold';
+                    : n.tur === 'admin'
+                        ? 'fa-user-shield text-yaziyo-gold'
+                        : 'fa-bell text-yaziyo-gold';
 
         return `<div class="p-3 rounded-xl border border-light-border dark:border-dark-border ${unreadClass} flex items-start gap-2" data-notification-id="${n.id}">
             <i class="fa-solid ${icon} mt-1 shrink-0"></i>

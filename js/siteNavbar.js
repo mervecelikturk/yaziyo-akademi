@@ -229,9 +229,9 @@
                     <li class="nav-dropdown">
                         <button type="button" class="nav-link nav-dropdown-trigger${ac(active, 'oyunlar')}" data-page="oyunlar">Oyunlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">
-                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled cursor-not-allowed">Klavye Düellosu</a></li>
-                            <li><a href="${paths.pageHref('kelimeEvi.html')}" class="nav-dropdown-item">Kelime Evi</a></li>
-                            <li><a href="${paths.pageHref('arabaYarisi.html')}" class="nav-dropdown-item">Araba Yarışı</a></li>
+                            <li><a href="${paths.pageHref('klavyeDuellosu.html')}" class="nav-dropdown-item" data-page="klavye-duellosu">Klavye Düellosu</a></li>
+                            <li><a href="${paths.pageHref('kelimeEvi.html')}" class="nav-dropdown-item" data-page="kelime-evi">Kelime Evi</a></li>
+                            <li><a href="${paths.pageHref('arabaYarisi.html')}" class="nav-dropdown-item" data-page="araba-yarisi">Araba Yarışı</a></li>
                         </ul>
                     </li>
                     <li class="nav-dropdown">
@@ -270,9 +270,9 @@
                         <li class="mobile-dropdown${mobOpen(active, 'oyunlar')}">
                             <button type="button" class="mobile-nav-link mobile-dropdown-trigger${ac(active, 'oyunlar')} w-full text-left flex items-center justify-between" data-page="oyunlar">Oyunlar <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
                             <ul class="mobile-dropdown-menu${mobOpen(active, 'oyunlar')} flex flex-col gap-1 pl-3 pt-1">
-                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em] cursor-not-allowed">Klavye Düellosu</a></li>
-                                <li><a href="${paths.pageHref('kelimeEvi.html')}" class="mobile-nav-link text-[0.8em]">Kelime Evi</a></li>
-                                <li><a href="${paths.pageHref('arabaYarisi.html')}" class="mobile-nav-link text-[0.8em]">Araba Yarışı</a></li>
+                                <li><a href="${paths.pageHref('klavyeDuellosu.html')}" class="mobile-nav-link text-[0.8em]" data-page="klavye-duellosu">Klavye Düellosu</a></li>
+                                <li><a href="${paths.pageHref('kelimeEvi.html')}" class="mobile-nav-link text-[0.8em]" data-page="kelime-evi">Kelime Evi</a></li>
+                                <li><a href="${paths.pageHref('arabaYarisi.html')}" class="mobile-nav-link text-[0.8em]" data-page="araba-yarisi">Araba Yarışı</a></li>
                             </ul>
                         </li>
                         <li class="mobile-dropdown${mobOpen(active, 'mulakatlar')}">

@@ -4,11 +4,12 @@
 import { getSupabaseClient, initSupabaseClient } from './lib/supabase.js';
 import { requireAdminAccess } from './lib/adminAuth.js';
 import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
-import { bindNameInput, validateNameFields } from './lib/nameValidation.js';
+import { bindNameInput, normalizeName, validateNameFields } from './lib/nameValidation.js';
 
 let allUsers = [];
 let searchQuery = '';
 let pendingDeleteUserId = null;
+let pendingMessageUserId = null;
 
 const tbody = () => document.querySelector('#users-tbody') || document.querySelector('tbody');
 const TABLE_COLSPAN = 7;
@@ -183,7 +184,12 @@ function renderTable() {
                 </td>
                 <td class="px-6 py-4 text-sm text-light-text-secondary dark:text-dark-text-secondary">${escapeHtml(createdAt)}</td>
                 <td class="px-6 py-4 text-right">
-                    <button type="button" class="delete-btn px-3 py-1.5 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 text-[11px] font-bold uppercase tracking-tight hover:bg-red-500 hover:text-white transition-all duration-200" data-id="${user.id}">Sil</button>
+                    <div class="inline-flex items-center justify-end gap-1.5">
+                        <button type="button" class="message-btn px-3 py-1.5 rounded-lg bg-yaziyo-gold/10 text-yaziyo-gold border border-yaziyo-gold/25 text-[11px] font-bold uppercase tracking-tight hover:bg-yaziyo-gold hover:text-slate-900 transition-all duration-200" data-id="${user.id}" title="Mesaj gönder">
+                            <i class="fa-solid fa-envelope mr-1"></i>Mesaj
+                        </button>
+                        <button type="button" class="delete-btn px-3 py-1.5 rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 text-[11px] font-bold uppercase tracking-tight hover:bg-red-500 hover:text-white transition-all duration-200" data-id="${user.id}">Sil</button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -191,6 +197,7 @@ function renderTable() {
 
     refreshAdminMobileTables();
     attachDeleteHandlers();
+    attachMessageHandlers();
 }
 
 export async function fetchUsers() {
@@ -233,6 +240,146 @@ function attachDeleteHandlers() {
             openDeleteUserModal(userId, user);
         };
     });
+}
+
+function attachMessageHandlers() {
+    document.querySelectorAll('.message-btn').forEach((btn) => {
+        btn.onclick = () => {
+            const userId = btn.getAttribute('data-id');
+            const user = allUsers.find((u) => u.id === userId);
+            openMessageUserModal(userId, user);
+        };
+    });
+}
+
+function setMessageFeedback({ error = '', success = '' } = {}) {
+    const errEl = document.getElementById('message-user-error');
+    const okEl = document.getElementById('message-user-success');
+    if (errEl) {
+        if (error) {
+            errEl.textContent = error;
+            errEl.classList.remove('hidden');
+        } else {
+            errEl.textContent = '';
+            errEl.classList.add('hidden');
+        }
+    }
+    if (okEl) {
+        if (success) {
+            okEl.textContent = success;
+            okEl.classList.remove('hidden');
+        } else {
+            okEl.textContent = '';
+            okEl.classList.add('hidden');
+        }
+    }
+}
+
+function updateMessageCharCount() {
+    const text = document.getElementById('message-user-text');
+    const count = document.getElementById('message-user-char-count');
+    if (!text || !count) return;
+    count.textContent = `${(text.value || '').length} / 2000`;
+}
+
+function openMessageUserModal(userId, user) {
+    pendingMessageUserId = userId;
+    const m = document.getElementById('message-user-modal');
+    const backdrop = document.getElementById('message-user-backdrop');
+    const content = document.getElementById('message-user-content');
+    const nameEl = document.getElementById('message-user-name');
+    const titleEl = document.getElementById('message-user-title');
+    const textEl = document.getElementById('message-user-text');
+    if (!m || !backdrop || !content) return;
+
+    if (nameEl) {
+        nameEl.textContent = (user?.full_name || '').trim() || user?.email || 'Kullanıcı';
+    }
+    if (titleEl) titleEl.value = '';
+    if (textEl) textEl.value = '';
+    setMessageFeedback();
+    updateMessageCharCount();
+
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+
+    requestAnimationFrame(() => {
+        backdrop.classList.remove('opacity-0');
+        content.classList.remove('scale-95', 'opacity-0');
+        content.classList.add('scale-100', 'opacity-100');
+        textEl?.focus();
+    });
+}
+
+function closeMessageUserModal() {
+    const m = document.getElementById('message-user-modal');
+    const backdrop = document.getElementById('message-user-backdrop');
+    const content = document.getElementById('message-user-content');
+    if (!m || !backdrop || !content) return;
+
+    pendingMessageUserId = null;
+    setMessageFeedback();
+    backdrop.classList.add('opacity-0');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+
+    setTimeout(() => {
+        m.classList.remove('flex');
+        m.classList.add('hidden');
+    }, 300);
+}
+
+async function sendMessageToUser() {
+    const supabase = getSupabaseClient();
+    if (!pendingMessageUserId || !supabase) return;
+
+    const title = (document.getElementById('message-user-title')?.value || '').trim();
+    const message = (document.getElementById('message-user-text')?.value || '').trim();
+    const btn = document.getElementById('message-user-send-btn');
+    const label = btn?.querySelector('.message-send-label');
+
+    setMessageFeedback();
+
+    if (!message) {
+        setMessageFeedback({ error: 'Mesaj boş olamaz.' });
+        return;
+    }
+    if (message.length > 2000) {
+        setMessageFeedback({ error: 'Mesaj en fazla 2000 karakter olabilir.' });
+        return;
+    }
+
+    try {
+        if (btn) btn.disabled = true;
+        if (label) label.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gönderiliyor...';
+
+        const { data, error } = await supabase.rpc('gonder_admin_bildirim', {
+            p_kullanici_id: pendingMessageUserId,
+            p_mesaj: message,
+            p_baslik: title || null,
+        });
+
+        if (error) throw error;
+        if (data && data.success === false) {
+            throw new Error(data.message || 'Mesaj gönderilemedi.');
+        }
+
+        setMessageFeedback({ success: 'Mesaj kullanıcının bildirim paneline gönderildi.' });
+        setTimeout(() => closeMessageUserModal(), 900);
+    } catch (err) {
+        console.error('Admin mesaj hatası:', err);
+        const msg = err?.message || 'Mesaj gönderilirken hata oluştu.';
+        if (/gonder_admin_bildirim|schema cache|PGRST/i.test(msg)) {
+            setMessageFeedback({
+                error: 'Mesaj fonksiyonu henüz kurulmamış olabilir. Supabase SQL Editor\'da gonder_admin_bildirim.sql dosyasını çalıştırın.',
+            });
+        } else {
+            setMessageFeedback({ error: msg });
+        }
+    } finally {
+        if (btn) btn.disabled = false;
+        if (label) label.textContent = 'Gönder';
+    }
 }
 
 function openDeleteUserModal(userId, user) {
@@ -385,8 +532,12 @@ async function createUser(e) {
     const supabase = getSupabaseClient();
     if (!supabase) return;
 
-    const ad = (document.getElementById('add-user-ad')?.value || '').trim();
-    const soyad = (document.getElementById('add-user-soyad')?.value || '').trim();
+    const adInput = document.getElementById('add-user-ad');
+    const soyadInput = document.getElementById('add-user-soyad');
+    const ad = normalizeName(adInput?.value);
+    const soyad = normalizeName(soyadInput?.value);
+    if (adInput) adInput.value = ad;
+    if (soyadInput) soyadInput.value = soyad;
     const email = (document.getElementById('add-user-email')?.value || '').trim();
     const password = document.getElementById('add-user-password')?.value || '';
     const confirm = document.getElementById('add-user-password-confirm')?.value || '';
@@ -512,6 +663,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.addEventListener('click', closeDeleteUserModal);
     });
     document.getElementById('confirm-delete-user-btn')?.addEventListener('click', confirmDeleteUser);
+
+    document.getElementById('message-user-backdrop')?.addEventListener('click', closeMessageUserModal);
+    document.querySelectorAll('[data-close-message-user-modal]').forEach((btn) => {
+        btn.addEventListener('click', closeMessageUserModal);
+    });
+    document.getElementById('message-user-send-btn')?.addEventListener('click', sendMessageToUser);
+    document.getElementById('message-user-text')?.addEventListener('input', updateMessageCharCount);
 
     document.getElementById('toggle-add-user-password')?.addEventListener('click', (e) => {
         toggleModalPassword('add-user-password', e.currentTarget);
