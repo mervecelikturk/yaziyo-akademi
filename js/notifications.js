@@ -308,6 +308,132 @@ export async function refreshNotificationsForModal(supabase) {
     return notifications;
 }
 
+function ensureGuestModalCopy(notificationContent) {
+    let emptyMsg = document.getElementById('notification-empty-msg');
+    let footerMsg = document.getElementById('notification-footer-msg');
+
+    if (!emptyMsg && notificationContent) {
+        const existingP = notificationContent.querySelector('p:not([id])');
+        if (existingP) {
+            existingP.id = 'notification-empty-msg';
+            emptyMsg = existingP;
+        }
+    }
+
+    if (!footerMsg && notificationContent) {
+        const allP = notificationContent.querySelectorAll('p');
+        allP.forEach((p) => {
+            if (!p.id && (p.textContent.includes('yakında') || p.textContent.includes('aktif olacak'))) {
+                p.id = 'notification-footer-msg';
+                footerMsg = p;
+            }
+        });
+        if (!footerMsg) {
+            footerMsg = document.createElement('p');
+            footerMsg.id = 'notification-footer-msg';
+            footerMsg.className = 'text-xs text-yaziyo-gold font-inter font-medium tracking-wide text-center mt-2';
+            const divider = notificationContent.querySelector('.h-px, hr');
+            if (divider) divider.after(footerMsg);
+            else notificationContent.appendChild(footerMsg);
+        }
+    }
+
+    return { emptyMsg, footerMsg };
+}
+
+export async function openNotificationModal() {
+    const notificationModal = document.getElementById('notification-modal');
+    const notificationBackdrop = document.getElementById('notification-backdrop');
+    const notificationContent = document.getElementById('notification-content');
+    if (!notificationModal) return;
+
+    const isLoggedIn = document.documentElement.classList.contains('is-logged-in');
+    const { emptyMsg, footerMsg } = ensureGuestModalCopy(notificationContent);
+    const supabase = _notificationSupabase
+        || window.yaziyoSupabase
+        || window.yaziyoAuth?.getSupabaseClient?.()
+        || null;
+
+    if (isLoggedIn && supabase) {
+        await refreshNotificationsForModal(supabase);
+    } else {
+        const list = document.getElementById('notification-list');
+        if (list) list.classList.add('hidden');
+
+        if (emptyMsg) {
+            emptyMsg.classList.remove('hidden');
+            emptyMsg.textContent = isLoggedIn
+                ? 'Henüz yeni bildiriminiz yok.'
+                : 'Bildirimlerinizi görmek için giriş yapın.';
+        }
+
+        if (footerMsg) {
+            footerMsg.classList.remove('hidden');
+            if (isLoggedIn) {
+                footerMsg.innerHTML = '';
+            } else {
+                const girisHref = (window.YaziyoPaths?.pageHref('girisKayit.html')) || 'pages/giris-kayit/';
+                footerMsg.innerHTML =
+                    '<a href="' + girisHref + '" class="inline-flex items-center gap-1 text-yaziyo-gold hover:underline transition-all font-semibold">' +
+                    '<i class="fa-solid fa-right-to-bracket"></i> Giriş yap / Kayıt ol' +
+                    '</a>';
+            }
+        }
+    }
+
+    notificationModal.classList.remove('hidden');
+    notificationModal.classList.add('flex');
+
+    requestAnimationFrame(() => {
+        notificationBackdrop?.classList.remove('opacity-0');
+        notificationContent?.classList.remove('scale-95', 'opacity-0');
+        notificationContent?.classList.add('scale-100', 'opacity-100');
+    });
+}
+
+export function closeNotificationModal() {
+    const notificationModal = document.getElementById('notification-modal');
+    const notificationBackdrop = document.getElementById('notification-backdrop');
+    const notificationContent = document.getElementById('notification-content');
+    if (!notificationModal) return;
+
+    notificationBackdrop?.classList.add('opacity-0');
+    notificationContent?.classList.remove('scale-100', 'opacity-100');
+    notificationContent?.classList.add('scale-95', 'opacity-0');
+
+    setTimeout(() => {
+        notificationModal.classList.remove('flex');
+        notificationModal.classList.add('hidden');
+    }, 300);
+}
+
+let _modalUiBound = false;
+
+/** Tüm sayfalarda bildirim butonu / modal (header remount sonrası da çalışır) */
+export function bindNotificationModal() {
+    if (_modalUiBound || typeof document === 'undefined') return;
+    _modalUiBound = true;
+
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('#notification-btn')) {
+            e.preventDefault();
+            openNotificationModal();
+            return;
+        }
+        if (e.target.closest('#notification-close') || e.target.id === 'notification-backdrop') {
+            closeNotificationModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        const modal = document.getElementById('notification-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+            closeNotificationModal();
+        }
+    });
+}
+
 // Global erişim (main.js ve profil inline script)
 if (typeof window !== 'undefined') {
     window.YaziyoNotifications = {
@@ -315,10 +441,14 @@ if (typeof window !== 'undefined') {
         loadNotifications,
         renderNotificationPanel,
         refreshNotificationsForModal,
+        openNotificationModal,
+        closeNotificationModal,
+        bindNotificationModal,
         onGoalsCompleted,
         playNotificationSound,
         markAllNotificationsRead,
         deleteNotification,
         trimNotificationsToMax,
     };
+    bindNotificationModal();
 }

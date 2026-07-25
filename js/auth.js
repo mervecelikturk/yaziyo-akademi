@@ -282,6 +282,11 @@ if (document.readyState === 'loading') {
     attachAuthEvents();
 }
 
+// Bildirim modalı tüm sayfalarda açılsın (yalnızca ana sayfa değil)
+import('./notifications.js')
+    .then(({ bindNotificationModal }) => bindNotificationModal())
+    .catch(() => {});
+
 function updateGlobalRank(totalWords) {
     let rankClass = '', rankName = '', rankColor = '';
 

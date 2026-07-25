@@ -30,8 +30,8 @@
     const HEARTBEAT_MS = 2500;
     const MATCH_DISCONNECT_MS = 12000;
     const RECONNECT_MS = 2500;
-    /** Odada tek kişi kalıp 5 dk kimse gelmezse oda kapanır */
-    const SOLO_WAIT_MS = 5 * 60 * 1000;
+    /** Maç başlamazsa (şifreli/açık fark etmez) oda 3 dk içinde kapanır */
+    const ROOM_EXPIRE_MS = 3 * 60 * 1000;
 
     const SOUND_CAR = '../sound effect/car.mp3';
 
@@ -459,7 +459,9 @@
         try {
             const { data, error } = await state.supabase.rpc('aktif_yaris_odalari');
             if (error) throw error;
-            const rooms = (data || []).filter((r) => r.olusturan_id !== state.userId);
+            const rooms = (data || []).filter((r) =>
+                r.olusturan_id !== state.userId && !isRoomExpired(r)
+            );
             if (!rooms.length) {
                 listEl.innerHTML = '';
                 listEl.classList.add('hidden');
@@ -510,6 +512,11 @@
 
     /* ---------------- ODAYA KATIL ---------------- */
     function attemptJoin(room) {
+        if (isRoomExpired(room)) {
+            alert('Bu odanın süresi doldu.');
+            refreshRoomList();
+            return;
+        }
         if (room.sifreli) {
             state.pendingJoinRoom = room;
             openPassModal();
@@ -572,6 +579,17 @@
         syncSoloWaitTimer();
     }
 
+    function roomExpiresAt(room) {
+        if (!room) return Date.now() + ROOM_EXPIRE_MS;
+        const created = room.created_at ? new Date(room.created_at).getTime() : NaN;
+        if (Number.isFinite(created)) return created + ROOM_EXPIRE_MS;
+        return Date.now() + ROOM_EXPIRE_MS;
+    }
+
+    function isRoomExpired(room) {
+        return Date.now() >= roomExpiresAt(room);
+    }
+
     function clearSoloWaitTimer() {
         if (state.soloWaitTimer) {
             clearTimeout(state.soloWaitTimer);
@@ -581,19 +599,21 @@
 
     function startSoloWaitTimer() {
         if (state.soloWaitTimer) return;
-        if (state.cleanedUp || state.screen !== 'room' || isInMatch() || state.rivalPresent) return;
+        if (state.cleanedUp || state.screen !== 'room' || isInMatch()) return;
+        const delay = Math.max(0, roomExpiresAt(state.room) - Date.now());
         state.soloWaitTimer = setTimeout(() => {
             state.soloWaitTimer = null;
-            if (state.cleanedUp || state.screen !== 'room' || isInMatch() || state.rivalPresent) return;
-            alert('5 dakika boyunca rakip gelmediği için oda kapatıldı.');
+            if (state.cleanedUp || state.screen !== 'room' || isInMatch()) return;
+            alert('Maç 3 dakika içinde başlamadığı için oda kapatıldı.');
             leaveRoom('lobby');
-        }, SOLO_WAIT_MS);
+        }, delay);
     }
 
     function syncSoloWaitTimer() {
-        if (state.rivalPresent || isInMatch() || state.screen !== 'room') {
+        if (isInMatch() || state.screen !== 'room') {
             clearSoloWaitTimer();
         } else {
+            clearSoloWaitTimer();
             startSoloWaitTimer();
         }
     }
@@ -963,6 +983,7 @@
         if (state.running || isCountdownOpen() || state.matchActive) return;
         cancelLeaveConfirm();
         state.matchActive = true;
+        clearSoloWaitTimer();
         prepareRace();
         openWorkspace();
         runCountdown(() => startRace());
