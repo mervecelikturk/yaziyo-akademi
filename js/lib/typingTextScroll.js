@@ -1,32 +1,50 @@
 /**
  * Klavye çalışması / özel metin — referans metin + yazım alanı senkron kaydırma
+ * Textarea: imleç son satıra gelince yukarı kayar, silince geri gelir.
  */
 (function (global) {
     'use strict';
 
+    function parsePx(value, fallback) {
+        const n = parseFloat(value);
+        return Number.isFinite(n) ? n : fallback;
+    }
+
     function measureWrappedTextHeight(text, styleSource) {
         const cs = getComputedStyle(styleSource);
+        const isTextarea = styleSource.tagName === 'TEXTAREA';
+        const width = Math.max(1, styleSource.clientWidth);
+
         const probe = document.createElement('div');
+        probe.setAttribute('aria-hidden', 'true');
         probe.style.cssText = `
             position: absolute;
+            left: -99999px;
+            top: 0;
             visibility: hidden;
             pointer-events: none;
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: break-word;
             box-sizing: ${cs.boxSizing};
-            width: ${styleSource.clientWidth}px;
+            width: ${width}px;
             font-family: ${cs.fontFamily};
             font-size: ${cs.fontSize};
             font-weight: ${cs.fontWeight};
+            font-style: ${cs.fontStyle};
             line-height: ${cs.lineHeight};
             letter-spacing: ${cs.letterSpacing};
+            word-spacing: ${cs.wordSpacing};
             text-align: ${cs.textAlign};
+            text-transform: ${cs.textTransform};
             padding: ${cs.paddingTop} ${cs.paddingRight} ${cs.paddingBottom} ${cs.paddingLeft};
             margin: 0;
             border: 0;
+            ${isTextarea ? `tab-size: ${cs.tabSize || 8};` : ''}
         `;
-        probe.textContent = text || '';
+        // Son satır boşsa (\\n ile bitiyorsa) yüksekliğin sayılması için görünmez karakter
+        const raw = text || '';
+        probe.textContent = raw.endsWith('\n') ? raw + '\u200b' : raw;
         document.body.appendChild(probe);
         const height = probe.offsetHeight;
         probe.remove();
@@ -35,7 +53,7 @@
 
     function visibleContainerHeight(containerEl) {
         const cs = getComputedStyle(containerEl);
-        const padY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+        const padY = parsePx(cs.paddingTop, 0) + parsePx(cs.paddingBottom, 0);
         return Math.max(0, containerEl.clientHeight - padY);
     }
 
@@ -47,6 +65,43 @@
         return Math.min(offset, maxScroll);
     }
 
+    /**
+     * Textarea imlecini görünür alanda tutar (yazdıkça kayar, sildikçe geri gelir).
+     * maxScroll için tarayıcının gerçek scrollHeight değerini kullanır.
+     */
+    function scrollTextareaToCaret(textarea, typedLen, anchorRatio) {
+        if (!textarea) return;
+
+        const value = textarea.value;
+        const caret = Math.max(
+            0,
+            Math.min(
+                typeof textarea.selectionEnd === 'number' ? textarea.selectionEnd : value.length,
+                typedLen == null ? value.length : typedLen,
+                value.length
+            )
+        );
+
+        const maxScroll = Math.max(0, textarea.scrollHeight - textarea.clientHeight);
+        if (maxScroll <= 0) {
+            textarea.scrollTop = 0;
+            return;
+        }
+
+        // Yazım sonda ilerler: son satır görünür kalsın; silince maxScroll küçülür, metin geri gelir
+        if (caret >= value.length) {
+            textarea.scrollTop = maxScroll;
+            return;
+        }
+
+        const before = value.slice(0, caret);
+        const prefixHeight = measureWrappedTextHeight(before, textarea);
+        const viewH = textarea.clientHeight;
+        const ratio = Math.min(0.92, Math.max(0.55, anchorRatio));
+        const target = prefixHeight - viewH * ratio;
+        textarea.scrollTop = Math.max(0, Math.min(target, maxScroll));
+    }
+
     function syncTypingPanels({
         referenceEl,
         referenceContainer,
@@ -54,6 +109,7 @@
         userInputEl,
         typedLen,
         anchorRatio = 0.35,
+        textareaAnchorRatio = 0.78,
         referenceMoveMode = 'transform',
     }) {
         const safeLen = Math.max(0, typedLen || 0);
@@ -76,11 +132,7 @@
         }
 
         if (userInputEl) {
-            const typed = userInputEl.value.substring(0, safeLen);
-            const prefixHeight = measureWrappedTextHeight(typed, userInputEl);
-            const fullHeight = measureWrappedTextHeight(userInputEl.value, userInputEl);
-            const containerHeight = userInputEl.clientHeight;
-            userInputEl.scrollTop = resolveScroll(prefixHeight, fullHeight, containerHeight, anchorRatio);
+            scrollTextareaToCaret(userInputEl, safeLen, textareaAnchorRatio);
         }
     }
 
@@ -99,5 +151,9 @@
         }
     }
 
-    global.YaziyoTypingScroll = { syncTypingPanels, resetTypingPanels };
+    global.YaziyoTypingScroll = {
+        syncTypingPanels,
+        resetTypingPanels,
+        scrollTextareaToCaret,
+    };
 })(typeof window !== 'undefined' ? window : globalThis);

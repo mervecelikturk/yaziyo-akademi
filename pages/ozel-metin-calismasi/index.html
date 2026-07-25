@@ -133,6 +133,16 @@
             text-align: left;
         }
 
+        /* Yazım alanı: son satırda imleç takip eder */
+        #workspace-screen #user-input {
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            white-space: pre-wrap !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            line-height: 1.5 !important;
+        }
+
         /* Metin içeriği, JS ile kaydırılacak */
         #text-content {
             position: absolute;
@@ -987,15 +997,18 @@
 
         function scrollTextToMatch() {
             const scrollLib = window.YaziyoTypingScroll;
-            if (!scrollLib || !currentActiveText) return;
-            scrollLib.syncTypingPanels({
-                referenceEl: textContentDiv,
-                referenceContainer: textContentDiv.parentElement,
-                referenceFullText: currentActiveText.trim().replace(/[ \t]+/g, ' '),
-                userInputEl: userInput,
-                typedLen: userInput.value.length,
-                referenceMoveMode: 'top',
-            });
+            if (!scrollLib || !currentActiveText || !userInput) return;
+            const run = () => {
+                scrollLib.syncTypingPanels({
+                    referenceEl: textContentDiv,
+                    referenceContainer: textContentDiv.parentElement,
+                    referenceFullText: currentActiveText.trim().replace(/[ \t]+/g, ' '),
+                    userInputEl: userInput,
+                    typedLen: userInput.value.length,
+                    referenceMoveMode: 'top',
+                });
+            };
+            requestAnimationFrame(run);
         }
 
         /* ============================================ */

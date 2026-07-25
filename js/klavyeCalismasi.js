@@ -1095,15 +1095,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function syncTypingScroll() {
         const scrollLib = window.YaziyoTypingScroll;
-        if (!scrollLib) return;
-        scrollLib.syncTypingPanels({
-            referenceEl: textContentDiv,
-            referenceContainer: document.getElementById('text-display-card'),
-            referenceFullText: getDisplayText(),
-            userInputEl: userInput,
-            typedLen: userInput.value.length,
-            referenceMoveMode: 'transform',
-        });
+        if (!scrollLib || !userInput) return;
+        const run = () => {
+            scrollLib.syncTypingPanels({
+                referenceEl: textContentDiv,
+                referenceContainer: document.getElementById('text-display-card'),
+                referenceFullText: getDisplayText(),
+                userInputEl: userInput,
+                typedLen: userInput.value.length,
+                referenceMoveMode: 'transform',
+            });
+        };
+        // scrollHeight değerin DOM'a yansıması için bir kare bekle
+        requestAnimationFrame(run);
     }
 
     /** BAŞLA BUTONU TIKLANDIĞINDA */
