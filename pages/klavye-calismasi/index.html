@@ -75,10 +75,32 @@
             padding-right: 2.5rem;
         }
 
-        /* WORKSPACE: Minimal Sınav Ekranı */
+        /* WORKSPACE: Minimal Sınav Ekranı — viewport yüksekliğine sığdır */
         #workspace-screen {
             background-color: #F9FAFB !important; /* Açık gri/beyaz arka plan */
             color: #1F2937 !important;
+            height: 100vh;
+            height: 100dvh;
+            max-height: 100vh;
+            max-height: 100dvh;
+            /* JS visualViewport ile güncellenir (tablet klavye) */
+            height: calc(var(--yaziyo-vvh, 1vh) * 100);
+            max-height: calc(var(--yaziyo-vvh, 1vh) * 100);
+            overflow: hidden;
+        }
+
+        #workspace-content {
+            flex: 1 1 auto;
+            min-height: 0 !important;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+        }
+
+        #workspace-content > .w-full.max-w-5xl {
+            min-height: 0;
         }
 
         /* Metin Alanı Stili */
@@ -90,6 +112,10 @@
             position: relative;
             overflow: hidden;
             width: 100%;
+            height: min(260px, calc(var(--yaziyo-vvh, 1vh) * 30));
+            min-height: 140px;
+            max-height: min(300px, calc(var(--yaziyo-vvh, 1vh) * 34));
+            flex-shrink: 0;
         }
 
         #text-content {
@@ -97,9 +123,10 @@
             font-size: 16.5px !important; /* 2 birim büyütüldü */
             line-height: 1.5 !important; /* Sık satır aralığı */
             text-align: justify !important; /* Düz hizalı */
-            padding: 2rem !important;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            padding: 1.25rem 1.5rem !important;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
             transform-origin: top;
+            will-change: transform;
         }
 
         /* Kelime Durumları */
@@ -117,7 +144,7 @@
             color: #10B981 !important;
         }
 
-        /* Yazma Alanı Stili */
+        /* Yazma Alanı Stili — sabit yükseklik + scroll (tablet kritik) */
         #user-input {
             background: #FFFFFF !important;
             border: 1.5px solid rgba(217, 119, 6, 0.3) !important; /* İnce turuncu border */
@@ -125,17 +152,24 @@
             color: #111827 !important;
             font-size: 18px !important;
             line-height: 1.5 !important;
-            padding: 1.5rem !important;
+            padding: 1.25rem 1.5rem !important;
             resize: none !important;
             outline: none !important;
             transition: border-color 0.2s ease !important;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
             width: 100%;
+            height: min(280px, calc(var(--yaziyo-vvh, 1vh) * 34)) !important;
+            min-height: 160px !important;
+            max-height: min(350px, calc(var(--yaziyo-vvh, 1vh) * 40)) !important;
             overflow-y: auto !important;
             overflow-x: hidden !important;
             white-space: pre-wrap !important;
             word-wrap: break-word !important;
             overflow-wrap: break-word !important;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: auto;
+            scroll-padding-bottom: 2em;
+            flex-shrink: 0;
         }
 
         #user-input:focus {
@@ -205,122 +239,553 @@
             50% { transform: scale(1.05); opacity: 0.85; }
         }
 
+        /* Tablet / dar ekran — paneller viewport’a sığsın, yazım alanı görünür kalsın */
+        @media (max-width: 1024px) {
+            #workspace-top-left {
+                top: 0.75rem !important;
+                left: 0.75rem !important;
+            }
+
+            #workspace-top-right {
+                top: 0.75rem !important;
+                right: 0.75rem !important;
+            }
+
+            .timer-box {
+                padding: 0.45rem 0.85rem !important;
+            }
+
+            .timer-box #timer-display {
+                font-size: 1.25rem !important;
+            }
+
+            .exit-btn {
+                width: 44px !important;
+                height: 44px !important;
+            }
+
+            .exit-btn i {
+                font-size: 1.5rem !important;
+            }
+
+            #workspace-content {
+                padding-top: 4.25rem !important;
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+
+            #text-display-card {
+                height: min(200px, calc(var(--yaziyo-vvh, 1vh) * 26)) !important;
+                min-height: 120px !important;
+                max-height: min(220px, calc(var(--yaziyo-vvh, 1vh) * 28)) !important;
+            }
+
+            #text-content {
+                font-size: 15.5px !important;
+                padding: 1rem 1.1rem !important;
+            }
+
+            #user-input {
+                height: min(220px, calc(var(--yaziyo-vvh, 1vh) * 32)) !important;
+                min-height: 140px !important;
+                max-height: min(260px, calc(var(--yaziyo-vvh, 1vh) * 36)) !important;
+                font-size: 16px !important;
+                padding: 1rem 1.1rem !important;
+            }
+
+            #live-stats {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+                padding-top: 0.5rem !important;
+                padding-bottom: 0.5rem !important;
+            }
+
+            #workspace-screen.exam2-mode #text-display-card {
+                height: min(240px, calc(var(--yaziyo-vvh, 1vh) * 30)) !important;
+                min-height: 140px !important;
+                max-height: min(280px, calc(var(--yaziyo-vvh, 1vh) * 34)) !important;
+            }
+
+            #workspace-screen.exam2-mode #user-input {
+                height: min(200px, calc(var(--yaziyo-vvh, 1vh) * 28)) !important;
+                min-height: 130px !important;
+                max-height: min(240px, calc(var(--yaziyo-vvh, 1vh) * 32)) !important;
+            }
+
+            #workspace-screen.exam2-mode #workspace-content {
+                padding-top: 0.75rem !important;
+            }
+        }
+
         /* Mobil Optimizasyon */
         @media (max-width: 640px) {
             input, select, textarea {
                 font-size: 16px !important;
             }
 
-            #workspace-screen.exam2-mode #user-input,
-            #workspace-screen.exam2-mode #text-content {
-                font-size: 18px !important;
-            }
-
             #countdown-number.is-start {
                 font-size: clamp(1.75rem, 9.5vw, 3rem);
+            }
+
+            .exam2-header-inner {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            #text-display-card {
+                height: min(160px, calc(var(--yaziyo-vvh, 1vh) * 24)) !important;
+                max-height: min(180px, calc(var(--yaziyo-vvh, 1vh) * 26)) !important;
+            }
+
+            #user-input {
+                height: min(180px, calc(var(--yaziyo-vvh, 1vh) * 30)) !important;
+                max-height: min(200px, calc(var(--yaziyo-vvh, 1vh) * 32)) !important;
+            }
+
+            #workspace-screen.exam2-mode #text-display-card {
+                height: min(180px, calc(var(--yaziyo-vvh, 1vh) * 26)) !important;
+                min-height: 120px !important;
+                max-height: min(200px, calc(var(--yaziyo-vvh, 1vh) * 28)) !important;
+            }
+
+            #workspace-screen.exam2-mode #user-input {
+                height: min(160px, calc(var(--yaziyo-vvh, 1vh) * 28)) !important;
+                min-height: 110px !important;
+                max-height: min(180px, calc(var(--yaziyo-vvh, 1vh) * 30)) !important;
+            }
+        }
+
+        /* Kısa viewport (klavye açık / yatay tablet) */
+        @media (max-height: 700px) {
+            #text-display-card {
+                height: min(140px, calc(var(--yaziyo-vvh, 1vh) * 22)) !important;
+                max-height: min(160px, calc(var(--yaziyo-vvh, 1vh) * 24)) !important;
+            }
+
+            #user-input {
+                height: min(160px, calc(var(--yaziyo-vvh, 1vh) * 30)) !important;
+                max-height: min(180px, calc(var(--yaziyo-vvh, 1vh) * 34)) !important;
+            }
+
+            #workspace-screen.exam2-mode #text-display-card {
+                height: min(150px, calc(var(--yaziyo-vvh, 1vh) * 24)) !important;
+                max-height: min(170px, calc(var(--yaziyo-vvh, 1vh) * 26)) !important;
+            }
+
+            #workspace-screen.exam2-mode #user-input {
+                height: min(140px, calc(var(--yaziyo-vvh, 1vh) * 28)) !important;
+                max-height: min(160px, calc(var(--yaziyo-vvh, 1vh) * 30)) !important;
+            }
+
+            #live-stats {
+                display: none !important;
             }
         }
 
         /* Sınav Ekranı 2 */
-        #workspace-screen.exam2-mode #workspace-content {
-            justify-content: center;
-            padding-top: 5rem;
-            padding-bottom: 2rem;
-            min-height: calc(100vh - 2rem);
+        #exam2-header {
+            display: none;
+            width: 100%;
+            flex-shrink: 0;
+            background: #F3F4F6;
+            border-bottom: 1px solid #E5E7EB;
+            z-index: 200; /* geri sayım overlay (210) altında kalsın */
         }
 
-        #workspace-screen.exam2-mode #workspace-content > .w-full.max-w-5xl {
-            max-width: 52rem;
-            width: 100%;
+        #workspace-screen.exam2-mode #exam2-header {
+            display: block;
+        }
+
+        #workspace-screen.exam2-mode #workspace-top-left,
+        #workspace-screen.exam2-mode #workspace-top-right {
+            display: none !important;
+        }
+
+        .exam2-header-inner {
+            width: 98%;
+            margin: 0 auto;
+            min-height: 56px;
+            padding: 0.65rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             gap: 1rem;
         }
 
-        #workspace-screen.exam2-mode #text-display-card,
-        #workspace-screen.exam2-mode #user-input {
-            width: 100%;
-            height: 320px;
-            min-height: 320px;
-            max-height: 320px;
+        .exam2-aday-no {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #374151;
+            letter-spacing: 0.01em;
+        }
+
+        .exam2-aday-no span {
+            font-weight: 700;
+            color: #111827;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .exam2-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        #workspace-screen.exam2-mode #workspace-content {
+            justify-content: flex-start;
+            padding-top: 1.25rem;
+            padding-bottom: 1.5rem;
+            min-height: 0;
+            flex: 1;
+        }
+
+        #workspace-screen.exam2-mode #workspace-content > .w-full.max-w-5xl {
+            max-width: none;
+            width: 98%;
+            gap: 0.85rem;
         }
 
         #workspace-screen.exam2-mode #text-display-card {
+            width: 100%;
+            height: min(400px, calc(var(--yaziyo-vvh, 1vh) * 38));
+            min-height: 160px;
+            max-height: min(400px, calc(var(--yaziyo-vvh, 1vh) * 42));
             background: #FFFFFF !important;
-            border: 1px solid #D1D5DB !important;
-            border-radius: 10px !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+            border: 1px solid #9CA3AF !important;
+            border-radius: 4px !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
         }
 
         #workspace-screen.exam2-mode #text-content {
-            color: #000000 !important;
-            font-size: 18px !important;
-            line-height: 1.65 !important;
+            color: #111827 !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+            font-size: 16px !important;
+            line-height: 1.55 !important;
             text-align: left !important;
-            padding: 1.25rem !important;
+            padding: 1rem 1.1rem !important;
             white-space: pre-wrap;
             word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         #workspace-screen.exam2-mode #user-input {
+            width: 100%;
+            height: min(300px, calc(var(--yaziyo-vvh, 1vh) * 32));
+            min-height: 140px;
+            max-height: min(300px, calc(var(--yaziyo-vvh, 1vh) * 36));
             background: #FFFFFF !important;
-            color: #000000 !important;
-            font-size: 18px !important;
-            line-height: 1.65 !important;
-            border: 1px solid #D1D5DB !important;
-            border-radius: 10px !important;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-            padding: 1.25rem !important;
-            overflow: hidden;
+            color: #111827 !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+            font-size: 16px !important;
+            line-height: 1.55 !important;
+            border: 1px solid #9CA3AF !important;
+            border-radius: 4px !important;
+            box-shadow: none !important;
+            padding: 1rem 1.1rem !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
             resize: none !important;
         }
 
         #workspace-screen.exam2-mode #user-input:focus {
             border-color: #9CA3AF !important;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+            box-shadow: none !important;
         }
 
-        #workspace-screen.exam2-mode .timer-box {
-            background-color: #E5E7EB !important;
-            color: #374151 !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+        #workspace-screen.exam2-mode #user-input::placeholder {
+            color: #9CA3AF;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
-        #workspace-screen.exam2-mode .timer-toggle-btn {
+        #workspace-screen.exam2-mode .exam2-timer-box {
             background-color: #E5E7EB !important;
             color: #374151 !important;
-            border: none;
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px !important;
+            font-weight: 800 !important;
             display: flex;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-            transition: background-color 0.2s ease;
-        }
-
-        #workspace-screen.exam2-mode .timer-toggle-btn:hover {
-            background-color: #D1D5DB !important;
+            gap: 8px;
+            box-shadow: none !important;
         }
 
         #workspace-screen.exam2-mode .exam2-finish-btn {
             width: auto !important;
             height: auto !important;
-            min-height: 44px;
-            padding: 0.65rem 1.35rem !important;
+            min-height: 40px;
+            padding: 0.55rem 1.25rem !important;
             background-color: #E5E7EB !important;
             color: #374151 !important;
-            border-radius: 10px !important;
+            border: none;
+            border-radius: 8px !important;
             font-family: Poppins, sans-serif;
             font-weight: 700;
             font-size: 0.875rem;
             letter-spacing: 0.02em;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            box-shadow: none !important;
         }
 
         #workspace-screen.exam2-mode .exam2-finish-btn:hover {
             background-color: #D1D5DB !important;
             transform: none;
+        }
+
+        /* Sınav Ekranı 3 — iki sütun, tam ekran */
+        #exam3-header {
+            display: none;
+            width: 100%;
+            flex-shrink: 0;
+            background: #F3F4F6;
+            border-bottom: 1px solid #E5E7EB;
+            z-index: 200;
+        }
+
+        #exam3-footer {
+            display: none;
+            flex-shrink: 0;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            padding: 0.65rem 1rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
+            background: #F9FAFB;
+            border-top: 1px solid #E5E7EB;
+            z-index: 200;
+        }
+
+        #workspace-screen.exam3-mode #exam3-header {
+            display: block;
+        }
+
+        #workspace-screen.exam3-mode #exam3-footer {
+            display: flex;
+        }
+
+        #workspace-screen.exam3-mode #exam2-header,
+        #workspace-screen.exam3-mode #workspace-top-left,
+        #workspace-screen.exam3-mode #workspace-top-right,
+        #workspace-screen.exam3-mode #live-stats {
+            display: none !important;
+        }
+
+        .exam3-header-inner {
+            width: 100%;
+            max-width: none;
+            min-height: 44px;
+            padding: 0.45rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .exam3-aday-no {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .exam3-aday-no span {
+            font-weight: 700;
+            color: #111827;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .exam3-timer-box {
+            background-color: #E5E7EB;
+            color: #374151;
+            padding: 0.35rem 0.85rem;
+            border-radius: 6px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .exam3-timer-box #exam3-timer-display {
+            font-family: Poppins, sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        #workspace-screen.exam3-mode #workspace-content {
+            flex: 1 1 auto;
+            min-height: 0 !important;
+            padding: 0.65rem 0.75rem !important;
+            overflow: hidden;
+            justify-content: stretch;
+            align-items: stretch;
+        }
+
+        #workspace-screen.exam3-mode #workspace-content > .w-full.max-w-5xl {
+            max-width: none !important;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: minmax(0, 1fr);
+            gap: 0.75rem;
+            align-content: stretch;
+        }
+
+        #workspace-screen.exam3-mode #workspace-content > .w-full.max-w-5xl > * + * {
+            margin-top: 0 !important;
+        }
+
+        #workspace-screen.exam3-mode #text-display-card {
+            width: 100%;
+            height: 100% !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            background: #FFFFFF !important;
+            border: 1px solid #9CA3AF !important;
+            border-radius: 4px !important;
+            box-shadow: none !important;
+            overflow: hidden !important;
+        }
+
+        #workspace-screen.exam3-mode #text-content {
+            color: #111827 !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+            font-size: 16px !important;
+            line-height: 1.55 !important;
+            text-align: left !important;
+            padding: 1rem 1.1rem !important;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        #workspace-screen.exam3-mode #user-input {
+            width: 100%;
+            height: 100% !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            background: #FFFFFF !important;
+            color: #111827 !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+            font-size: 16px !important;
+            line-height: 1.55 !important;
+            border: 1px solid #9CA3AF !important;
+            border-radius: 4px !important;
+            box-shadow: none !important;
+            padding: 1rem 1.1rem !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            resize: none !important;
+        }
+
+        #workspace-screen.exam3-mode #user-input:focus {
+            border-color: #9CA3AF !important;
+            box-shadow: none !important;
+        }
+
+        #workspace-screen.exam3-mode #user-input::placeholder {
+            color: #9CA3AF;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #exam3-finish-btn {
+            min-width: 140px;
+            min-height: 44px;
+            padding: 0.65rem 1.75rem;
+            background-color: #DC2626;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            font-family: Poppins, sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.15s ease;
+            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+        }
+
+        #exam3-finish-btn:hover {
+            background-color: #B91C1C;
+        }
+
+        #exam3-finish-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Tablet: iki sütun kalır, boşluklar sıkı */
+        @media (max-width: 1024px) {
+            #workspace-screen.exam3-mode #workspace-content {
+                padding: 0.5rem !important;
+            }
+
+            #workspace-screen.exam3-mode #workspace-content > .w-full.max-w-5xl {
+                gap: 0.5rem;
+            }
+
+            #workspace-screen.exam3-mode #text-content,
+            #workspace-screen.exam3-mode #user-input {
+                font-size: 15px !important;
+                padding: 0.85rem !important;
+            }
+
+            .exam3-header-inner {
+                padding: 0.4rem 0.75rem;
+                min-height: 40px;
+            }
+        }
+
+        /* Telefon: sütunlar alt alta */
+        @media (max-width: 768px) {
+            #workspace-screen.exam3-mode #workspace-content {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #workspace-screen.exam3-mode #workspace-content > .w-full.max-w-5xl {
+                grid-template-columns: 1fr;
+                grid-template-rows: minmax(140px, 1fr) minmax(160px, 1fr);
+                min-height: min(520px, calc(var(--yaziyo-vvh, 1vh) * 70));
+            }
+
+            #workspace-screen.exam3-mode #text-content,
+            #workspace-screen.exam3-mode #user-input {
+                font-size: 16px !important;
+                padding: 0.75rem !important;
+            }
+
+            #exam3-finish-btn {
+                width: min(100%, 280px);
+                min-height: 48px;
+            }
+
+            .exam3-aday-no {
+                font-size: 0.8rem;
+            }
+
+            .exam3-timer-box #exam3-timer-display {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-height: 700px) {
+            .exam3-header-inner {
+                min-height: 36px;
+                padding: 0.3rem 0.75rem;
+            }
+
+            #exam3-footer {
+                padding: 0.4rem 0.75rem calc(0.4rem + env(safe-area-inset-bottom, 0px));
+            }
+
+            #exam3-finish-btn {
+                min-height: 40px;
+                padding: 0.5rem 1.25rem;
+                font-size: 0.875rem;
+            }
         }
     </style>
 </head>
@@ -520,8 +985,9 @@
     <main id="setup-screen" class="flex-grow flex items-center justify-center py-6 px-4 sm:px-6 relative">
         <div class="w-full max-w-5xl">
             <div class="text-center mb-10">
-                <h1 class="text-3xl sm:text-4xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-4">
-                    Klavye Çalışması
+                <h1 class="inline-flex items-center justify-center gap-2.5 text-3xl sm:text-4xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-4">
+                    <i class="fa-solid fa-keyboard text-yaziyo-gold text-[0.7em] leading-none" aria-hidden="true"></i>
+                    <span>Klavye Çalışması</span>
                 </h1>
             </div>
 
@@ -637,6 +1103,7 @@
                                     <option value="app">Uygulama Ekranı</option>
                                     <option value="exam" selected>Sınav Ekranı</option>
                                     <option value="exam2">Sınav Ekranı 2</option>
+                                    <option value="exam3">Sınav Ekranı 3</option>
                                 </select>
                             </div>
 
@@ -699,8 +1166,35 @@
             </div>
         </div>
 
+        <!-- Sınav Ekranı 2 Header -->
+        <header id="exam2-header" aria-label="Sınav bilgileri">
+            <div class="exam2-header-inner">
+                <div class="exam2-aday-no">Aday no: <span id="exam2-aday-no">00000000000</span></div>
+                <div class="exam2-header-actions">
+                    <div class="exam2-timer-box">
+                        <span class="font-inter font-black text-xs uppercase tracking-wider opacity-90">Süre :</span>
+                        <span id="exam2-timer-display" class="font-poppins font-black text-2xl">00:00</span>
+                    </div>
+                    <button id="exam2-finish-btn" type="button" class="exam2-finish-btn" title="Bitir (ESC)">
+                        Bitir
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sınav Ekranı 3 Toolbar -->
+        <header id="exam3-header" aria-label="Sınav bilgileri">
+            <div class="exam3-header-inner">
+                <div class="exam3-aday-no">Aday no: <span id="exam3-aday-no">00000000000</span></div>
+                <div class="exam3-timer-box">
+                    <span class="font-inter font-black text-[10px] uppercase tracking-wider opacity-90">Süre :</span>
+                    <span id="exam3-timer-display">00:00</span>
+                </div>
+            </div>
+        </header>
+
         <!-- Sabit Kontroller (Üst Köşeler) -->
-        <div class="absolute top-8 left-8 z-[250] flex items-center gap-2">
+        <div id="workspace-top-left" class="absolute top-8 left-8 z-[250] flex items-center gap-2">
             <div id="timer-container" class="timer-box">
                 <span class="font-inter font-black text-xs uppercase tracking-wider opacity-90">Süre :</span>
                 <span id="timer-display" class="font-poppins font-black text-2xl">00:00</span>
@@ -710,8 +1204,8 @@
             </button>
         </div>
 
-        <div class="absolute top-8 right-8 z-[250] flex items-center gap-2">
-            <button id="finish-workspace-btn" type="button" class="exit-btn exam2-finish-btn hidden" title="Bitir (ESC)">
+        <div id="workspace-top-right" class="absolute top-8 right-8 z-[250] flex items-center gap-2">
+            <button id="finish-workspace-btn" type="button" class="exit-btn hidden" title="Bitir (ESC)">
                 Bitir
             </button>
             <button id="close-workspace-btn" type="button" class="exit-btn group" title="Çıkış (ESC)">
@@ -744,7 +1238,7 @@
                 </div>
 
                 <!-- Metin Alanı (Koyu gri, büyütülmüş yazı, justified) -->
-                <div id="text-display-card" class="w-full min-h-[300px] max-h-[300px] cursor-default select-none pointer-events-none">
+                <div id="text-display-card" class="w-full cursor-default select-none pointer-events-none">
                     <div id="text-content">
                         <!-- Metin JS ile buraya gelecek -->
                     </div>
@@ -752,7 +1246,7 @@
 
                 <!-- Kullanıcı Yazma Alanı (Geniş, beyaz, ince turuncu border) -->
                 <textarea id="user-input"
-                    class="w-full min-h-[350px]"
+                    class="w-full"
                     lang="tr" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"
                     data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false"
                     placeholder="Yazmaya başlayın..."
@@ -763,6 +1257,11 @@
                 <div id="workspace-title" class="hidden"></div>
             </div>
         </div>
+
+        <!-- Sınav Ekranı 3 Alt Bitir -->
+        <footer id="exam3-footer">
+            <button id="exam3-finish-btn" type="button" title="Bitir (ESC)">Bitir</button>
+        </footer>
     </div>
     <!-- /WORKSPACE -->
 

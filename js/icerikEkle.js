@@ -9,10 +9,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!(await requireAdminAccess())) return;
 
     const tbody = document.getElementById('page-status-tbody');
+    const syncHint = document.getElementById('page-status-sync-hint');
     if (!tbody || !window.YaziyoPageStatus) return;
 
-    const { PAGES, getStatus, setPageActive } = window.YaziyoPageStatus;
-    const status = getStatus();
+    const { PAGES, getStatus, setPageActiveAsync, syncFromRemote, pushAllToRemote } = window.YaziyoPageStatus;
+
+    // Önce sunucudaki kalıcı durumu al
+    await syncFromRemote();
+
+    let status = getStatus();
+
+    // Uzakta hiç kayıt yoksa mevcut durumu ilk kez yükle (kalıcılık başlasın)
+    try {
+        const { fetchRemotePageStatusMap } = await import('./lib/pageStatusApi.js');
+        const remote = await fetchRemotePageStatusMap();
+        if (remote && Object.keys(remote).length === 0) {
+            const pushed = await pushAllToRemote();
+            if (pushed?.ok) {
+                setSyncHint('Durumlar sunucuya kaydedildi.', false);
+            } else if (pushed?.missingTable) {
+                setSyncHint('Uyarı: site_page_status tablosu yok. sql/site_page_status.sql dosyasını Supabase\'de çalıştırın.', true);
+            }
+        }
+    } catch (_) { /* ignore */ }
+
+    status = getStatus();
+    tbody.innerHTML = '';
 
     PAGES.forEach((page) => {
         const active = status[page.id] !== false;
@@ -35,9 +57,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     refreshAdminMobileTables();
 
-    tbody.addEventListener('click', (e) => {
+    tbody.addEventListener('click', async (e) => {
         const btn = e.target.closest('.status-toggle-btn');
-        if (!btn) return;
+        if (!btn || btn.disabled) return;
 
         const row = btn.closest('tr');
         const pageId = row?.dataset.pageId;
@@ -46,11 +68,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         const isActive = btn.classList.contains('is-active');
         const nextActive = !isActive;
 
-        setPageActive(pageId, nextActive);
+        btn.disabled = true;
         updateToggleButton(btn, nextActive);
+
+        const result = await setPageActiveAsync(pageId, nextActive);
+        btn.disabled = false;
+
+        if (!result?.remoteOk) {
+            // Uzak kayıt başarısızsa UI'ı geri al
+            updateToggleButton(btn, isActive);
+            window.YaziyoPageStatus.setPageActive(pageId, isActive);
+            if (result?.missingTable) {
+                setSyncHint('Kayıt başarısız: site_page_status tablosu bulunamadı. sql/site_page_status.sql dosyasını çalıştırın.', true);
+            } else {
+                setSyncHint('Sunucuya kaydedilemedi. Bağlantıyı kontrol edip tekrar deneyin.', true);
+            }
+            return;
+        }
+
+        setSyncHint(`${row.querySelector('td')?.textContent?.trim() || 'Sayfa'} ${nextActive ? 'aktif' : 'pasif'} olarak kaydedildi.`, false);
         window.YaziyoAdminNavbar?.refreshMobileTables?.();
         window.YaziyoPageStatus.applyToNavbar();
     });
+
+    function setSyncHint(message, isError) {
+        if (!syncHint) return;
+        syncHint.textContent = message || '';
+        syncHint.classList.toggle('text-red-500', !!isError);
+        syncHint.classList.toggle('text-yaziyo-gold', !isError && !!message);
+        syncHint.classList.toggle('hidden', !message);
+    }
 });
 
 function updateToggleButton(btn, active) {

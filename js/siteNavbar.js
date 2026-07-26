@@ -312,6 +312,12 @@
         if (mounted && global.YaziyoPageStatus) {
             global.YaziyoPageStatus.applyToNavbar();
             applyNavActive(resolveActiveNav());
+            if (typeof global.YaziyoPageStatus.syncFromRemote === 'function') {
+                global.YaziyoPageStatus.syncFromRemote().then(() => {
+                    global.YaziyoPageStatus.applyToNavbar();
+                    applyNavActive(resolveActiveNav());
+                }).catch(() => { /* ignore */ });
+            }
         }
         return mounted;
     }

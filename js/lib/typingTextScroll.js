@@ -1,6 +1,7 @@
 /**
  * Klavye çalışması / özel metin — referans metin + yazım alanı senkron kaydırma
  * Textarea: imleç son satıra gelince yukarı kayar, silince geri gelir.
+ * Tablet/mobil: scrollHeight gecikmesi ve sanal klavye için tekrarlı senkron.
  */
 (function (global) {
     'use strict';
@@ -13,6 +14,7 @@
     function measureWrappedTextHeight(text, styleSource) {
         const cs = getComputedStyle(styleSource);
         const isTextarea = styleSource.tagName === 'TEXTAREA';
+        // Scrollbar genişliğini düş: clientWidth sarmalama ile uyumlu
         const width = Math.max(1, styleSource.clientWidth);
 
         const probe = document.createElement('div');
@@ -90,7 +92,12 @@
 
         // Yazım sonda ilerler: son satır görünür kalsın; silince maxScroll küçülür, metin geri gelir
         if (caret >= value.length) {
-            textarea.scrollTop = maxScroll;
+            // iOS/tablet: scrollHeight gecikmeli gelebilir; doğrudan scrollHeight daha güvenilir
+            textarea.scrollTop = textarea.scrollHeight;
+            // Bazı motorlarda tek atama tutmaz
+            if (textarea.scrollTop < maxScroll - 1) {
+                textarea.scrollTop = maxScroll;
+            }
             return;
         }
 
@@ -136,6 +143,21 @@
         }
     }
 
+    /**
+     * Layout/scrollHeight oturana kadar birkaç kez senkronlar (tablet/iOS).
+     */
+    function scheduleSyncTypingPanels(options, delays) {
+        const times = Array.isArray(delays) && delays.length ? delays : [0, 32, 100];
+        const run = () => syncTypingPanels(options);
+        times.forEach((ms) => {
+            if (ms <= 0) {
+                requestAnimationFrame(() => requestAnimationFrame(run));
+            } else {
+                setTimeout(run, ms);
+            }
+        });
+    }
+
     function resetTypingPanels({ referenceEl, userInputEl, referenceMoveMode = 'transform' }) {
         if (referenceEl) {
             if (referenceMoveMode === 'top') {
@@ -153,6 +175,7 @@
 
     global.YaziyoTypingScroll = {
         syncTypingPanels,
+        scheduleSyncTypingPanels,
         resetTypingPanels,
         scrollTextareaToCaret,
     };

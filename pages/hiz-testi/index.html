@@ -158,13 +158,60 @@
 
             position: relative;
 
-            transition: all 0.3s ease;
+            transition: font-size 0.2s ease, line-height 0.2s ease, height 0.2s ease;
 
         }
 
         #text-display-inner {
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             transform-origin: top;
+            will-change: transform;
+        }
+
+        /* Test alanı: tablet / kısa ekranda giriş görünür kalsın */
+        #test-section {
+            scroll-margin-bottom: 1rem;
+        }
+
+        #test-section #user-input {
+            font-size: 16px;
+            min-height: 48px;
+        }
+
+        @media (max-width: 1024px) {
+            #text-display {
+                font-size: 1.1rem;
+                line-height: 2.05;
+                height: calc(1.1rem * 2.05 * 3);
+            }
+
+            #test-section.space-y-5 > :not([hidden]) ~ :not([hidden]) {
+                margin-top: 0.85rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #text-display {
+                font-size: 1rem;
+                line-height: 1.95;
+                height: calc(1rem * 1.95 * 3);
+            }
+        }
+
+        @media (max-height: 700px) {
+            #text-display {
+                font-size: 1rem;
+                line-height: 1.9;
+                height: calc(1rem * 1.9 * 2.5);
+            }
+
+            #test-section.space-y-5 > :not([hidden]) ~ :not([hidden]) {
+                margin-top: 0.65rem;
+            }
+
+            #combo-container {
+                display: none !important;
+            }
         }
 
 
@@ -229,6 +276,105 @@
 
             color: #64748B;
 
+        }
+
+
+
+        /* Kelime takipli ekran — sadece .mode-kelime iken */
+
+        #text-display.mode-kelime .word {
+
+            display: inline;
+
+            transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+
+        }
+
+        #text-display.mode-kelime .word.correct {
+
+            color: #10B981;
+
+            text-decoration: none;
+
+            background-color: transparent;
+
+            box-shadow: none;
+
+        }
+
+        #text-display.mode-kelime .word.incorrect {
+
+            color: #EF4444;
+
+            background-color: rgba(239, 68, 68, 0.15);
+
+            border-radius: 2px;
+
+            text-decoration: none;
+
+            box-shadow: none;
+
+        }
+
+        #text-display.mode-kelime .word.current {
+
+            text-decoration: underline;
+
+            text-decoration-color: #D97706;
+
+            text-underline-offset: 4px;
+
+            text-decoration-thickness: 2px;
+
+            color: #64748B;
+
+            background-color: rgba(217, 119, 6, 0.14);
+
+            border-radius: 3px;
+
+            box-shadow: 0 0 0 1px rgba(217, 119, 6, 0.25);
+
+        }
+
+        .dark #text-display.mode-kelime .word.current {
+
+            background-color: rgba(217, 119, 6, 0.2);
+
+            box-shadow: 0 0 0 1px rgba(217, 119, 6, 0.35);
+
+        }
+
+        #text-display.mode-kelime .word.pending {
+
+            color: #64748B;
+
+            text-decoration: none;
+
+            background-color: transparent;
+
+            box-shadow: none;
+
+        }
+
+        /* Harf takipli ekran — kelime hover/altı çizgi asla uygulanmaz */
+
+        #text-display.mode-harf .char.current {
+
+            background-color: transparent;
+
+            box-shadow: none;
+
+        }
+
+        /* Takipsiz ekran — harf/kelime vurgusu yok */
+        #text-display.mode-takipsiz,
+        #text-display.mode-takipsiz #text-display-inner {
+            color: #64748B;
+        }
+
+        .dark #text-display.mode-takipsiz,
+        .dark #text-display.mode-takipsiz #text-display-inner {
+            color: #94A3B8;
         }
 
 
@@ -897,15 +1043,13 @@
 
 
 
-                    <!-- Dropdown Satırı -->
+                    <!-- Üst Satır: Süre + Metin Türü -->
 
-                    <div class="flex flex-col sm:flex-row gap-4">
-
-
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <!-- Süre Seçimi -->
 
-                        <div class="flex-1">
+                        <div>
 
                             <label for="duration-select"
 
@@ -933,13 +1077,13 @@
 
                         <!-- Metin Türü Seçimi -->
 
-                        <div class="flex-1">
+                        <div>
 
                             <label for="text-type-select"
 
                                 class="block text-yaziyo-text-secondary text-sm font-inter font-medium mb-2">
 
-                                <i class="fa-solid fa-file-alt text-yaziyo-gold mr-1"></i> Metin Türü
+                                <i class="fa-solid fa-file-alt text-yaziyo-gold mr-1"></i> Metin Seç
 
                             </label>
 
@@ -957,11 +1101,17 @@
 
                         </div>
 
+                    </div>
 
+
+
+                    <!-- Alt Satır: Kombo + Ekran -->
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <!-- Kombo Sayacı -->
 
-                        <div class="flex-1">
+                        <div>
 
                             <label for="combo-select"
 
@@ -978,6 +1128,34 @@
                                 <option value="on" selected>Açık</option>
 
                                 <option value="off">Kapalı</option>
+
+                            </select>
+
+                        </div>
+
+
+
+                        <!-- Ekran Seçimi -->
+
+                        <div>
+
+                            <label for="screen-select"
+
+                                class="block text-yaziyo-text-secondary text-sm font-inter font-medium mb-2">
+
+                                <i class="fa-solid fa-display text-yaziyo-gold mr-1"></i> Ekran Seç
+
+                            </label>
+
+                            <select id="screen-select"
+
+                                class="custom-select w-full bg-yaziyo-bg border border-yaziyo-border rounded-lg px-4 py-3 text-yaziyo-text font-inter text-sm focus:border-yaziyo-gold focus:ring-1 focus:ring-yaziyo-gold transition-all duration-300 cursor-pointer">
+
+                                <option value="harf" selected>Harf Takipli Ekran</option>
+
+                                <option value="kelime">Kelime Takipli Ekran</option>
+
+                                <option value="takipsiz">Takipsiz Ekran</option>
 
                             </select>
 

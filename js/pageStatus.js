@@ -1,10 +1,12 @@
 /* ============================================ */
 /* YAZİYO - Sayfa Aktif/Pasif Yönetimi         */
+/* localStorage önbellek + Supabase kalıcı kayıt */
 /* ============================================ */
 
 (function (global) {
     /** v2: eski kayıtlarda kelime-evi yanlışlıkla pasif kalmasın diye sürüm yükseltildi */
     const STORAGE_KEY = 'yaziyo-page-status-v2';
+    const REMOTE_SYNCED_KEY = 'yaziyo-page-status-remote-synced-at';
 
     const PAGES = [
         { id: 'anasayfa', label: 'Ana Sayfa', href: 'index.html', defaultActive: true },
@@ -26,11 +28,18 @@
         { id: 'iletisim', label: 'İletişim', href: 'iletisim.html', defaultActive: true }
     ];
 
+    let syncPromise = null;
+
     function getDefaults() {
         return PAGES.reduce((acc, page) => {
             acc[page.id] = page.defaultActive;
             return acc;
         }, {});
+    }
+
+    function persistStatus(status) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(status));
+        return status;
     }
 
     function getStatus() {
@@ -42,7 +51,7 @@
             const merged = { ...defaults };
             PAGES.forEach((page) => {
                 if (Object.prototype.hasOwnProperty.call(parsed, page.id)) {
-                    merged[page.id] = parsed[page.id];
+                    merged[page.id] = parsed[page.id] !== false;
                 }
             });
             return merged;
@@ -51,11 +60,27 @@
         }
     }
 
+    /** Uzak map ile birleştir; uzak kaynak önceliklidir */
+    function applyRemoteMap(remoteMap) {
+        const status = getDefaults();
+        if (remoteMap && typeof remoteMap === 'object') {
+            PAGES.forEach((page) => {
+                if (Object.prototype.hasOwnProperty.call(remoteMap, page.id)) {
+                    status[page.id] = remoteMap[page.id] !== false;
+                }
+            });
+        }
+        persistStatus(status);
+        try {
+            localStorage.setItem(REMOTE_SYNCED_KEY, new Date().toISOString());
+        } catch (_) { /* ignore */ }
+        return status;
+    }
+
     function setPageActive(pageId, active) {
         const status = getStatus();
-        status[pageId] = active;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(status));
-        return status;
+        status[pageId] = !!active;
+        return persistStatus(status);
     }
 
     function isPageActive(pageId) {
@@ -127,13 +152,12 @@
     }
 
     function enableLink(link, targetHref) {
-        // Mevcut doğru yolu koru; yalnızca javascript:void ise hedefi kullan
         const current = link.getAttribute('href');
         const stored = link.dataset.originalHref;
+        // Hedef yolu önceliklendir (hardcoded javascript:void linklerde stored boş kalır)
         let href = null;
-
-        if (isUsableHref(stored)) href = stored;
-        else if (isUsableHref(targetHref)) href = targetHref;
+        if (isUsableHref(targetHref)) href = targetHref;
+        else if (isUsableHref(stored)) href = stored;
         else if (isUsableHref(current)) href = current;
 
         if (href) {
@@ -236,11 +260,77 @@
         });
     }
 
+    /**
+     * Supabase'den durumu çek, localStorage'a yaz, navbar'ı güncelle.
+     * Tablo yoksa / boşsa mevcut local durumu korur.
+     */
+    async function syncFromRemote() {
+        if (syncPromise) return syncPromise;
+
+        syncPromise = (async () => {
+            try {
+                const mod = await import('./lib/pageStatusApi.js');
+                const remoteMap = await mod.fetchRemotePageStatusMap();
+                if (!remoteMap) return getStatus();
+
+                // Uzakta hiç kayıt yoksa local'i koru (ilk kurulum)
+                if (Object.keys(remoteMap).length === 0) return getStatus();
+
+                const status = applyRemoteMap(remoteMap);
+                applyToNavbar();
+                return status;
+            } catch (err) {
+                console.warn('Sayfa durumu senkronu atlandı:', err);
+                return getStatus();
+            } finally {
+                syncPromise = null;
+            }
+        })();
+
+        return syncPromise;
+    }
+
+    /** Local + uzak kaydet (İçerik Ekle) */
+    async function setPageActiveAsync(pageId, active) {
+        const status = setPageActive(pageId, active);
+        applyToNavbar();
+
+        try {
+            const mod = await import('./lib/pageStatusApi.js');
+            const result = await mod.upsertRemotePageStatus(pageId, active);
+            if (!result.ok) {
+                console.warn('Sayfa durumu uzak kaydı başarısız:', result.error?.message || result.error);
+                return { status, remoteOk: false, missingTable: !!result.missingTable, error: result.error };
+            }
+            try {
+                localStorage.setItem(REMOTE_SYNCED_KEY, new Date().toISOString());
+            } catch (_) { /* ignore */ }
+            return { status, remoteOk: true };
+        } catch (err) {
+            console.warn('Sayfa durumu uzak kaydı atlandı:', err);
+            return { status, remoteOk: false, error: err };
+        }
+    }
+
+    /** Tüm local durumu uzağa yükle (tablo ilk kez doldurulurken) */
+    async function pushAllToRemote() {
+        try {
+            const mod = await import('./lib/pageStatusApi.js');
+            return mod.upsertRemotePageStatusBulk(getStatus());
+        } catch (err) {
+            return { ok: false, error: err };
+        }
+    }
+
     global.YaziyoPageStatus = {
         PAGES,
         getStatus,
         setPageActive,
+        setPageActiveAsync,
         isPageActive,
-        applyToNavbar
+        applyToNavbar,
+        syncFromRemote,
+        pushAllToRemote,
+        applyRemoteMap,
     };
 })(window);

@@ -131,6 +131,7 @@
             const durationSelect = document.getElementById('duration-select');
             const textTypeSelect = document.getElementById('text-type-select');
             const comboSelect = document.getElementById('combo-select');
+            const screenSelect = document.getElementById('screen-select');
             const textDisplay = document.getElementById('text-display');
             const userInput = document.getElementById('user-input');
             const timerDisplay = document.getElementById('timer-display');
@@ -176,6 +177,7 @@
             let comboCount = 0;             // Peş peşe doğru kelime sayısı
             let maxCombo = 0;               // Test boyunca ulaşılan en yüksek kombo
             let isComboEnabled = true;      // Kombo sistemi aktif mi
+            let screenMode = 'harf';        // 'harf' | 'kelime' | 'takipsiz'
             let pendingSaveWords = 0;       // Kaydedilecek kelime sayısı (test sonucu)
             let pendingSaveCombo = 0;       // Kaydedilecek max kombo
             let pendingSaveWpm = 0;         // Kaydedilecek WPM
@@ -251,9 +253,9 @@
             /* ============================================ */
 
             /**
-             * Metni karakter karakter DOM'a render eder
+             * Metni karakter karakter DOM'a render eder (harf takipli ekran)
              */
-            function renderText() {
+            function renderTextLetterMode() {
                 textDisplay.innerHTML = '';
                 const inner = document.createElement('div');
                 inner.id = 'text-display-inner';
@@ -281,20 +283,123 @@
                 });
             }
 
+            /**
+             * Metni kelime kelime DOM'a render eder (kelime takipli ekran)
+             */
+            function renderTextWordMode() {
+                textDisplay.innerHTML = '';
+                const inner = document.createElement('div');
+                inner.id = 'text-display-inner';
+
+                words.forEach((word, idx) => {
+                    const wordSpan = document.createElement('span');
+                    wordSpan.classList.add('word');
+                    wordSpan.textContent = word;
+                    wordSpan.setAttribute('data-word-index', idx);
+
+                    if (idx === 0) {
+                        wordSpan.classList.add('current');
+                    } else {
+                        wordSpan.classList.add('pending');
+                    }
+
+                    inner.appendChild(wordSpan);
+
+                    if (idx < words.length - 1) {
+                        inner.appendChild(document.createTextNode(' '));
+                    }
+                });
+
+                textDisplay.appendChild(inner);
+                window.YaziyoTypingScroll?.resetTypingPanels({
+                    referenceEl: inner,
+                    userInputEl: userInput,
+                    referenceMoveMode: 'transform',
+                });
+            }
+
+            /**
+             * Metni düz metin olarak render eder (takipsiz ekran — renk/vurgu yok)
+             */
+            function renderTextTakipsizMode() {
+                textDisplay.innerHTML = '';
+                const inner = document.createElement('div');
+                inner.id = 'text-display-inner';
+                inner.textContent = fullText;
+                textDisplay.appendChild(inner);
+                window.YaziyoTypingScroll?.resetTypingPanels({
+                    referenceEl: inner,
+                    userInputEl: userInput,
+                    referenceMoveMode: 'transform',
+                });
+            }
+
+            /**
+             * Seçilen ekran moduna göre metni render eder
+             */
+            function renderText() {
+                textDisplay.classList.remove('mode-harf', 'mode-kelime', 'mode-takipsiz');
+                textDisplay.classList.add(`mode-${screenMode}`);
+
+                if (screenMode === 'kelime') {
+                    renderTextWordMode();
+                } else if (screenMode === 'takipsiz') {
+                    renderTextTakipsizMode();
+                } else {
+                    renderTextLetterMode();
+                }
+            }
+
+            function ensureHizInputVisible() {
+                if (!userInput || !testActive) return;
+                const vv = window.visualViewport;
+                const viewBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+                const rect = userInput.getBoundingClientRect();
+                if (rect.bottom > viewBottom - 12) {
+                    const delta = rect.bottom - viewBottom + 24;
+                    window.scrollBy(0, delta);
+                }
+            }
+
             function scrollTextDisplay() {
                 const inner = document.getElementById('text-display-inner');
                 const scrollLib = window.YaziyoTypingScroll;
                 if (!scrollLib || !fullText || !inner) return;
 
                 const typedLen = wordStartIndex + (userInput.value?.length || 0);
-                scrollLib.syncTypingPanels({
+                const options = {
                     referenceEl: inner,
                     referenceContainer: textDisplay,
                     referenceFullText: fullText,
-                    userInputEl: userInput,
+                    userInputEl: null, // tek satır input; textarea kaydırması yok
                     typedLen,
                     referenceMoveMode: 'transform',
-                });
+                };
+
+                if (typeof scrollLib.scheduleSyncTypingPanels === 'function') {
+                    scrollLib.scheduleSyncTypingPanels(options, [0, 40]);
+                } else {
+                    scrollLib.syncTypingPanels(options);
+                }
+
+                requestAnimationFrame(ensureHizInputVisible);
+            }
+
+            function updateHizVisualViewport() {
+                const h = window.visualViewport?.height || window.innerHeight || 0;
+                if (h > 0) {
+                    document.documentElement.style.setProperty('--yaziyo-vvh', `${h * 0.01}px`);
+                }
+                if (testActive) {
+                    ensureHizInputVisible();
+                    scrollTextDisplay();
+                }
+            }
+
+            updateHizVisualViewport();
+            window.addEventListener('resize', updateHizVisualViewport);
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', updateHizVisualViewport);
             }
 
 
@@ -393,7 +498,14 @@
                 totalDuration = parseInt(durationSelect.value, 10);
                 remainingTime = totalDuration;
 
-                // Metni oluştur ve render et
+                // Ekran modu ve kombo — render'dan ÖNCE ayarlanmalı
+                isComboEnabled = comboSelect.value === 'on';
+                const selectedScreen = screenSelect?.value;
+                screenMode = (selectedScreen === 'kelime' || selectedScreen === 'takipsiz')
+                    ? selectedScreen
+                    : 'harf';
+
+                // Metni oluştur ve seçilen moda göre render et
                 generateText();
                 renderText();
 
@@ -419,8 +531,6 @@
                 liveWpmMobile.textContent = '0';
                 liveAccuracyMobile.textContent = '100%';
 
-                // Dropdown'dan kombo durumunu al
-                isComboEnabled = comboSelect.value === 'on';
                 comboCount = 0;
                 maxCombo = 0;
                 resultSaved = false;
@@ -431,6 +541,7 @@
                 durationSelect.disabled = true;
                 textTypeSelect.disabled = true;
                 comboSelect.disabled = true;
+                screenSelect.disabled = true;
 
                 // Alanları göster/gizle
                 settingsSection.classList.add('hidden');
@@ -519,6 +630,7 @@
                 durationSelect.disabled = false;
                 textTypeSelect.disabled = false;
                 comboSelect.disabled = false;
+                screenSelect.disabled = false;
 
                 // Alanları göster/gizle
                 testSection.classList.add('hidden');
@@ -563,32 +675,25 @@
             });
 
             /**
-             * Kullanıcı girişini işler, karakter karakter kontrol eder
+             * Harf takipli ekranda kullanıcı girişini işler
              * @param {string} inputValue - Input alanındaki mevcut değer
              */
-            function processInput(inputValue) {
+            function processInputLetterMode(inputValue) {
                 const chars = textDisplay.querySelectorAll('.char');
-
-                // Mevcut kelimenin başlangıcından itibaren kontrol et
-                const currentFullWord = getCurrentExpectedSegment();
                 const inputLen = inputValue.length;
 
-                // Tüm karakterlerin durumunu güncelle
                 for (let i = 0; i < chars.length; i++) {
                     chars[i].classList.remove('correct', 'incorrect', 'current', 'pending');
 
                     if (i < wordStartIndex) {
-                        // Önceden tamamlanmış kelimeler - zaten işlendi
-                        // Durumlarını koru (önceden correct veya incorrect olarak işaretlendi)
                         if (chars[i].dataset.status === 'correct') {
                             chars[i].classList.add('correct');
                         } else if (chars[i].dataset.status === 'incorrect') {
                             chars[i].classList.add('incorrect');
                         } else {
-                            chars[i].classList.add('correct'); // varsayılan
+                            chars[i].classList.add('correct');
                         }
                     } else if (i < wordStartIndex + inputLen) {
-                        // Kullanıcının yazdığı kısım
                         const typedChar = inputValue[i - wordStartIndex];
                         const expectedChar = fullText[i];
 
@@ -598,32 +703,75 @@
                             chars[i].classList.add('incorrect');
                         }
                     } else if (i === wordStartIndex + inputLen) {
-                        // Şu anda yazılması gereken karakter
                         chars[i].classList.add('current');
                     } else {
-                        // Henüz yazılmamış
                         chars[i].classList.add('pending');
                     }
                 }
 
-                // Scroll kontrolü
                 scrollTextDisplay();
 
-                // Boşluk tuşuna basıldığında kelime tamamlanmış demektir
                 if (inputValue.endsWith(' ') && inputValue.trim().length > 0) {
                     completeWord(inputValue);
                 }
             }
 
             /**
-             * Mevcut beklenen segmenti (kelime + boşluk) döndürür
-             * @returns {string}
+             * Kelime takipli ekranda kullanıcı girişini işler
+             * @param {string} inputValue - Input alanındaki mevcut değer
              */
-            function getCurrentExpectedSegment() {
-                if (currentWordIndex >= words.length) return '';
-                const word = words[currentWordIndex];
-                // Sonraki kelime varsa boşluk da ekle
-                return currentWordIndex < words.length - 1 ? word + ' ' : word;
+            function processInputWordMode(inputValue) {
+                const wordSpans = textDisplay.querySelectorAll('.word');
+
+                wordSpans.forEach((span, idx) => {
+                    span.classList.remove('correct', 'incorrect', 'current', 'pending');
+
+                    if (idx < currentWordIndex) {
+                        if (span.dataset.status === 'correct') {
+                            span.classList.add('correct');
+                        } else if (span.dataset.status === 'incorrect') {
+                            span.classList.add('incorrect');
+                        } else {
+                            span.classList.add('correct');
+                        }
+                    } else if (idx === currentWordIndex) {
+                        span.classList.add('current');
+                    } else {
+                        span.classList.add('pending');
+                    }
+                });
+
+                scrollTextDisplay();
+
+                if (inputValue.endsWith(' ') && inputValue.trim().length > 0) {
+                    completeWord(inputValue);
+                }
+            }
+
+            /**
+             * Takipsiz ekranda yalnızca kaydırma + kelime tamamlama (görsel takip yok)
+             * @param {string} inputValue - Input alanındaki mevcut değer
+             */
+            function processInputTakipsizMode(inputValue) {
+                scrollTextDisplay();
+
+                if (inputValue.endsWith(' ') && inputValue.trim().length > 0) {
+                    completeWord(inputValue);
+                }
+            }
+
+            /**
+             * Kullanıcı girişini işler
+             * @param {string} inputValue - Input alanındaki mevcut değer
+             */
+            function processInput(inputValue) {
+                if (screenMode === 'kelime') {
+                    processInputWordMode(inputValue);
+                } else if (screenMode === 'takipsiz') {
+                    processInputTakipsizMode(inputValue);
+                } else {
+                    processInputLetterMode(inputValue);
+                }
             }
 
             /**
@@ -671,20 +819,27 @@
                     });
                 }
 
-                // Karakter durumlarını kalıcı olarak işaretle
-                const chars = textDisplay.querySelectorAll('.char');
-                for (let i = wordStartIndex; i < wordStartIndex + expectedWord.length + 1 && i < chars.length; i++) {
-                    if (i < wordStartIndex + Math.min(typedWord.length, expectedWord.length)) {
-                        const typedIdx = i - wordStartIndex;
-                        if (typedWord[typedIdx] === expectedWord[typedIdx]) {
+                // Karakter/kelime durumlarını kalıcı olarak işaretle (takipsiz ekranda yok)
+                if (screenMode === 'kelime') {
+                    const wordSpan = textDisplay.querySelector(`.word[data-word-index="${currentWordIndex}"]`);
+                    if (wordSpan) {
+                        wordSpan.dataset.status = isCorrect ? 'correct' : 'incorrect';
+                    }
+                } else if (screenMode === 'harf') {
+                    const chars = textDisplay.querySelectorAll('.char');
+                    for (let i = wordStartIndex; i < wordStartIndex + expectedWord.length + 1 && i < chars.length; i++) {
+                        if (i < wordStartIndex + Math.min(typedWord.length, expectedWord.length)) {
+                            const typedIdx = i - wordStartIndex;
+                            if (typedWord[typedIdx] === expectedWord[typedIdx]) {
+                                chars[i].dataset.status = 'correct';
+                            } else {
+                                chars[i].dataset.status = 'incorrect';
+                            }
+                        } else if (i === wordStartIndex + expectedWord.length) {
                             chars[i].dataset.status = 'correct';
                         } else {
                             chars[i].dataset.status = 'incorrect';
                         }
-                    } else if (i === wordStartIndex + expectedWord.length) {
-                        chars[i].dataset.status = 'correct';
-                    } else {
-                        chars[i].dataset.status = 'incorrect';
                     }
                 }
 

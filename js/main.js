@@ -160,6 +160,13 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ============================================ */
     if (window.YaziyoPageStatus) {
         window.YaziyoPageStatus.applyToNavbar();
+        // Supabase'deki kalıcı durumu çek (localStorage tek başına kaybolabiliyordu)
+        if (typeof window.YaziyoPageStatus.syncFromRemote === 'function') {
+            window.YaziyoPageStatus.syncFromRemote().then(() => {
+                window.YaziyoPageStatus.applyToNavbar();
+                window.YaziyoSiteNavbar?.syncNavActive?.();
+            }).catch(() => { /* ignore */ });
+        }
     }
 
 });

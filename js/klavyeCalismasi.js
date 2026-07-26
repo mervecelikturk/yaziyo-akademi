@@ -811,7 +811,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerContainer = document.getElementById('timer-container');
     const finishWorkspaceBtn = document.getElementById('finish-workspace-btn');
     const closeWorkspaceBtn = document.getElementById('close-workspace-btn');
+    const exam2AdayNo = document.getElementById('exam2-aday-no');
+    const exam2TimerDisplay = document.getElementById('exam2-timer-display');
+    const exam2FinishBtn = document.getElementById('exam2-finish-btn');
+    const exam3AdayNo = document.getElementById('exam3-aday-no');
+    const exam3TimerDisplay = document.getElementById('exam3-timer-display');
+    const exam3FinishBtn = document.getElementById('exam3-finish-btn');
     const workspaceTitle = document.getElementById('workspace-title');
+    const textDisplayCard = document.getElementById('text-display-card');
     const defaultInputPlaceholder = userInput?.getAttribute('placeholder') || 'Yazmaya başlayın...';
 
     let isTestRunning = false;
@@ -821,14 +828,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let countdownTimeoutIds = [];
     let workspaceSessionId = 0;
     let currentActiveText = ""; // Kıyaslama (Diff) için asıl metin
-    let currentMode = "app"; // app, exam, exam2, practice
+    let currentMode = "app"; // app, exam, exam2, exam3, practice
 
     function isExamLikeMode(mode = currentMode) {
-        return mode === 'exam' || mode === 'exam2';
+        return mode === 'exam' || mode === 'exam2' || mode === 'exam3';
+    }
+
+    function isSplitExamMode(mode = currentMode) {
+        return mode === 'exam2' || mode === 'exam3';
+    }
+
+    function generateAdayNo() {
+        // 11 haneli rastgele aday numarası (sol sıfır dolgulu)
+        let n = '';
+        for (let i = 0; i < 11; i++) {
+            n += Math.floor(Math.random() * 10).toString();
+        }
+        return n;
     }
 
     function applyWorkspaceModeUI() {
-        workspaceScreen.classList.remove('practice-mode', 'exam2-mode');
+        workspaceScreen.classList.remove('practice-mode', 'exam2-mode', 'exam3-mode');
         if (liveStats) liveStats.classList.add('hidden');
         if (workspaceTitle) workspaceTitle.classList.remove('hidden');
         toggleTimerBtn?.classList.add('hidden');
@@ -850,10 +870,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentMode === 'exam2') {
             workspaceScreen.classList.add('exam2-mode');
             if (workspaceTitle) workspaceTitle.classList.add('hidden');
-            toggleTimerBtn?.classList.remove('hidden');
-            finishWorkspaceBtn?.classList.remove('hidden');
             closeWorkspaceBtn?.classList.add('hidden');
-            if (userInput) userInput.placeholder = '';
+            if (exam2AdayNo) exam2AdayNo.textContent = generateAdayNo();
+            if (userInput) userInput.placeholder = 'Yazı alanı';
+        }
+
+        if (currentMode === 'exam3') {
+            workspaceScreen.classList.add('exam3-mode');
+            if (workspaceTitle) workspaceTitle.classList.add('hidden');
+            closeWorkspaceBtn?.classList.add('hidden');
+            if (exam3AdayNo) exam3AdayNo.textContent = generateAdayNo();
+            if (userInput) userInput.placeholder = 'Yazı alanı';
         }
 
         if (currentMode === 'practice' || currentMode === 'app') {
@@ -1072,7 +1099,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let processedText = rawText.trim().replace(/\s+/g, " ");
         wordsArray = processedText.split(' ').filter(w => w.length > 0);
 
-        if (currentMode === 'exam2') {
+        if (isSplitExamMode()) {
             textContentDiv.textContent = processedText;
         } else {
             let domHtml = '';
@@ -1093,21 +1120,66 @@ document.addEventListener('DOMContentLoaded', () => {
         return (currentActiveText || '').trim().replace(/\s+/g, ' ');
     }
 
+    function getTypingScrollOptions() {
+        return {
+            referenceEl: textContentDiv,
+            referenceContainer: document.getElementById('text-display-card'),
+            referenceFullText: getDisplayText(),
+            userInputEl: userInput,
+            typedLen: userInput?.value?.length || 0,
+            referenceMoveMode: 'transform',
+        };
+    }
+
+    /** Yazım alanını sanal klavye / kısa viewport üzerinde görünür tut */
+    function ensureTypingInputVisible() {
+        const content = document.getElementById('workspace-content');
+        if (!content || !userInput || content.classList.contains('hidden')) return;
+
+        const vv = window.visualViewport;
+        const viewTop = vv ? vv.offsetTop : 0;
+        const viewBottom = vv ? vv.offsetTop + vv.height : window.innerHeight;
+        const rect = userInput.getBoundingClientRect();
+
+        if (rect.bottom > viewBottom - 12) {
+            content.scrollTop += rect.bottom - viewBottom + 20;
+        } else if (rect.top < viewTop + 8) {
+            content.scrollTop -= viewTop + 8 - rect.top;
+        }
+    }
+
     function syncTypingScroll() {
         const scrollLib = window.YaziyoTypingScroll;
         if (!scrollLib || !userInput) return;
+
         const run = () => {
-            scrollLib.syncTypingPanels({
-                referenceEl: textContentDiv,
-                referenceContainer: document.getElementById('text-display-card'),
-                referenceFullText: getDisplayText(),
-                userInputEl: userInput,
-                typedLen: userInput.value.length,
-                referenceMoveMode: 'transform',
-            });
+            // Her tekrarında güncel typedLen alınır (tablet scrollHeight gecikmesi)
+            scrollLib.syncTypingPanels(getTypingScrollOptions());
+            ensureTypingInputVisible();
         };
-        // scrollHeight değerin DOM'a yansıması için bir kare bekle
-        requestAnimationFrame(run);
+
+        requestAnimationFrame(() => requestAnimationFrame(run));
+        setTimeout(run, 32);
+        setTimeout(run, 120);
+    }
+
+    function updateVisualViewportHeight() {
+        const h = window.visualViewport?.height || window.innerHeight || 0;
+        if (h > 0) {
+            document.documentElement.style.setProperty('--yaziyo-vvh', `${h * 0.01}px`);
+        }
+    }
+
+    updateVisualViewportHeight();
+    window.addEventListener('resize', updateVisualViewportHeight);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', () => {
+            updateVisualViewportHeight();
+            if (isTestRunning) syncTypingScroll();
+        });
+        window.visualViewport.addEventListener('scroll', () => {
+            if (isTestRunning) ensureTypingInputVisible();
+        });
     }
 
     /** BAŞLA BUTONU TIKLANDIĞINDA */
@@ -1232,6 +1304,9 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.focus();
         isTestRunning = true;
 
+        // Grid/layout oturduktan sonra kaydırma ölçümlerini yenile
+        syncTypingScroll();
+
         import('./lib/keyPressTracker.js').then(({ startKeyPressSession }) => {
             const kbType = document.getElementById('keyboard-type-select')?.value || 'q';
             startKeyPressSession(kbType);
@@ -1263,13 +1338,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateTimerDisplay() {
         const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
         const s = (timeRemaining % 60).toString().padStart(2, '0');
-        timerDisplay.textContent = m + ":" + s;
+        const formatted = m + ":" + s;
+        if (timerDisplay) timerDisplay.textContent = formatted;
+        if (exam2TimerDisplay) exam2TimerDisplay.textContent = formatted;
+        if (exam3TimerDisplay) exam3TimerDisplay.textContent = formatted;
 
-        if (timeRemaining <= 10 && timeRemaining > 0) {
-            timerDisplay.classList.add('timer-warning');
-        } else {
-            timerDisplay.classList.remove('timer-warning');
-        }
+        const warn = timeRemaining <= 10 && timeRemaining > 0;
+        timerDisplay?.classList.toggle('timer-warning', warn);
+        exam2TimerDisplay?.classList.toggle('timer-warning', warn);
+        exam3TimerDisplay?.classList.toggle('timer-warning', warn);
     }
 
     /** CANLI TAKİP VE RENKLİ VURGU (Çalışma Modu) */
@@ -1616,10 +1693,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isTestRunning && e.key) {
             import('./lib/keyPressTracker.js').then((m) => m.recordKeyPress(e.key));
         }
+        // Kopyala / yapıştır / kes engeli
+        if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key.toLowerCase())) {
+            e.preventDefault();
+            return;
+        }
         if (e.key === 'Escape' && isTestRunning) {
             e.preventDefault();
             endTest();
         }
+    });
+
+    // Metin / yazım alanında kopyala-yapıştır yok
+    ['copy', 'cut', 'paste', 'contextmenu', 'drop'].forEach((evt) => {
+        userInput?.addEventListener(evt, (e) => e.preventDefault());
+        textDisplayCard?.addEventListener(evt, (e) => e.preventDefault());
+        textContentDiv?.addEventListener(evt, (e) => e.preventDefault());
     });
 
     // Kapatma / bitir butonları ESC ile aynı işi yapar
@@ -1629,6 +1718,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (finishWorkspaceBtn) {
         finishWorkspaceBtn.addEventListener('click', closeWorkspace);
+    }
+
+    if (exam2FinishBtn) {
+        exam2FinishBtn.addEventListener('click', closeWorkspace);
+    }
+
+    if (exam3FinishBtn) {
+        exam3FinishBtn.addEventListener('click', closeWorkspace);
     }
 
     // ESC Tuşu ile herhangi bir durumda çıkış (Global listener)
