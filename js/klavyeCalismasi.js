@@ -824,7 +824,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let isTestRunning = false;
     let timerInterval = null;
     let timeRemaining = 0;
-    let initialTimeVal = 0; // Testin başladığı süre (saniye cinsinden)
+    let initialTimeVal = 0; // Sabit süre modunda seçilen toplam süre (sn)
+    let timeElapsed = 0; // Geçen süre (sn) — Süre modunda ileri akar
+    let isCountUpMode = false; // "Süre" seçeneği: sayaç ileri doğru
     let countdownTimeoutIds = [];
     let workspaceSessionId = 0;
     let currentActiveText = ""; // Kıyaslama (Diff) için asıl metin
@@ -1197,7 +1199,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = categorySelect.value;
         const group = groupSelect.value;
         const textIndex = textSelect.value;
-        const timeVal = parseInt(document.getElementById('time-select').value);
+        const timeSelectRaw = document.getElementById('time-select')?.value;
+        isCountUpMode = timeSelectRaw === 'sure';
+        const timeVal = isCountUpMode ? 0 : parseInt(timeSelectRaw, 10);
         currentMode = document.getElementById('display-mode-select').value;
 
         const catDef = CATEGORIES[category];
@@ -1218,6 +1222,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        if (!isCountUpMode && (!Number.isFinite(timeVal) || timeVal <= 0)) {
+            showTextWarningModal('Lütfen geçerli bir süre seçiniz.');
+            return;
+        }
+
         currentActiveText = textEntry.text;
         
         originalWordsForSession = currentActiveText.trim().split(/\s+/).filter(w => w.length > 0);
@@ -1234,8 +1243,14 @@ document.addEventListener('DOMContentLoaded', () => {
         wrongKeys = 0;
         userInput.value = "";
         userInput.readOnly = true;
-        timeRemaining = timeVal;
-        initialTimeVal = timeVal;
+        timeElapsed = 0;
+        if (isCountUpMode) {
+            timeRemaining = 0;
+            initialTimeVal = 0;
+        } else {
+            timeRemaining = timeVal;
+            initialTimeVal = timeVal;
+        }
         updateTimerDisplay();
 
         applyWorkspaceModeUI();
@@ -1328,25 +1343,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleTick() {
         if (!isTestRunning) return;
+
+        if (isCountUpMode) {
+            timeElapsed++;
+            updateTimerDisplay();
+            return;
+        }
+
         timeRemaining--;
+        timeElapsed = Math.max(0, initialTimeVal - timeRemaining);
         updateTimerDisplay();
         if (timeRemaining <= 0) {
             endTest();
         }
     }
 
+    function formatTimerSeconds(totalSeconds) {
+        const safe = Math.max(0, totalSeconds | 0);
+        const m = Math.floor(safe / 60).toString().padStart(2, '0');
+        const s = (safe % 60).toString().padStart(2, '0');
+        return m + ':' + s;
+    }
+
     function updateTimerDisplay() {
-        const m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
-        const s = (timeRemaining % 60).toString().padStart(2, '0');
-        const formatted = m + ":" + s;
+        const shown = isCountUpMode ? timeElapsed : timeRemaining;
+        const formatted = formatTimerSeconds(shown);
         if (timerDisplay) timerDisplay.textContent = formatted;
         if (exam2TimerDisplay) exam2TimerDisplay.textContent = formatted;
         if (exam3TimerDisplay) exam3TimerDisplay.textContent = formatted;
 
-        const warn = timeRemaining <= 10 && timeRemaining > 0;
+        // Uyarı yalnızca geri sayımda son 10 sn
+        const warn = !isCountUpMode && timeRemaining <= 10 && timeRemaining > 0;
         timerDisplay?.classList.toggle('timer-warning', warn);
         exam2TimerDisplay?.classList.toggle('timer-warning', warn);
         exam3TimerDisplay?.classList.toggle('timer-warning', warn);
+    }
+
+    function getElapsedSeconds() {
+        if (isCountUpMode) return Math.max(0, timeElapsed);
+        return Math.max(0, initialTimeVal - timeRemaining);
     }
 
     /** CANLI TAKİP VE RENKLİ VURGU (Çalışma Modu) */
@@ -1445,13 +1480,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         stopBackgroundAudio();
 
-        const timeElapsedSecond = initialTimeVal - timeRemaining;
+        const timeElapsedSecond = getElapsedSeconds();
         const timeElapsedMinute = timeElapsedSecond / 60;
 
         const isImlasiz = isImlasizMode();
         const originalWords = originalWordsForSession;
         const typedWords = parseWordsFromInput(userInput.value);
-        const incompleteLastWord = timeRemaining <= 0 &&
+        // Sabit sürede süre bitince yarım kalan son kelime; Süre modunda yalnızca manuel bitiş
+        const incompleteLastWord = !isCountUpMode && timeRemaining <= 0 &&
             isIncompleteLastWord(originalWords, typedWords, isImlasiz);
         const examOptions = { incompleteLastWord };
 
@@ -1531,8 +1567,9 @@ document.addEventListener('DOMContentLoaded', () => {
             mistakesSection.classList.add('hidden');
         }
 
-        const timeElapsedSecondFinal = initialTimeVal - timeRemaining;
-        const gecerli3dk = initialTimeVal === KLAVYE_3DK_SURE &&
+        const timeElapsedSecondFinal = timeElapsedSecond;
+        const gecerli3dk = !isCountUpMode &&
+            initialTimeVal === KLAVYE_3DK_SURE &&
             timeRemaining === 0 &&
             timeElapsedSecondFinal >= KLAVYE_3DK_SURE;
 
@@ -1612,7 +1649,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkUserGoalsAfterPractice(correctWordCount) {
         if (!window.yaziyoSupabase) return;
-        const sureDakika = Math.round(initialTimeVal / 60);
+        const sureDakika = Math.max(1, Math.round(getElapsedSeconds() / 60));
         try {
             const { checkGoalCompletion } = await import('./userGoals.js');
             const { onGoalsCompleted } = await import('./notifications.js');
