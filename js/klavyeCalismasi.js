@@ -850,7 +850,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyWorkspaceModeUI() {
-        workspaceScreen.classList.remove('practice-mode', 'exam2-mode', 'exam3-mode');
+        workspaceScreen.classList.remove('practice-mode', 'exam-mode', 'exam2-mode', 'exam3-mode');
         if (liveStats) liveStats.classList.add('hidden');
         if (workspaceTitle) workspaceTitle.classList.remove('hidden');
         toggleTimerBtn?.classList.add('hidden');
@@ -866,6 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (currentMode === 'exam') {
+            workspaceScreen.classList.add('exam-mode');
             if (workspaceTitle) workspaceTitle.classList.add('hidden');
         }
 
@@ -1034,6 +1035,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const restartBtn = document.getElementById('restart-btn');
     const saveResultBtn = document.getElementById('save-result-btn');
     const saveToast = document.getElementById('save-toast');
+    let recordCelebrationToken = 0;
 
     const textWarningModal = document.getElementById('text-warning-modal');
     const textWarningPanel = document.getElementById('text-warning-panel');
@@ -1601,6 +1603,86 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateSaveButtonState();
         checkUserGoalsAfterPractice(netWords);
+        void revealResultsWithOptionalCelebration(gecerli3dk, netWords);
+    }
+
+    function resetRecordCelebrationUI() {
+        const celebration = document.getElementById('record-celebration');
+        const panel = document.getElementById('result-panel');
+        if (celebration) {
+            celebration.classList.add('hidden');
+            celebration.classList.remove('is-active', 'is-leaving');
+            celebration.style.opacity = '';
+            celebration.style.transform = '';
+        }
+        if (panel) {
+            panel.classList.remove('is-waiting', 'is-entering', 'hidden');
+        }
+    }
+
+    async function isNew3dkWordRecord(netWords) {
+        if (!window.yaziyoSupabase || !(netWords > 0)) return false;
+        try {
+            const { isUserLoggedIn, loadUserStats } = await import('./userStats.js');
+            if (!await isUserLoggedIn(window.yaziyoSupabase)) return false;
+            const { data: { session } } = await window.yaziyoSupabase.auth.getSession();
+            const userId = session?.user?.id;
+            if (!userId) return false;
+            const stats = await loadUserStats(window.yaziyoSupabase, userId);
+            const prev = Number(stats?.en_yuksek_3dk_kelime) || 0;
+            return netWords > prev;
+        } catch (err) {
+            console.warn('3 dk rekor kontrolü atlandı:', err);
+            return false;
+        }
+    }
+
+    function waitMs(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function revealResultsWithOptionalCelebration(gecerli3dk, netWords) {
+        const celebration = document.getElementById('record-celebration');
+        const panel = document.getElementById('result-panel');
+        const wordsEl = document.getElementById('record-celebration-words');
+        const token = ++recordCelebrationToken;
+
+        resetRecordCelebrationUI();
+
+        const showPanel = () => {
+            if (token !== recordCelebrationToken || !panel) return;
+            panel.classList.remove('is-waiting', 'hidden');
+            panel.classList.remove('is-entering');
+            void panel.offsetWidth;
+            panel.classList.add('is-entering');
+        };
+
+        let isRecord = false;
+        if (gecerli3dk) {
+            if (panel) panel.classList.add('is-waiting');
+            isRecord = await isNew3dkWordRecord(netWords);
+            if (token !== recordCelebrationToken) return;
+        }
+
+        if (isRecord && celebration) {
+            if (wordsEl) wordsEl.textContent = String(netWords);
+            celebration.classList.remove('hidden', 'is-leaving');
+            void celebration.offsetWidth;
+            celebration.classList.add('is-active');
+
+            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            await waitMs(reducedMotion ? 900 : 2800);
+            if (token !== recordCelebrationToken) return;
+
+            celebration.classList.add('is-leaving');
+            await waitMs(reducedMotion ? 120 : 400);
+            if (token !== recordCelebrationToken) return;
+
+            celebration.classList.add('hidden');
+            celebration.classList.remove('is-active', 'is-leaving');
+        }
+
+        showPanel();
     }
 
     async function updateSaveButtonState() {
@@ -1670,6 +1752,8 @@ document.addEventListener('DOMContentLoaded', () => {
     endTestBtn.addEventListener('click', endTest);
 
     function closeResultModal() {
+        recordCelebrationToken += 1;
+        resetRecordCelebrationUI();
         resultModal.classList.add('hidden');
         const workspaceContent = document.getElementById('workspace-content');
         if (workspaceContent) workspaceContent.classList.add('hidden'); // Kapandığında tekrar gizli kalsın
