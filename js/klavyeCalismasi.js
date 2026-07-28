@@ -1035,7 +1035,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const restartBtn = document.getElementById('restart-btn');
     const saveResultBtn = document.getElementById('save-result-btn');
     const saveToast = document.getElementById('save-toast');
-    let recordCelebrationToken = 0;
 
     const textWarningModal = document.getElementById('text-warning-modal');
     const textWarningPanel = document.getElementById('text-warning-panel');
@@ -1599,25 +1598,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         workspaceScreen.classList.add('hidden');
         document.body.style.overflow = "auto";
+        setResultRecordTitle(false);
         resultModal.classList.remove('hidden');
 
         updateSaveButtonState();
         checkUserGoalsAfterPractice(netWords);
-        void revealResultsWithOptionalCelebration(gecerli3dk, netWords);
+        if (gecerli3dk) {
+            void markResultTitleIfRecord(netWords);
+        }
     }
 
-    function resetRecordCelebrationUI() {
-        const celebration = document.getElementById('record-celebration');
-        const panel = document.getElementById('result-panel');
-        if (celebration) {
-            celebration.classList.add('hidden');
-            celebration.classList.remove('is-active', 'is-leaving');
-            celebration.style.opacity = '';
-            celebration.style.transform = '';
-        }
-        if (panel) {
-            panel.classList.remove('is-waiting', 'is-entering', 'hidden');
-        }
+    function setResultRecordTitle(isRecord) {
+        document.getElementById('result-record-trophy')?.classList.toggle('hidden', !isRecord);
+        document.getElementById('result-record-label')?.classList.toggle('hidden', !isRecord);
     }
 
     async function isNew3dkWordRecord(netWords) {
@@ -1637,52 +1630,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function waitMs(ms) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
-    async function revealResultsWithOptionalCelebration(gecerli3dk, netWords) {
-        const celebration = document.getElementById('record-celebration');
-        const panel = document.getElementById('result-panel');
-        const wordsEl = document.getElementById('record-celebration-words');
-        const token = ++recordCelebrationToken;
-
-        resetRecordCelebrationUI();
-
-        const showPanel = () => {
-            if (token !== recordCelebrationToken || !panel) return;
-            panel.classList.remove('is-waiting', 'hidden');
-            panel.classList.remove('is-entering');
-            void panel.offsetWidth;
-            panel.classList.add('is-entering');
-        };
-
-        let isRecord = false;
-        if (gecerli3dk) {
-            if (panel) panel.classList.add('is-waiting');
-            isRecord = await isNew3dkWordRecord(netWords);
-            if (token !== recordCelebrationToken) return;
+    async function markResultTitleIfRecord(netWords) {
+        if (!resultModal || resultModal.classList.contains('hidden')) return;
+        const isRecord = await isNew3dkWordRecord(netWords);
+        if (!resultModal.classList.contains('hidden') && isRecord) {
+            setResultRecordTitle(true);
         }
-
-        if (isRecord && celebration) {
-            if (wordsEl) wordsEl.textContent = String(netWords);
-            celebration.classList.remove('hidden', 'is-leaving');
-            void celebration.offsetWidth;
-            celebration.classList.add('is-active');
-
-            const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            await waitMs(reducedMotion ? 900 : 2800);
-            if (token !== recordCelebrationToken) return;
-
-            celebration.classList.add('is-leaving');
-            await waitMs(reducedMotion ? 120 : 400);
-            if (token !== recordCelebrationToken) return;
-
-            celebration.classList.add('hidden');
-            celebration.classList.remove('is-active', 'is-leaving');
-        }
-
-        showPanel();
     }
 
     async function updateSaveButtonState() {
@@ -1752,8 +1705,7 @@ document.addEventListener('DOMContentLoaded', () => {
     endTestBtn.addEventListener('click', endTest);
 
     function closeResultModal() {
-        recordCelebrationToken += 1;
-        resetRecordCelebrationUI();
+        setResultRecordTitle(false);
         resultModal.classList.add('hidden');
         const workspaceContent = document.getElementById('workspace-content');
         if (workspaceContent) workspaceContent.classList.add('hidden'); // Kapandığında tekrar gizli kalsın

@@ -850,201 +850,6 @@
                 font-size: 0.875rem;
             }
         }
-
-        /* 3 dk rekor kupa animasyonu */
-        .kc-record-celebration {
-            position: absolute;
-            inset: 0;
-            z-index: 40;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: none;
-        }
-
-        .kc-record-celebration.hidden {
-            display: none !important;
-        }
-
-        .kc-record-glow {
-            position: absolute;
-            width: min(420px, 70vw);
-            height: min(420px, 70vw);
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(217, 119, 6, 0.35) 0%, rgba(217, 119, 6, 0.08) 45%, transparent 70%);
-            animation: kcRecordGlow 2.2s ease-in-out infinite;
-        }
-
-        .kc-record-rays {
-            position: absolute;
-            width: min(480px, 80vw);
-            height: min(480px, 80vw);
-            border-radius: 50%;
-            background:
-                conic-gradient(from 0deg,
-                    transparent 0deg,
-                    rgba(217, 119, 6, 0.12) 20deg,
-                    transparent 40deg,
-                    rgba(245, 158, 11, 0.1) 60deg,
-                    transparent 80deg,
-                    rgba(217, 119, 6, 0.12) 100deg,
-                    transparent 120deg,
-                    rgba(245, 158, 11, 0.1) 140deg,
-                    transparent 160deg,
-                    rgba(217, 119, 6, 0.12) 180deg,
-                    transparent 200deg,
-                    rgba(245, 158, 11, 0.1) 220deg,
-                    transparent 240deg,
-                    rgba(217, 119, 6, 0.12) 260deg,
-                    transparent 280deg,
-                    rgba(245, 158, 11, 0.1) 300deg,
-                    transparent 320deg,
-                    rgba(217, 119, 6, 0.12) 340deg,
-                    transparent 360deg);
-            animation: kcRecordSpin 8s linear infinite;
-            opacity: 0;
-        }
-
-        .kc-record-celebration.is-active .kc-record-rays {
-            opacity: 1;
-            transition: opacity 0.5s ease;
-        }
-
-        .kc-record-inner {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            padding: 1.5rem;
-        }
-
-        .kc-record-trophy-wrap {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1.25rem;
-        }
-
-        .kc-record-trophy {
-            font-size: clamp(4.5rem, 18vw, 6.5rem);
-            color: #D97706;
-            filter: drop-shadow(0 8px 24px rgba(217, 119, 6, 0.45));
-            transform: scale(0) rotate(-28deg);
-            opacity: 0;
-        }
-
-        .kc-record-celebration.is-active .kc-record-trophy {
-            animation:
-                kcTrophyPop 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards,
-                kcTrophyFloat 2s ease-in-out 0.85s infinite;
-        }
-
-        .kc-record-eyebrow {
-            font-family: Inter, system-ui, sans-serif;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: rgba(245, 158, 11, 0.9);
-            margin-bottom: 0.4rem;
-            opacity: 0;
-            transform: translateY(12px);
-        }
-
-        .kc-record-title {
-            font-family: Poppins, system-ui, sans-serif;
-            font-weight: 800;
-            font-size: clamp(1.75rem, 6vw, 2.5rem);
-            color: #F9FAFB;
-            margin-bottom: 0.5rem;
-            opacity: 0;
-            transform: translateY(14px);
-        }
-
-        .kc-record-words {
-            font-family: Inter, system-ui, sans-serif;
-            font-size: clamp(1rem, 3.5vw, 1.25rem);
-            color: rgba(249, 250, 251, 0.85);
-            opacity: 0;
-            transform: translateY(14px);
-        }
-
-        .kc-record-words span {
-            font-family: Poppins, system-ui, sans-serif;
-            font-weight: 800;
-            color: #D97706;
-        }
-
-        .kc-record-celebration.is-active .kc-record-eyebrow {
-            animation: kcRecordTextIn 0.55s ease 0.35s forwards;
-        }
-
-        .kc-record-celebration.is-active .kc-record-title {
-            animation: kcRecordTextIn 0.55s ease 0.5s forwards;
-        }
-
-        .kc-record-celebration.is-active .kc-record-words {
-            animation: kcRecordTextIn 0.55s ease 0.65s forwards;
-        }
-
-        .kc-record-celebration.is-leaving {
-            animation: kcRecordFadeOut 0.4s ease forwards;
-        }
-
-        #result-panel.is-waiting {
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        #result-panel.is-entering {
-            animation: kcResultPanelIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        @keyframes kcTrophyPop {
-            0% { transform: scale(0) rotate(-28deg); opacity: 0; }
-            70% { transform: scale(1.12) rotate(4deg); opacity: 1; }
-            100% { transform: scale(1) rotate(0); opacity: 1; }
-        }
-
-        @keyframes kcTrophyFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        @keyframes kcRecordGlow {
-            0%, 100% { transform: scale(1); opacity: 0.85; }
-            50% { transform: scale(1.08); opacity: 1; }
-        }
-
-        @keyframes kcRecordSpin {
-            to { transform: rotate(360deg); }
-        }
-
-        @keyframes kcRecordTextIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes kcRecordFadeOut {
-            to { opacity: 0; transform: scale(0.96); }
-        }
-
-        @keyframes kcResultPanelIn {
-            from { opacity: 0; transform: translateY(16px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .kc-record-celebration.is-active .kc-record-trophy,
-            .kc-record-celebration.is-active .kc-record-eyebrow,
-            .kc-record-celebration.is-active .kc-record-title,
-            .kc-record-celebration.is-active .kc-record-words,
-            .kc-record-glow,
-            .kc-record-rays,
-            #result-panel.is-entering {
-                animation: none !important;
-                opacity: 1 !important;
-                transform: none !important;
-            }
-        }
     </style>
 </head>
 
@@ -1581,22 +1386,6 @@
         <!-- Karartma -->
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
 
-        <!-- 3 dk rekor: önce kupa, sonra sonuçlar -->
-        <div id="record-celebration" class="kc-record-celebration hidden" aria-live="polite">
-            <div class="kc-record-glow" aria-hidden="true"></div>
-            <div class="kc-record-rays" aria-hidden="true"></div>
-            <div class="kc-record-inner">
-                <div class="kc-record-trophy-wrap">
-                    <i class="fa-solid fa-trophy kc-record-trophy" aria-hidden="true"></i>
-                </div>
-                <p class="kc-record-eyebrow">3 Dakika</p>
-                <h2 class="kc-record-title">Yeni Rekor!</h2>
-                <p class="kc-record-words">
-                    <span id="record-celebration-words">0</span> net kelime
-                </p>
-            </div>
-        </div>
-
         <!-- Modal İçerik -->
         <div id="result-panel" class="relative z-10 flex items-center justify-center min-h-screen p-4">
             <div
@@ -1606,16 +1395,14 @@
                 <div
                     class="sticky top-0 bg-yaziyo-card/95 backdrop-blur-md border-b border-yaziyo-border px-6 py-4 rounded-t-2xl z-10">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="flex items-center justify-center w-10 h-10 rounded-full bg-yaziyo-gold/10 border border-yaziyo-gold/30">
-                                <i class="fa-solid fa-trophy text-yaziyo-gold"></i>
-                            </div>
-                            <h2 class="font-poppins font-bold text-xl sm:text-2xl text-yaziyo-text">Çalışma Sonuçları
+                        <div class="flex items-center gap-3 min-w-0">
+                            <h2 class="font-poppins font-bold text-xl sm:text-2xl text-yaziyo-text flex items-center gap-2 min-w-0 flex-wrap">
+                                <i id="result-record-trophy" class="fa-solid fa-trophy text-yaziyo-gold text-sm sm:text-base hidden shrink-0" aria-hidden="true"></i>
+                                <span>Çalışma Sonuçları<span id="result-record-label" class="hidden"> (rekor çalışma)</span></span>
                             </h2>
                         </div>
                         <button id="close-modal-btn"
-                            class="text-yaziyo-text-secondary hover:text-yaziyo-text p-2 rounded-lg hover:bg-yaziyo-bg transition-all duration-200">
+                            class="text-yaziyo-text-secondary hover:text-yaziyo-text p-2 rounded-lg hover:bg-yaziyo-bg transition-all duration-200 shrink-0">
                             <i class="fa-solid fa-xmark text-xl"></i>
                         </button>
                     </div>
