@@ -78,7 +78,6 @@ function showToast(msg, type = 'success') {
 function showLoggedIn(user) {
     document.documentElement.classList.add('is-logged-in');
     els.authGate?.classList.add('hidden');
-    els.packageGate?.classList.add('hidden');
     els.main?.classList.remove('hidden');
     const name = user?.user_metadata?.site_full_name
         || user?.user_metadata?.full_name
@@ -91,14 +90,6 @@ function showLoggedIn(user) {
 function showLoggedOut() {
     document.documentElement.classList.remove('is-logged-in');
     els.authGate?.classList.remove('hidden');
-    els.packageGate?.classList.add('hidden');
-    els.main?.classList.add('hidden');
-}
-
-function showPackageGate() {
-    document.documentElement.classList.add('is-logged-in');
-    els.authGate?.classList.add('hidden');
-    els.packageGate?.classList.remove('hidden');
     els.main?.classList.add('hidden');
 }
 
@@ -608,7 +599,6 @@ async function indirBelge(id) {
 
 function cacheElements() {
     els.authGate = document.getElementById('eg-auth-gate');
-    els.packageGate = document.getElementById('eg-package-gate');
     els.main = document.getElementById('eg-main-content');
     els.menuToggle = document.getElementById('eg-menu-toggle');
     els.menuList = document.getElementById('eg-menu-list');
@@ -759,7 +749,7 @@ async function init() {
 
     const hasPackage = await userHasPurchasedPaket(supabase);
     if (!hasPackage) {
-        showPackageGate();
+        window.location.replace('../egitim-paketleri/');
         return;
     }
 
