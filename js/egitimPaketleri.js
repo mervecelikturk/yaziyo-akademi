@@ -4,6 +4,9 @@
 import {
     fetchPublishedPaketler,
     isTableMissingError,
+    isPaketSoldOut,
+    purchasePaket,
+    ratingStarsHtml,
     BADGE_OPTIONS
 } from './lib/egitimPaketleriApi.js';
 
@@ -125,6 +128,7 @@ function renderFeatured() {
                     <i class="fa-solid fa-fire"></i> Öne Çıkan Paket
                 </span>
                 <h2 class="font-poppins font-bold text-2xl sm:text-3xl text-light-text dark:text-dark-text mb-3">${escapeHtml(p.title)}</h2>
+                ${ratingStarsHtml(p.ratingAvg, p.ratingCount, { size: 'lg' }) ? `<div class="mb-3">${ratingStarsHtml(p.ratingAvg, p.ratingCount, { size: 'lg' })}</div>` : ''}
                 <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6 leading-relaxed">${escapeHtml(p.description)}</p>
                 <ul class="space-y-2 mb-8">
                     ${(p.features || []).slice(0, 5).map((f) => `
@@ -176,6 +180,7 @@ function renderGrid() {
                 <span class="text-[10px] font-bold uppercase text-light-text-secondary">${escapeHtml(p.category)}</span>
             </div>
             <h3 class="font-poppins font-bold text-lg text-light-text dark:text-dark-text mb-2 line-clamp-2">${escapeHtml(p.title)}</h3>
+            ${ratingStarsHtml(p.ratingAvg, p.ratingCount) ? `<div class="mb-2">${ratingStarsHtml(p.ratingAvg, p.ratingCount)}</div>` : ''}
             <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary line-clamp-2 mb-4 flex-grow">${escapeHtml(p.description)}</p>
             <ul class="space-y-1.5 mb-4">
                 ${(p.features || []).slice(0, 4).map((f) => `
@@ -238,9 +243,27 @@ function openDrawer(pkg) {
     const drawer = els.drawer;
     if (!drawer || !pkg) return;
 
+    const soldOut = isPaketSoldOut(pkg);
+    const days = pkg.validityDays || 30;
+
     els.drawerTitle.textContent = pkg.title;
     els.drawerDesc.textContent = pkg.description;
     els.drawerPrice.textContent = formatPrice(pkg.price);
+    if (els.drawerRating) {
+        const html = ratingStarsHtml(pkg.ratingAvg, pkg.ratingCount, { size: 'lg' });
+        if (html) {
+            els.drawerRating.innerHTML = `<p class="text-[10px] font-bold uppercase tracking-widest text-yaziyo-gold mb-2">Kullanıcı Değerlendirmesi</p>${html}`;
+            els.drawerRating.classList.remove('hidden');
+        } else {
+            els.drawerRating.innerHTML = '';
+            els.drawerRating.classList.add('hidden');
+        }
+    }
+    if (els.drawerValidity) {
+        els.drawerValidity.textContent = soldOut
+            ? 'Bu paket için kontenjan dolmuştur.'
+            : `Satın alındıktan sonra ${days} gün boyunca geçerlidir.`;
+    }
     els.drawerModules.innerHTML = (pkg.modules || []).length
         ? (pkg.modules || []).map((m) => `
             <li class="flex items-center gap-2 text-sm py-2 border-b border-light-border dark:border-dark-border last:border-0">
@@ -254,16 +277,83 @@ function openDrawer(pkg) {
             </li>`).join('')
         : '<li class="text-sm text-light-text-secondary">Henüz öğrenme hedefi eklenmemiş.</li>';
 
+    els.drawerCta.textContent = 'Satın Al / Başla';
+    delete els.drawerCta.dataset.href;
     if (pkg.contentUrl) {
-        els.drawerCta.textContent = 'Pakete Git';
-        els.drawerCta.dataset.href = pkg.contentUrl;
+        els.drawerCta.dataset.contentUrl = pkg.contentUrl;
     } else {
-        els.drawerCta.textContent = 'Satın Al / Başla';
-        delete els.drawerCta.dataset.href;
+        delete els.drawerCta.dataset.contentUrl;
     }
 
     drawer.classList.add('ep-drawer-open');
     document.body.style.overflow = 'hidden';
+}
+
+function getLoginRedirectUrl() {
+    const next = encodeURIComponent(window.location.href);
+    return `../giris-kayit/?redirect=${next}`;
+}
+
+async function handlePurchaseClick() {
+    if (!selectedPackage) return;
+
+    if (isPaketSoldOut(selectedPackage)) {
+        showToast('Şu an aktif değil.', 'error');
+        return;
+    }
+
+    els.drawerCta.disabled = true;
+    const prevLabel = els.drawerCta.textContent;
+    els.drawerCta.textContent = 'İşleniyor...';
+
+    try {
+        const { data, error } = await purchasePaket(selectedPackage.id);
+
+        if (error) {
+            showToast(error.message || 'Satın alma başarısız.', 'error');
+            return;
+        }
+
+        if (!data?.success) {
+            if (data?.code === 'auth') {
+                showToast('Satın almak için giriş yapmalısınız.');
+                setTimeout(() => {
+                    window.location.href = getLoginRedirectUrl();
+                }, 900);
+                return;
+            }
+            showToast(data?.message || 'Şu an aktif değil.', 'error');
+            if (data?.code === 'sold_out' || data?.code === 'inactive') {
+                selectedPackage.salesCount = selectedPackage.maxSales;
+                const idx = PACKAGES.findIndex((p) => p.id === selectedPackage.id);
+                if (idx >= 0) PACKAGES[idx] = { ...PACKAGES[idx], salesCount: PACKAGES[idx].maxSales };
+                if (els.drawerValidity) {
+                    els.drawerValidity.textContent = 'Bu paket için kontenjan dolmuştur.';
+                }
+            }
+            return;
+        }
+
+        selectedPackage.salesCount = (selectedPackage.salesCount || 0) + 1;
+        const idx = PACKAGES.findIndex((p) => p.id === selectedPackage.id);
+        if (idx >= 0) {
+            PACKAGES[idx] = {
+                ...PACKAGES[idx],
+                salesCount: (PACKAGES[idx].salesCount || 0) + 1
+            };
+        }
+
+        const days = data.gecerlilik_gun || selectedPackage.validityDays || 30;
+        showToast(`${selectedPackage.title} satın alındı — ${days} gün geçerli.`);
+
+        const contentUrl = data.icerik_url || selectedPackage.contentUrl || els.drawerCta.dataset.contentUrl;
+        if (contentUrl) {
+            window.open(contentUrl, '_blank', 'noopener');
+        }
+    } finally {
+        els.drawerCta.disabled = false;
+        els.drawerCta.textContent = prevLabel;
+    }
 }
 
 function closeDrawer() {
@@ -333,12 +423,7 @@ function bindEvents() {
     els.drawerClose?.addEventListener('click', closeDrawer);
     els.drawerBackdrop?.addEventListener('click', closeDrawer);
     els.drawerCta?.addEventListener('click', () => {
-        if (!selectedPackage) return;
-        if (els.drawerCta.dataset.href) {
-            window.open(els.drawerCta.dataset.href, '_blank', 'noopener');
-            return;
-        }
-        showToast(`${selectedPackage.title} — ödeme yakında aktif olacak.`);
+        handlePurchaseClick();
     });
 
     document.addEventListener('keydown', (e) => {
@@ -346,13 +431,20 @@ function bindEvents() {
     });
 }
 
-function showToast(msg) {
+function showToast(msg, type = 'success') {
     const t = els.toast;
     if (!t) return;
     t.textContent = msg;
+    t.className = `fixed bottom-6 right-6 z-[130] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-opacity ${
+        type === 'error'
+            ? 'bg-red-500 text-white border border-red-400'
+            : 'bg-yaziyo-card border border-yaziyo-border'
+    }`;
     t.classList.remove('hidden', 'opacity-0');
-    setTimeout(() => t.classList.add('opacity-0'), 2800);
-    setTimeout(() => t.classList.add('hidden'), 3200);
+    clearTimeout(showToast._t1);
+    clearTimeout(showToast._t2);
+    showToast._t1 = setTimeout(() => t.classList.add('opacity-0'), 2800);
+    showToast._t2 = setTimeout(() => t.classList.add('hidden'), 3200);
 }
 
 function showSetupBanner() {
@@ -383,7 +475,9 @@ function cacheElements() {
     els.drawerClose = document.getElementById('ep-drawer-close');
     els.drawerTitle = document.getElementById('ep-drawer-title');
     els.drawerDesc = document.getElementById('ep-drawer-desc');
+    els.drawerRating = document.getElementById('ep-drawer-rating');
     els.drawerPrice = document.getElementById('ep-drawer-price');
+    els.drawerValidity = document.getElementById('ep-drawer-validity');
     els.drawerModules = document.getElementById('ep-drawer-modules');
     els.drawerLearn = document.getElementById('ep-drawer-learn');
     els.drawerCta = document.getElementById('ep-drawer-cta');

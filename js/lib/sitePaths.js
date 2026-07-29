@@ -13,6 +13,8 @@
         'arabaYarisi.html': 'araba-yarisi',
         'becayis.html': 'becayis',
         'egitimPaketleri.html': 'egitim-paketleri',
+        'egitimlerim.html': 'egitimlerim',
+        'adminEgitimlerim.html': 'admin-egitimlerim',
         'girisKayit.html': 'giris-kayit',
         'haberler.html': 'haberler',
         'hizTesti.html': 'hiz-testi',

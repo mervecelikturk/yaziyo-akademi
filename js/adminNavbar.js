@@ -9,12 +9,14 @@
         'sinav-ekle': 'sinav-ekle',
         'admin-haberler': 'admin-haberler',
         'admin-egitim-paketleri': 'admin-egitim-paketleri',
+        'admin-egitimlerim': 'admin-egitimlerim',
         'admin-sozlu-mulakat': 'admin-sozlu-mulakat',
         'admin-mulakat-simulasyonu': 'admin-mulakat-simulasyonu',
         mesajlar: 'mesajlar',
     };
 
     const MULAKAT_PAGES = ['admin-sozlu-mulakat', 'admin-mulakat-simulasyonu', 'admin-mulakatlar'];
+    const EGITIM_PAGES = ['admin-egitim-paketleri', 'admin-egitimlerim', 'admin-egitimler'];
 
     function getPaths() {
         return global.YaziyoPaths || {
@@ -56,6 +58,14 @@
         return MULAKAT_PAGES.includes(active) ? ' active' : '';
     }
 
+    function egitimOpen(active) {
+        return EGITIM_PAGES.includes(active) ? ' open' : '';
+    }
+
+    function egitimParentActive(active) {
+        return EGITIM_PAGES.includes(active) ? ' active' : '';
+    }
+
     function linkSlug(href) {
         if (!href || href.startsWith('javascript')) return '';
         const parts = href.split('?')[0].split('#')[0].replace(/\/+$/, '').split('/').filter(Boolean);
@@ -92,6 +102,17 @@
 
         if (MULAKAT_PAGES.includes(activeKey)) {
             navbar.querySelectorAll('[data-page="admin-mulakatlar"]').forEach((el) => {
+                el.classList.add('active');
+                if (el.classList.contains('mobile-dropdown-trigger')) {
+                    el.classList.add('open');
+                    el.closest('.mobile-dropdown')?.classList.add('open');
+                    el.nextElementSibling?.classList.add('open');
+                }
+            });
+        }
+
+        if (EGITIM_PAGES.includes(activeKey)) {
+            navbar.querySelectorAll('[data-page="admin-egitimler"]').forEach((el) => {
                 el.classList.add('active');
                 if (el.classList.contains('mobile-dropdown-trigger')) {
                     el.classList.add('open');
@@ -189,7 +210,13 @@
                     <li><a href="${p('icerikEkle.html')}" class="nav-link${ac(active, 'icerik-ekle')}" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-1 text-[0.85em]"></i>İçerik Ekle</a></li>
                     <li><a href="${p('sinavEkle.html')}" class="nav-link${ac(active, 'sinav-ekle')}" data-page="sinav-ekle"><i class="fa-solid fa-award mr-1 text-[0.85em]"></i>Sınav Ekle</a></li>
                     <li><a href="${p('adminHaberler.html')}" class="nav-link${ac(active, 'admin-haberler')}" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-1 text-[0.85em]"></i>Haberler</a></li>
-                    <li><a href="${p('adminEgitimPaketleri.html')}" class="nav-link${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-1 text-[0.85em]"></i>Eğitim Paketleri</a></li>
+                    <li class="nav-dropdown">
+                        <button type="button" class="nav-link nav-dropdown-trigger${egitimParentActive(active)}" data-page="admin-egitimler"><i class="fa-solid fa-box-open mr-1 text-[0.85em]"></i>Eğitim Paketleri <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="${p('adminEgitimPaketleri.html')}" class="nav-dropdown-item${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                            <li><a href="${p('adminEgitimlerim.html')}" class="nav-dropdown-item${ac(active, 'admin-egitimlerim')}" data-page="admin-egitimlerim">Eğitimlerim</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-dropdown">
                         <button type="button" class="nav-link nav-dropdown-trigger${mulakatParentActive(active)}" data-page="admin-mulakatlar"><i class="fa-solid fa-microphone-lines mr-1 text-[0.85em]"></i>Mülakatlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">
@@ -214,7 +241,13 @@
                         <li><a href="${p('icerikEkle.html')}" class="mobile-nav-link${ac(active, 'icerik-ekle')}" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-2"></i>İçerik Ekle</a></li>
                         <li><a href="${p('sinavEkle.html')}" class="mobile-nav-link${ac(active, 'sinav-ekle')}" data-page="sinav-ekle"><i class="fa-solid fa-award mr-2"></i>Sınav Ekle</a></li>
                         <li><a href="${p('adminHaberler.html')}" class="mobile-nav-link${ac(active, 'admin-haberler')}" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-2"></i>Haberler</a></li>
-                        <li><a href="${p('adminEgitimPaketleri.html')}" class="mobile-nav-link${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-2"></i>Eğitim Paketleri</a></li>
+                        <li class="mobile-dropdown${egitimOpen(active)}">
+                            <button type="button" class="mobile-nav-link mobile-dropdown-trigger${egitimParentActive(active)} w-full text-left flex items-center justify-between" data-page="admin-egitimler">Eğitim Paketleri <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu${egitimOpen(active)} flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="${p('adminEgitimPaketleri.html')}" class="mobile-nav-link text-[0.8em]${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                                <li><a href="${p('adminEgitimlerim.html')}" class="mobile-nav-link text-[0.8em]${ac(active, 'admin-egitimlerim')}" data-page="admin-egitimlerim">Eğitimlerim</a></li>
+                            </ul>
+                        </li>
                         <li class="mobile-dropdown${mulakatOpen(active)}">
                             <button type="button" class="mobile-nav-link mobile-dropdown-trigger${mulakatParentActive(active)} w-full text-left flex items-center justify-between" data-page="admin-mulakatlar">Mülakatlar <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
                             <ul class="mobile-dropdown-menu${mulakatOpen(active)} flex flex-col gap-1 pl-3 pt-1">

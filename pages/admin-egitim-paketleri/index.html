@@ -104,7 +104,13 @@
                     <li><a href="../icerik-ekle/" class="nav-link" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-1.5 text-[0.85em]"></i>İçerik Ekle</a></li>
                     <li><a href="../sinav-ekle/" class="nav-link" data-page="sinav-ekle"><i class="fa-solid fa-award mr-1.5 text-[0.85em]"></i>Sınav Ekle</a></li>
                     <li><a href="../admin-haberler/" class="nav-link" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-1.5 text-[0.85em]"></i>Haberler</a></li>
-                    <li><a href="../admin-egitim-paketleri/" class="nav-link active" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-1.5 text-[0.85em]"></i>Eğitim Paketleri</a></li>
+                    <li class="nav-dropdown">
+                        <button type="button" class="nav-link nav-dropdown-trigger active" data-page="admin-egitimler"><i class="fa-solid fa-box-open mr-1.5 text-[0.85em]"></i>Eğitim Paketleri <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="../admin-egitim-paketleri/" class="nav-dropdown-item active" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                            <li><a href="../admin-egitimlerim/" class="nav-dropdown-item" data-page="admin-egitimlerim">Eğitimlerim</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-dropdown">
                         <button type="button" class="nav-link nav-dropdown-trigger" data-page="admin-mulakatlar"><i class="fa-solid fa-microphone-lines mr-1.5 text-[0.85em]"></i>Mülakatlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">
@@ -125,7 +131,13 @@
                         <li><a href="../icerik-ekle/" class="mobile-nav-link" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-2"></i>İçerik Ekle</a></li>
                         <li><a href="../sinav-ekle/" class="mobile-nav-link" data-page="sinav-ekle"><i class="fa-solid fa-award mr-2"></i>Sınav Ekle</a></li>
                         <li><a href="../admin-haberler/" class="mobile-nav-link" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-2"></i>Haberler</a></li>
-                        <li><a href="../admin-egitim-paketleri/" class="mobile-nav-link active" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-2"></i>Eğitim Paketleri</a></li>
+                        <li class="mobile-dropdown open">
+                            <button type="button" class="mobile-nav-link mobile-dropdown-trigger active open w-full text-left flex items-center justify-between" data-page="admin-egitimler">Eğitim Paketleri <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu open flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="../admin-egitim-paketleri/" class="mobile-nav-link text-[0.8em] active" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                                <li><a href="../admin-egitimlerim/" class="mobile-nav-link text-[0.8em]" data-page="admin-egitimlerim">Eğitimlerim</a></li>
+                            </ul>
+                        </li>
                         <li><a href="../admin-sozlu-mulakat/" class="mobile-nav-link" data-page="admin-sozlu-mulakat"><i class="fa-solid fa-microphone-lines mr-2"></i>Sözlü Mülakat</a></li>
                         <li><a href="../admin-mulakat-simulasyonu/" class="mobile-nav-link" data-page="admin-mulakat-simulasyonu"><i class="fa-solid fa-user-tie mr-2"></i>Mülakat Simülasyonu</a></li>
                         <li><a href="../mesajlar/" class="mobile-nav-link" data-page="mesajlar"><i class="fa-solid fa-envelope mr-2"></i>Mesajlar</a></li>
@@ -179,6 +191,19 @@
             </div>
         </div>
 
+        <div id="admin-purchase-notifications" class="mb-8 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-bg/30 dark:bg-dark-bg/30 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-sm font-poppins font-bold text-light-text-secondary uppercase tracking-wider">Satış Bildirimleri</h2>
+                    <span id="notif-unread-badge" class="hidden inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-orange-500 text-white text-[10px] font-bold">0</span>
+                </div>
+                <button type="button" id="btn-mark-all-notif-read" class="text-xs font-bold text-yaziyo-gold hover:underline disabled:opacity-40 disabled:no-underline">Tümünü okundu işaretle</button>
+            </div>
+            <div id="admin-notif-list" class="divide-y divide-light-border dark:divide-dark-border max-h-64 overflow-y-auto custom-scrollbar">
+                <p class="px-6 py-8 text-center text-sm text-light-text-secondary">Bildirim yok.</p>
+            </div>
+        </div>
+
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div class="flex flex-col sm:flex-row gap-3 flex-grow max-w-2xl">
                 <div class="relative flex-grow">
@@ -209,6 +234,7 @@
                             <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Başlık</th>
                             <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Kategori</th>
                             <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Fiyat</th>
+                            <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Satış</th>
                             <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary">Durum</th>
                             <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary text-center">Öne Çıkan</th>
                             <th class="px-6 py-4 text-xs font-poppins font-bold uppercase text-light-text-secondary text-right">İşlem</th>
@@ -279,6 +305,30 @@
                         <label for="field-content" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Paket / İçerik Linki</label>
                         <input id="field-content" type="url" class="admin-form-input" placeholder="https://...">
                     </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="field-max-sales" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Maks. Satış Adedi (1–100)</label>
+                        <input id="field-max-sales" type="number" min="1" max="100" value="100" required class="admin-form-input" placeholder="100">
+                        <p class="mt-1 text-[11px] text-light-text-secondary">Bu sayıya ulaşıldığında paket görünür kalır; satın almaya izin verilmez.</p>
+                    </div>
+                    <div>
+                        <label for="field-validity-days" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Geçerlilik Süresi (gün)</label>
+                        <input id="field-validity-days" type="number" min="1" max="3650" value="30" required class="admin-form-input" placeholder="30">
+                        <p class="mt-1 text-[11px] text-light-text-secondary">Kullanıcı satın aldığında paket bu kadar gün geçerli olur.</p>
+                    </div>
+                </div>
+                <!-- Paket yetkilendirme: satın alan kullanıcıda aktif olacak özellikler -->
+                <div>
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary">Paket Yetkilendirme</label>
+                        <div class="flex gap-2">
+                            <button type="button" id="btn-yetki-all" class="text-[11px] font-bold text-yaziyo-gold hover:underline">Tümünü seç</button>
+                            <button type="button" id="btn-yetki-none" class="text-[11px] font-bold text-light-text-secondary hover:underline">Temizle</button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-light-text-secondary mb-3">Satın alan kullanıcıda hangi özelliklerin aktif olacağını detaylı seçin.</p>
+                    <div id="field-yetkiler" class="space-y-4 max-h-64 overflow-y-auto custom-scrollbar rounded-xl border border-light-border dark:border-dark-border p-3 sm:p-4"></div>
                 </div>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <label class="flex items-center gap-2 text-sm cursor-pointer">

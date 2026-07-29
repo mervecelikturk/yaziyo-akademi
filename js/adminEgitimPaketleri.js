@@ -1,19 +1,24 @@
 /**
  * YAZİYO — Admin Eğitim Paketleri (Supabase)
  */
-import { supabase } from './lib/supabase.js';
 import { requireAdminAccess } from './lib/adminAuth.js';
 import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 import {
     EGITIM_KATEGORILERI,
     BADGE_OPTIONS,
+    PAKET_YETKILERI,
     fetchAllPaketlerAdmin,
     upsertPaket,
     deletePaket,
-    isTableMissingError
+    isTableMissingError,
+    isPaketSoldOut,
+    fetchAdminBildirimler,
+    markAdminBildirimOkundu,
+    markAllAdminBildirimOkundu
 } from './lib/egitimPaketleriApi.js';
 
 let packages = [];
+let notifications = [];
 let editingId = null;
 let deleteTarget = null;
 let searchQuery = '';
@@ -39,6 +44,23 @@ function formatPrice(price) {
     const n = Number(price) || 0;
     if (n <= 0) return 'Ücretsiz';
     return `₺${n.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`;
+}
+
+function formatDateTime(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleString('tr-TR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function clampField(value, min, max, fallback) {
+    const n = parseInt(value, 10);
+    if (Number.isNaN(n)) return fallback;
+    return Math.min(max, Math.max(min, n));
 }
 
 function showToast(message, type = 'success') {
@@ -99,14 +121,15 @@ function updateStats() {
 
 function showSetupRequired() {
     els.tbody.innerHTML = `
-        <tr><td colspan="6" class="px-6 py-12">
+        <tr><td colspan="7" class="px-6 py-12">
             <div class="max-w-2xl mx-auto bg-orange-500/5 border border-orange-500/20 rounded-2xl p-8 text-center">
                 <i class="fa-solid fa-database text-4xl text-orange-500 mb-4"></i>
                 <h3 class="text-xl font-poppins font-bold mb-2">Veritabanı Kurulumu Gerekli</h3>
                 <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-4">
                     Eğitim paketleri tablosu henüz oluşturulmamış. Supabase SQL Editor'da
                     <code class="text-yaziyo-gold">supabase/migrations/023_egitim_paketleri.sql</code>
-                    dosyasını çalıştırın.
+                    ve <code class="text-yaziyo-gold">sql/024_egitim_paketi_satis.sql</code>
+                    dosyalarını çalıştırın.
                 </p>
                 <button type="button" id="ep-reload-btn" class="px-8 py-3 bg-orange-500 text-white rounded-xl font-poppins font-bold text-sm">Sayfayı Yenile</button>
             </div>
@@ -114,11 +137,50 @@ function showSetupRequired() {
     document.getElementById('ep-reload-btn')?.addEventListener('click', () => location.reload());
 }
 
+function renderNotifications() {
+    const list = els.notifList;
+    const badge = els.notifBadge;
+    if (!list) return;
+
+    const unread = notifications.filter((n) => !n.okundu).length;
+    if (badge) {
+        if (unread > 0) {
+            badge.textContent = String(unread);
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+    if (els.btnMarkAllNotif) {
+        els.btnMarkAllNotif.disabled = unread === 0;
+    }
+
+    if (!notifications.length) {
+        list.innerHTML = '<p class="px-6 py-8 text-center text-sm text-light-text-secondary">Henüz satış bildirimi yok.</p>';
+        return;
+    }
+
+    list.innerHTML = notifications.map((n) => `
+        <div class="px-6 py-4 flex gap-3 items-start ${n.okundu ? 'opacity-70' : 'bg-yaziyo-gold/5'}" data-notif-id="${n.id}">
+            <div class="w-9 h-9 rounded-full shrink-0 flex items-center justify-center ${n.okundu ? 'bg-slate-500/10 text-slate-400' : 'bg-orange-500/15 text-orange-500'}">
+                <i class="fa-solid fa-box-open text-sm"></i>
+            </div>
+            <div class="min-w-0 flex-grow">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <p class="font-poppins font-bold text-sm">${escapeHtml(n.baslik)}</p>
+                    <span class="text-[10px] text-light-text-secondary whitespace-nowrap">${escapeHtml(formatDateTime(n.created_at))}</span>
+                </div>
+                <p class="text-xs text-light-text-secondary mt-1 leading-relaxed">${escapeHtml(n.mesaj)}</p>
+                ${n.okundu ? '' : `<button type="button" class="mt-2 text-[11px] font-bold text-yaziyo-gold hover:underline" data-mark-notif="${n.id}">Okundu</button>`}
+            </div>
+        </div>`).join('');
+}
+
 function renderTable() {
     const list = filterList();
     if (!list.length) {
         els.tbody.innerHTML = `
-            <tr><td colspan="6" class="px-6 py-16 text-center text-sm text-light-text-secondary">
+            <tr><td colspan="7" class="px-6 py-16 text-center text-sm text-light-text-secondary">
                 ${packages.length ? 'Filtreye uygun paket bulunamadı.' : 'Henüz eğitim paketi eklenmedi. Yeni paket ekleyerek başlayın.'}
             </td></tr>`;
         refreshAdminMobileTables();
@@ -127,14 +189,20 @@ function renderTable() {
 
     els.tbody.innerHTML = list.map((p) => {
         const badgeLabel = p.badge ? (BADGE_OPTIONS[p.badge]?.label || p.badge) : '—';
+        const soldOut = isPaketSoldOut(p);
         return `
             <tr class="hover:bg-light-bg/40 dark:hover:bg-dark-bg/40 transition-colors">
                 <td class="px-6 py-4">
                     <p class="font-poppins font-bold text-sm">${escapeHtml(p.title)}</p>
                     <p class="text-xs text-light-text-secondary line-clamp-1 mt-0.5">${escapeHtml(p.description)}</p>
+                    <p class="text-[10px] text-light-text-secondary mt-1">${p.validityDays || 30} gün geçerli</p>
                 </td>
                 <td class="px-6 py-4 text-sm">${escapeHtml(p.category)}</td>
                 <td class="px-6 py-4 text-sm font-bold text-yaziyo-gold">${formatPrice(p.price)}</td>
+                <td class="px-6 py-4 text-sm tabular-nums">
+                    <span class="${soldOut ? 'text-red-500 font-bold' : ''}">${p.salesCount || 0}/${p.maxSales || 100}</span>
+                    ${soldOut ? '<span class="block text-[10px] text-red-500 font-bold mt-0.5">Dolu</span>' : ''}
+                </td>
                 <td class="px-6 py-4">
                     <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase ${p.active ? 'bg-green-500/15 text-green-500' : 'bg-slate-500/15 text-slate-400'}">${p.active ? 'Yayında' : 'Taslak'}</span>
                     ${p.badge ? `<span class="ml-1 inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-yaziyo-gold/15 text-yaziyo-gold">${escapeHtml(badgeLabel)}</span>` : ''}
@@ -151,6 +219,38 @@ function renderTable() {
     refreshAdminMobileTables();
 }
 
+function renderYetkiCheckboxes(selected = []) {
+    const wrap = els.fieldYetkiler;
+    if (!wrap) return;
+    const set = new Set(selected || []);
+    wrap.innerHTML = PAKET_YETKILERI.map((group) => `
+        <div>
+            <p class="text-[10px] font-bold uppercase tracking-wider text-yaziyo-gold mb-2">${escapeHtml(group.group)}</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                ${group.items.map((item) => `
+                    <label class="flex items-start gap-2 text-sm cursor-pointer rounded-lg px-2 py-1.5 hover:bg-light-bg/60 dark:hover:bg-dark-bg/60">
+                        <input type="checkbox" class="mt-0.5 rounded border-light-border text-yaziyo-gold focus:ring-yaziyo-gold" data-yetki-id="${escapeHtml(item.id)}" ${set.has(item.id) ? 'checked' : ''}>
+                        <span>${escapeHtml(item.label)}</span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function readYetkilerFromForm() {
+    if (!els.fieldYetkiler) return [];
+    return [...els.fieldYetkiler.querySelectorAll('[data-yetki-id]:checked')]
+        .map((el) => el.dataset.yetkiId)
+        .filter(Boolean);
+}
+
+function setAllYetkiler(checked) {
+    els.fieldYetkiler?.querySelectorAll('[data-yetki-id]').forEach((el) => {
+        el.checked = checked;
+    });
+}
+
 function resetForm() {
     editingId = null;
     els.form.reset();
@@ -160,6 +260,9 @@ function resetForm() {
     els.fieldFeatured.checked = false;
     els.fieldPopular.checked = false;
     els.fieldSort.value = '0';
+    els.fieldMaxSales.value = '100';
+    els.fieldValidityDays.value = '30';
+    renderYetkiCheckboxes([]);
     els.modalTitle.textContent = 'Yeni Eğitim Paketi';
 }
 
@@ -176,14 +279,37 @@ function fillForm(pkg) {
     els.fieldLearn.value = arrayToLines(pkg.learn);
     els.fieldCover.value = pkg.coverUrl || '';
     els.fieldContent.value = pkg.contentUrl || '';
+    els.fieldMaxSales.value = String(pkg.maxSales || 100);
+    els.fieldValidityDays.value = String(pkg.validityDays || 30);
     els.fieldFeatured.checked = !!pkg.featured;
     els.fieldPopular.checked = !!pkg.popular;
     els.fieldActive.checked = !!pkg.active;
     els.fieldSort.value = String(pkg.sortOrder || 0);
+    renderYetkiCheckboxes(pkg.yetkiler || []);
+}
+
+async function loadNotifications() {
+    const { data, error } = await fetchAdminBildirimler();
+    if (error) {
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('yonetici_bildirimleri') || error.code === 'PGRST205') {
+            if (els.notifList) {
+                els.notifList.innerHTML = `
+                    <p class="px-6 py-6 text-center text-sm text-orange-500">
+                        Satış bildirimleri için <code class="text-yaziyo-gold">sql/024_egitim_paketi_satis.sql</code> dosyasını çalıştırın.
+                    </p>`;
+            }
+            return;
+        }
+        console.warn('Bildirim yükleme hatası:', error);
+        return;
+    }
+    notifications = data || [];
+    renderNotifications();
 }
 
 async function loadData() {
-    els.tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-sm text-light-text-secondary"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Yükleniyor...</td></tr>`;
+    els.tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-sm text-light-text-secondary"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Yükleniyor...</td></tr>`;
     const { data, error } = await fetchAllPaketlerAdmin();
     if (error) {
         if (isTableMissingError(error)) showSetupRequired();
@@ -208,6 +334,9 @@ function readFormData() {
         learn: linesToArray(els.fieldLearn.value),
         coverUrl: els.fieldCover.value,
         contentUrl: els.fieldContent.value,
+        maxSales: clampField(els.fieldMaxSales.value, 1, 100, 100),
+        validityDays: clampField(els.fieldValidityDays.value, 1, 3650, 30),
+        yetkiler: readYetkilerFromForm(),
         featured: els.fieldFeatured.checked,
         popular: els.fieldPopular.checked,
         active: els.fieldActive.checked,
@@ -221,7 +350,12 @@ function bindEvents() {
         openModal(els.modal);
     });
 
-    els.btnRefresh?.addEventListener('click', loadData);
+    els.btnYetkiAll?.addEventListener('click', () => setAllYetkiler(true));
+    els.btnYetkiNone?.addEventListener('click', () => setAllYetkiler(false));
+
+    els.btnRefresh?.addEventListener('click', async () => {
+        await Promise.all([loadData(), loadNotifications()]);
+    });
 
     els.search?.addEventListener('input', (e) => {
         searchQuery = e.target.value;
@@ -244,7 +378,12 @@ function bindEvents() {
         const { data, error } = await upsertPaket(payload);
         els.btnSave.disabled = false;
         if (error) {
-            showToast(error.message || 'Kayıt başarısız', 'error');
+            const msg = error.message || 'Kayıt başarısız';
+            if (/max_satis|gecerlilik_gun|yetkiler|column/i.test(msg)) {
+                showToast('Yeni alanlar için sql/024 ve sql/026 dosyalarını çalıştırın.', 'error');
+            } else {
+                showToast(msg, 'error');
+            }
             return;
         }
         closeModal(els.modal);
@@ -279,6 +418,30 @@ function bindEvents() {
             els.deleteMessage.textContent = `"${pkg.title}" paketini silmek istediğinize emin misiniz?`;
             openModal(els.deleteModal);
         }
+    });
+
+    els.notifList?.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-mark-notif]');
+        if (!btn) return;
+        const id = btn.dataset.markNotif;
+        const { error } = await markAdminBildirimOkundu(id);
+        if (error) {
+            showToast(error.message || 'Bildirim güncellenemedi', 'error');
+            return;
+        }
+        notifications = notifications.map((n) => (n.id === id ? { ...n, okundu: true } : n));
+        renderNotifications();
+    });
+
+    els.btnMarkAllNotif?.addEventListener('click', async () => {
+        const { error } = await markAllAdminBildirimOkundu();
+        if (error) {
+            showToast(error.message || 'Bildirimler güncellenemedi', 'error');
+            return;
+        }
+        notifications = notifications.map((n) => ({ ...n, okundu: true }));
+        renderNotifications();
+        showToast('Tüm bildirimler okundu işaretlendi');
     });
 
     els.btnConfirmDelete?.addEventListener('click', async () => {
@@ -343,10 +506,18 @@ function cacheElements() {
     els.fieldLearn = document.getElementById('field-learn');
     els.fieldCover = document.getElementById('field-cover');
     els.fieldContent = document.getElementById('field-content');
+    els.fieldMaxSales = document.getElementById('field-max-sales');
+    els.fieldValidityDays = document.getElementById('field-validity-days');
+    els.fieldYetkiler = document.getElementById('field-yetkiler');
+    els.btnYetkiAll = document.getElementById('btn-yetki-all');
+    els.btnYetkiNone = document.getElementById('btn-yetki-none');
     els.fieldFeatured = document.getElementById('field-featured');
     els.fieldPopular = document.getElementById('field-popular');
     els.fieldActive = document.getElementById('field-active');
     els.fieldSort = document.getElementById('field-sort');
+    els.notifList = document.getElementById('admin-notif-list');
+    els.notifBadge = document.getElementById('notif-unread-badge');
+    els.btnMarkAllNotif = document.getElementById('btn-mark-all-notif-read');
 }
 
 async function init() {
@@ -356,7 +527,7 @@ async function init() {
     populateCategorySelect();
     bindEvents();
     resetForm();
-    await loadData();
+    await Promise.all([loadData(), loadNotifications()]);
 }
 
 if (document.readyState === 'loading') {

@@ -9,6 +9,7 @@
         'sinav-ekle',
         'admin-haberler',
         'admin-egitim-paketleri',
+        'admin-egitimlerim',
         'admin-sozlu-mulakat',
         'admin-mulakat-simulasyonu',
         'mesajlar',

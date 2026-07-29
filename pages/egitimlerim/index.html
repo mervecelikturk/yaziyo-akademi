@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YAZİYO Eğitimlerim - Kişisel eğitim paneli, görevler, takvim ve belgeler.">
+    <title>Eğitimlerim - YAZİYO</title>
+    <link rel="icon" type="image/png" href="../../images/favicon-48.png" sizes="48x48">
+    <link rel="icon" href="../../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="../../images/logo.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="../../images/logo.png">
+
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:site_name" content="YAZİYO">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Eğitimlerim - YAZİYO">
+    <meta property="og:description" content="YAZİYO Eğitimlerim - Kişisel eğitim paneli.">
+    <meta property="og:url" content="https://yaziyoakademi.com/pages/egitimlerim/">
+    <meta property="og:image" content="https://yaziyoakademi.com/images/logo.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Eğitimlerim - YAZİYO">
+    <link rel="canonical" href="https://yaziyoakademi.com/pages/egitimlerim/">
+
+    <script>
+        (function () {
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+        })();
+    </script>
+    <script src="../../js/authBoot.js"></script>
+    <script src="../../js/lib/sitePaths.js"></script>
+    <script type="module" src="../../js/auth.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6139144813128892"
+     crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- Eğitimlerim özel stilleri -->
+    <link rel="stylesheet" href="../../css/egitimlerim.css">
+</head>
+
+<body class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
+
+    <header id="main-header" class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
+            <a href="../../index.html" class="flex items-center gap-2 group">
+                <img src="../../images/logo.png" alt="YAZİYO AKADEMİ Logo" class="h-5 sm:h-6 w-auto yaziyo-nav-logo object-contain rounded-lg">
+                <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
+            </a>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="theme-toggle-btn" class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold" aria-label="Tema Değiştir">
+                    <i class="fa-solid fa-sun text-base sm:text-lg theme-icon-sun"></i>
+                    <i class="fa-solid fa-moon text-base sm:text-lg theme-icon-moon"></i>
+                </button>
+                <a href="../profil/" class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-xs sm:text-sm rounded-lg">
+                    <i class="fa-solid fa-user"></i><span class="hidden sm:inline">Profil</span>
+                </a>
+            </div>
+        </div>
+        <div class="w-full h-px bg-light-border dark:bg-dark-border"></div>
+        <nav id="main-navbar" class="bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-md">
+            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+                <ul id="desktop-menu" class="hidden lg:flex items-center justify-center gap-x-1 py-2 text-[10px] xl:text-[11px] font-medium">
+                    <li><a href="../../index.html" class="nav-link" data-page="anasayfa">Ana Sayfa</a></li>
+                    <li><a href="../profil/" class="nav-link" data-page="profil">Profil</a></li>
+                    <li><a href="../egitim-paketleri/" class="nav-link" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                    <li><a href="../haberler/" class="nav-link" data-page="haberler">Haberler</a></li>
+                    <li><a href="../iletisim/" class="nav-link" data-page="iletisim">İletişim</a></li>
+                </ul>
+                <div class="lg:hidden flex items-center justify-between py-2">
+                    <span class="text-sm text-light-text-secondary">Menü</span>
+                    <button id="hamburger-btn" class="p-2 rounded-lg" aria-label="Menü"><i class="fa-solid fa-bars" id="hamburger-icon"></i></button>
+                </div>
+                <div id="mobile-menu" class="lg:hidden hidden pb-4 text-sm">
+                    <ul class="flex flex-col gap-1">
+                        <li><a href="../../index.html" class="mobile-nav-link" data-page="anasayfa">Ana Sayfa</a></li>
+                        <li><a href="../profil/" class="mobile-nav-link" data-page="profil">Profil</a></li>
+                        <li><a href="../egitim-paketleri/" class="mobile-nav-link" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                        <li><a href="../iletisim/" class="mobile-nav-link" data-page="iletisim">İletişim</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+
+            <!-- Giriş zorunlu kapısı -->
+            <div id="eg-auth-gate" class="w-full max-w-2xl mx-auto mt-6">
+                <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-8 sm:p-12 shadow-xl text-center flex flex-col items-center gap-6">
+                    <div class="w-20 h-20 rounded-full bg-yaziyo-gold/10 flex items-center justify-center text-3xl text-yaziyo-gold border border-yaziyo-gold/20">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-poppins font-extrabold text-2xl mb-2">Eğitimlerim</h1>
+                        <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary max-w-md mx-auto">
+                            Kişisel eğitim panelinizi görmek için giriş yapın.
+                        </p>
+                    </div>
+                    <a href="../giris-kayit/" class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl">
+                        <i class="fa-solid fa-right-to-bracket"></i> Giriş Yap / Kayıt Ol
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ana içerik: sol sidebar + sağ paneller -->
+            <div id="eg-main-content" class="eg-layout hidden">
+
+                <!-- SOL SIDEBAR -->
+                <aside class="eg-sidebar">
+                    <div class="px-5 pt-6 pb-4 text-center border-b border-light-border dark:border-dark-border">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-yaziyo-gold mb-1">Eğitimlerim</p>
+                        <h2 id="eg-sidebar-name" class="font-poppins font-bold text-base truncate">Öğrenci</h2>
+                    </div>
+
+                    <button type="button" id="eg-menu-toggle" class="eg-menu-toggle border-b border-light-border dark:border-dark-border">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-bars-staggered text-yaziyo-gold"></i> Menü</span>
+                        <i class="fa-solid fa-chevron-down text-xs" id="eg-menu-chevron"></i>
+                    </button>
+
+                    <nav id="eg-menu-list" class="eg-menu-list">
+                        <button type="button" class="eg-menu-item active" data-eg-panel="ana"><i class="fa-solid fa-house"></i> Ana Sayfa</button>
+                        <button type="button" class="eg-menu-item" data-eg-panel="gorevler"><i class="fa-solid fa-list-check"></i> Görevlerim</button>
+                        <button type="button" class="eg-menu-item" data-eg-panel="ilerleme"><i class="fa-solid fa-chart-line"></i> İlerleme Grafiğim</button>
+                        <button type="button" class="eg-menu-item" data-eg-panel="takvim"><i class="fa-solid fa-calendar-days"></i> Takvim</button>
+                        <button type="button" class="eg-menu-item" data-eg-panel="etut"><i class="fa-solid fa-users-rectangle"></i> Etüt Odaları</button>
+                        <button type="button" class="eg-menu-item" data-eg-panel="belgeler"><i class="fa-solid fa-file-pdf"></i> Belgelerim</button>
+                    </nav>
+                </aside>
+
+                <!-- SAĞ İÇERİK -->
+                <section class="min-w-0 space-y-4">
+
+                    <!-- PANEL: Ana Sayfa -->
+                    <div id="panel-ana" class="eg-panel active space-y-4">
+                        <div class="eg-card flex flex-wrap items-start justify-between gap-4">
+                            <div>
+                                <h1 class="font-poppins font-bold text-2xl sm:text-3xl">
+                                    Hoş geldiniz, <span id="eg-welcome-name">Öğrenci</span>
+                                </h1>
+                                <p class="text-sm text-light-text-secondary mt-1">Kişisel eğitim özetiniz</p>
+                            </div>
+                            <div id="eg-rozet-wrap" class="eg-badge-rozet">
+                                <i class="fa-solid fa-medal"></i>
+                                <span id="eg-rozet-label">Rozet yok</span>
+                            </div>
+                        </div>
+
+                        <div class="eg-home-grid">
+                            <!-- Günlük not -->
+                            <div class="eg-card eg-note-box">
+                                <h3 class="eg-card-title">Günlük Not <span class="text-[10px] font-normal text-light-text-secondary">(max 256)</span></h3>
+                                <textarea id="eg-daily-note" maxlength="256" placeholder="Bugünkü notunuz..."></textarea>
+                                <div class="flex items-center justify-between mt-2 gap-2">
+                                    <span id="eg-note-emoji" class="text-2xl" title="Admin emoji"></span>
+                                    <div class="flex items-center gap-2">
+                                        <span id="eg-note-count" class="text-[11px] text-light-text-secondary">0/256</span>
+                                        <button type="button" id="eg-note-save" class="px-4 py-2 rounded-lg bg-yaziyo-gold text-slate-900 text-xs font-bold">Kaydet</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Paket detayları -->
+                            <div class="eg-card">
+                                <h3 class="eg-card-title">Paket Detayları</h3>
+                                <dl class="space-y-2 text-sm">
+                                    <div class="flex justify-between gap-2"><dt class="text-light-text-secondary">Ad</dt><dd id="eg-paket-adi" class="font-semibold text-right">—</dd></div>
+                                    <div class="flex justify-between gap-2"><dt class="text-light-text-secondary">Başlangıç</dt><dd id="eg-paket-baslangic" class="font-semibold text-right">—</dd></div>
+                                    <div class="flex justify-between gap-2"><dt class="text-light-text-secondary">Bitiş</dt><dd id="eg-paket-bitis" class="font-semibold text-right">—</dd></div>
+                                    <div class="flex justify-between gap-2"><dt class="text-light-text-secondary">Kalan gün</dt><dd id="eg-paket-kalan" class="font-bold text-yaziyo-gold text-right">—</dd></div>
+                                </dl>
+                            </div>
+
+                            <!-- Paket süresi bitince 5 yıldız değerlendirme -->
+                            <div id="eg-rating-card" class="eg-card hidden">
+                                <h3 class="eg-card-title">Paket Değerlendirmesi</h3>
+                                <p class="text-xs text-light-text-secondary mb-3">Eğitim paketinizin süresi doldu. Deneyiminizi 5 yıldız üzerinden puanlayın.</p>
+                                <div id="eg-rating-stars" class="flex gap-2 mb-3" role="radiogroup" aria-label="Puan"></div>
+                                <textarea id="eg-rating-yorum" maxlength="500" class="w-full min-h-[4.5rem] rounded-xl px-3 py-2 text-sm bg-light-bg/50 dark:bg-dark-bg/50 border-2 border-light-border dark:border-dark-border" placeholder="İsteğe bağlı yorum (max 500)"></textarea>
+                                <button type="button" id="eg-rating-save" class="mt-3 px-4 py-2 rounded-lg bg-yaziyo-gold text-slate-900 text-xs font-bold">Değerlendirmeyi Gönder</button>
+                                <p id="eg-rating-done" class="hidden text-sm text-green-500 mt-2 font-semibold"></p>
+                            </div>
+
+                            <!-- Koç + görüşme + mesaj -->
+                            <div class="eg-card space-y-3">
+                                <div>
+                                    <h3 class="eg-card-title">Koç</h3>
+                                    <p id="eg-koc-adi" class="text-sm font-semibold">—</p>
+                                </div>
+                                <div>
+                                    <h3 class="eg-card-title">Sonraki Görüşme</h3>
+                                    <p id="eg-sonraki-gorusme" class="text-sm font-semibold">—</p>
+                                </div>
+                                <div>
+                                    <h3 class="eg-card-title">Yeni Mesaj</h3>
+                                    <p id="eg-mesaj-bildirim" class="text-sm">
+                                        <span id="eg-mesaj-count" class="font-bold text-yaziyo-gold">0</span> okunmamış bildirim
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="eg-card">
+                            <h3 class="eg-card-title">Günlük Görev Özeti</h3>
+                            <p id="eg-gorev-ozeti" class="text-sm text-light-text-secondary">Yükleniyor...</p>
+                        </div>
+                    </div>
+
+                    <!-- PANEL: Görevlerim -->
+                    <div id="panel-gorevler" class="eg-panel">
+                        <div class="eg-card">
+                            <h2 class="font-poppins font-bold text-xl mb-4">Görevlerim</h2>
+                            <div id="eg-gorev-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL: İlerleme -->
+                    <div id="panel-ilerleme" class="eg-panel">
+                        <div class="eg-card mb-4">
+                            <h2 class="font-poppins font-bold text-xl mb-4">İlerleme Grafiğim</h2>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 text-center">
+                                <div class="rounded-xl border border-light-border dark:border-dark-border p-3">
+                                    <p class="text-[10px] uppercase text-light-text-secondary font-bold">En düşük hız</p>
+                                    <p id="eg-stat-min-hiz" class="text-xl font-poppins font-bold text-yaziyo-gold mt-1">—</p>
+                                </div>
+                                <div class="rounded-xl border border-light-border dark:border-dark-border p-3">
+                                    <p class="text-[10px] uppercase text-light-text-secondary font-bold">En yüksek hız</p>
+                                    <p id="eg-stat-max-hiz" class="text-xl font-poppins font-bold text-yaziyo-gold mt-1">—</p>
+                                </div>
+                                <div class="rounded-xl border border-light-border dark:border-dark-border p-3">
+                                    <p class="text-[10px] uppercase text-light-text-secondary font-bold">En düşük 3dk</p>
+                                    <p id="eg-stat-min-3dk" class="text-xl font-poppins font-bold text-yaziyo-gold mt-1">—</p>
+                                </div>
+                                <div class="rounded-xl border border-light-border dark:border-dark-border p-3">
+                                    <p class="text-[10px] uppercase text-light-text-secondary font-bold">En yüksek 3dk</p>
+                                    <p id="eg-stat-max-3dk" class="text-xl font-poppins font-bold text-yaziyo-gold mt-1">—</p>
+                                </div>
+                            </div>
+                            <div class="eg-chart-wrap">
+                                <div>
+                                    <p class="text-xs font-bold uppercase text-light-text-secondary mb-2">Çizgisel (hedefe göre)</p>
+                                    <canvas id="eg-line-chart" class="eg-line-chart" height="180"></canvas>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-bold uppercase text-light-text-secondary mb-2">Dairesel (hedef gerçekleşme)</p>
+                                    <canvas id="eg-donut-chart" class="eg-donut-chart" height="180"></canvas>
+                                </div>
+                            </div>
+                            <p id="eg-hedef-info" class="text-xs text-light-text-secondary mt-4"></p>
+                        </div>
+                    </div>
+
+                    <!-- PANEL: Takvim -->
+                    <div id="panel-takvim" class="eg-panel">
+                        <div class="eg-card">
+                            <h2 class="font-poppins font-bold text-xl mb-2">Takvim</h2>
+                            <p class="text-xs text-light-text-secondary mb-4">Kendi görüşme/derslerinizi görürsünüz; diğer zamanlar “Dolu” olarak görünür.</p>
+                            <div id="eg-takvim-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- PANEL: Etüt -->
+                    <div id="panel-etut" class="eg-panel space-y-4">
+                        <div class="eg-card">
+                            <h2 class="font-poppins font-bold text-xl mb-4">Etüt Odaları</h2>
+                            <div id="eg-etut-list"></div>
+                        </div>
+                        <div class="eg-card">
+                            <h3 class="eg-card-title">Katıldığım Etütler</h3>
+                            <p class="text-sm">Toplam: <span id="eg-etut-katilim" class="font-bold text-yaziyo-gold">0</span></p>
+                            <p class="text-[11px] text-light-text-secondary mt-1">Bu bölüm şu an yalnızca sayaç gösterir.</p>
+                        </div>
+                    </div>
+
+                    <!-- PANEL: Belgeler -->
+                    <div id="panel-belgeler" class="eg-panel">
+                        <div class="eg-card">
+                            <h2 class="font-poppins font-bold text-xl mb-4">Belgelerim</h2>
+                            <div id="eg-belge-list"></div>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <div id="eg-toast" class="hidden fixed bottom-6 right-6 z-[130] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl"></div>
+
+    <footer id="main-footer" class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <p class="text-center text-light-text-secondary text-xs">© 2026 YAZİYO AKADEMİ. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script src="../../js/pageStatus.js"></script>
+    <script src="../../js/siteNavbar.js"></script>
+    <script src="../../js/main.js"></script>
+    <script type="module" src="../../js/egitimlerim.js"></script>
+</body>
+</html>

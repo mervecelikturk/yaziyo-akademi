@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YAZİYO Yönetici Paneli - Eğitimlerim yönetimi.">
+    <title>Eğitimlerim - Admin - YAZİYO</title>
+    <link rel="icon" type="image/png" href="../../images/favicon-48.png" sizes="48x48">
+    <link rel="icon" href="../../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="../../images/logo.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="../../images/logo.png">
+
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:site_name" content="YAZİYO">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Eğitimlerim - Admin - YAZİYO">
+    <meta property="og:description" content="YAZİYO Yönetici Paneli - Eğitimlerim yönetimi.">
+    <meta property="og:url" content="https://yaziyoakademi.com/pages/admin-egitimlerim/">
+    <meta property="og:image" content="https://yaziyoakademi.com/images/logo.png">
+    <link rel="canonical" href="https://yaziyoakademi.com/pages/admin-egitimlerim/">
+
+    <script>
+        (function () {
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+        })();
+    </script>
+    <script src="../../js/authBoot.js"></script>
+    <script src="../../js/lib/sitePaths.js"></script>
+    <script type="module" src="../../js/auth.js"></script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6139144813128892"
+     crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <!-- PDF şablon üretimi (belgeler) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--yaziyo-gold-rgb) / 0.3); border-radius: 10px; }
+        .admin-form-input, .admin-form-select, .admin-form-textarea {
+            width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; font-family: 'Inter', sans-serif;
+            font-size: 0.875rem; transition: all 0.3s ease; background-color: rgb(var(--yaziyo-bg-rgb) / 0.5);
+            border: 2px solid rgb(var(--yaziyo-border-rgb) / 0.8); color: rgb(var(--yaziyo-text-rgb));
+        }
+        .admin-form-input:focus, .admin-form-select:focus, .admin-form-textarea:focus {
+            outline: none; border-color: rgb(var(--yaziyo-gold-rgb)); box-shadow: 0 0 0 4px rgb(var(--yaziyo-gold-rgb) / 0.15);
+        }
+        .admin-form-textarea { min-height: 90px; resize: vertical; }
+        .admin-tab {
+            padding: 0.65rem 1rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 700;
+            font-family: 'Poppins', sans-serif; border: 1px solid rgb(var(--yaziyo-border-rgb));
+            white-space: nowrap;
+        }
+        .admin-tab-active {
+            background: linear-gradient(to right, #f97316, #ea580c); color: white; border-color: transparent;
+        }
+        .admin-panel.hidden { display: none; }
+        .emoji-btn {
+            width: 2.5rem; height: 2.5rem; border-radius: 0.65rem; font-size: 1.25rem;
+            border: 1px solid rgb(var(--yaziyo-border-rgb)); background: rgb(var(--yaziyo-bg-rgb) / 0.5);
+        }
+        .emoji-btn.active { border-color: var(--yaziyo-gold-hex); background: rgb(var(--yaziyo-gold-rgb) / 0.15); }
+    </style>
+</head>
+
+<body class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Admin navbar: adminNavbar.js ile mount edilir (üst menüye Eğitimlerim eklenmedi) -->
+    <header id="main-header" data-yaziyo-admin-header="1" class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
+            <a href="../admin/" class="flex items-center gap-2">
+                <img src="../../images/logo.png" alt="YAZİYO AKADEMİ Logo" class="h-5 sm:h-6 w-auto yaziyo-nav-logo object-contain rounded-lg">
+                <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
+            </a>
+            <a href="../admin/" class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm rounded-lg">
+                <i class="fa-solid fa-user-shield"></i><span>Admin</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+                <div>
+                    <h1 class="font-poppins font-bold text-2xl sm:text-3xl">Eğitimlerim Yönetimi</h1>
+                    <p class="text-sm text-light-text-secondary mt-1">Kullanıcıya özel program, takvim, etüt ve belge yönetimi</p>
+                </div>
+                <a href="../egitimlerim/" target="_blank" rel="noopener"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-light-border dark:border-dark-border text-sm font-semibold hover:border-yaziyo-gold hover:text-yaziyo-gold">
+                    <i class="fa-solid fa-external-link"></i> Öğrenci görünümü
+                </a>
+            </div>
+
+            <!-- Kullanıcı seçici (tüm sekmeler için ortak) -->
+            <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 sm:p-5 mb-6">
+                <label for="admin-user-select" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Kullanıcı seç</label>
+                <select id="admin-user-select" class="admin-form-select">
+                    <option value="">— Kullanıcı seçin —</option>
+                </select>
+            </div>
+
+            <!-- Sekmeler -->
+            <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-2 mb-6">
+                <button type="button" class="admin-tab admin-tab-active" data-admin-tab="profil">Profil / Ana Sayfa</button>
+                <button type="button" class="admin-tab" data-admin-tab="notlar">Günlük Notlar</button>
+                <button type="button" class="admin-tab" data-admin-tab="gorevler">Görevler</button>
+                <button type="button" class="admin-tab" data-admin-tab="takvim">Takvim</button>
+                <button type="button" class="admin-tab" data-admin-tab="etut">Etüt Odaları</button>
+                <button type="button" class="admin-tab" data-admin-tab="belgeler">Belgeler</button>
+            </div>
+
+            <!-- SEKME: Profil -->
+            <div id="tab-profil" class="admin-panel">
+                <form id="profil-form" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 sm:p-6 space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Koç adı</label>
+                            <input id="field-koc" type="text" class="admin-form-input" placeholder="Örn: Ayşe Yılmaz">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Başarı rozeti</label>
+                            <select id="field-rozet" class="admin-form-select"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Hedef hız testi neti</label>
+                            <input id="field-hedef-hiz" type="number" min="1" value="40" class="admin-form-input">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Hedef 3dk metin neti</label>
+                            <input id="field-hedef-3dk" type="number" min="1" value="90" class="admin-form-input">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Sonraki görüşme (tarih/saat)</label>
+                            <input id="field-gorusme" type="datetime-local" class="admin-form-input">
+                        </div>
+                    </div>
+                    <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm">Profili Kaydet</button>
+                </form>
+            </div>
+
+            <!-- SEKME: Notlar -->
+            <div id="tab-notlar" class="admin-panel hidden">
+                <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl overflow-hidden">
+                    <div class="px-5 py-4 border-b border-light-border dark:border-dark-border">
+                        <h2 class="text-sm font-poppins font-bold uppercase tracking-wider text-light-text-secondary">Kullanıcı notları + emoji</h2>
+                    </div>
+                    <div id="admin-not-list" class="divide-y divide-light-border dark:divide-dark-border max-h-[28rem] overflow-y-auto custom-scrollbar">
+                        <p class="px-5 py-8 text-center text-sm text-light-text-secondary">Kullanıcı seçin.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEKME: Görevler -->
+            <div id="tab-gorevler" class="admin-panel hidden space-y-4">
+                <form id="gorev-form" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 space-y-4">
+                    <input type="hidden" id="gorev-edit-id">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Görev başlığı *</label>
+                            <input id="gorev-baslik" type="text" required class="admin-form-input">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Açıklama</label>
+                            <textarea id="gorev-aciklama" class="admin-form-textarea"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Tahmini süre (dk)</label>
+                            <input id="gorev-sure" type="number" min="1" value="15" class="admin-form-input">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Öncelik</label>
+                            <select id="gorev-oncelik" class="admin-form-select">
+                                <option value="zorunlu">Zorunlu</option>
+                                <option value="onerilen">Önerilen</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm">Görevi Kaydet</button>
+                </form>
+                <div id="admin-gorev-list" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5"></div>
+            </div>
+
+            <!-- SEKME: Takvim (admin tüm kullanıcıları görür) -->
+            <div id="tab-takvim" class="admin-panel hidden space-y-4">
+                <form id="takvim-form" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 space-y-4">
+                    <input type="hidden" id="takvim-edit-id">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Başlık</label>
+                            <input id="takvim-baslik" type="text" class="admin-form-input" value="Görüşme">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Tür</label>
+                            <select id="takvim-tur" class="admin-form-select">
+                                <option value="gorusme">Görüşme</option>
+                                <option value="online_ders">Online ders</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Başlangıç</label>
+                            <input id="takvim-baslangic" type="datetime-local" required class="admin-form-input">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Bitiş</label>
+                            <input id="takvim-bitis" type="datetime-local" required class="admin-form-input">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Durum</label>
+                            <select id="takvim-durum" class="admin-form-select">
+                                <option value="planlandi">Planlandı</option>
+                                <option value="gerceklesti">Gerçekleşti</option>
+                                <option value="iptal_edildi">İptal edildi</option>
+                                <option value="ertelendi">Ertelendi</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm">Takvime Ekle / Güncelle</button>
+                </form>
+                <div id="admin-takvim-list" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 max-h-[28rem] overflow-y-auto custom-scrollbar"></div>
+            </div>
+
+            <!-- SEKME: Etüt -->
+            <div id="tab-etut" class="admin-panel hidden space-y-4">
+                <form id="etut-form" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 space-y-4">
+                    <input type="hidden" id="etut-edit-id">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Başlık</label>
+                            <input id="etut-baslik" type="text" class="admin-form-input" value="Etüt Odası">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Başlangıç</label>
+                            <input id="etut-baslangic" type="datetime-local" required class="admin-form-input">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Bitiş</label>
+                            <input id="etut-bitis" type="datetime-local" required class="admin-form-input">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Google Meet linki</label>
+                            <input id="etut-meet" type="url" required class="admin-form-input" placeholder="https://meet.google.com/...">
+                        </div>
+                    </div>
+                    <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm">Etüt Kaydet</button>
+                </form>
+                <div id="admin-etut-list" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5"></div>
+            </div>
+
+            <!-- SEKME: Belgeler -->
+            <div id="tab-belgeler" class="admin-panel hidden space-y-4">
+                <form id="belge-form" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 space-y-4">
+                    <p class="text-xs text-light-text-secondary">Akış: Kullanıcı seç → Belge türü seç → İsim otomatik dolar → PDF oluştur → Gönder</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Belge türü</label>
+                            <select id="belge-tur" class="admin-form-select">
+                                <option value="katilim">Katılım Belgesi</option>
+                                <option value="tamamlama">Tamamlama Belgesi</option>
+                                <option value="basari">Başarı Belgesi</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Alıcı adı (otomatik)</label>
+                            <input id="belge-alici" type="text" class="admin-form-input" readonly>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" id="btn-pdf-olustur" class="px-5 py-2.5 rounded-xl border border-yaziyo-gold text-yaziyo-gold font-bold text-sm">PDF Oluştur</button>
+                        <button type="submit" id="btn-belge-gonder" disabled class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold text-sm disabled:opacity-40">Gönder</button>
+                    </div>
+                    <p id="belge-pdf-status" class="text-xs text-light-text-secondary"></p>
+                </form>
+                <div id="admin-belge-list" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="admin-toast" class="hidden fixed bottom-6 right-6 z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../../js/lib/adminPaths.js"></script>
+    <script src="../../js/pageStatus.js"></script>
+    <script src="../../js/adminNavbar.js"></script>
+    <script src="../../js/main.js"></script>
+    <script type="module" src="../../js/adminEgitimlerim.js"></script>
+</body>
+</html>

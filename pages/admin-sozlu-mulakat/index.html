@@ -110,7 +110,13 @@
                     <li><a href="../icerik-ekle/" class="nav-link" data-page="icerik-ekle"><i class="fa-solid fa-folder-plus mr-1.5 text-[0.85em]"></i>İçerik Ekle</a></li>
                     <li><a href="../sinav-ekle/" class="nav-link" data-page="sinav-ekle"><i class="fa-solid fa-award mr-1.5 text-[0.85em]"></i>Sınav Ekle</a></li>
                     <li><a href="../admin-haberler/" class="nav-link" data-page="admin-haberler"><i class="fa-solid fa-newspaper mr-1.5 text-[0.85em]"></i>Haberler</a></li>
-                    <li><a href="../admin-egitim-paketleri/" class="nav-link" data-page="admin-egitim-paketleri"><i class="fa-solid fa-box-open mr-1.5 text-[0.85em]"></i>Eğitim Paketleri</a></li>
+                    <li class="nav-dropdown">
+                        <button type="button" class="nav-link nav-dropdown-trigger" data-page="admin-egitimler"><i class="fa-solid fa-box-open mr-1.5 text-[0.85em]"></i>Eğitim Paketleri <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="../admin-egitim-paketleri/" class="nav-dropdown-item" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                            <li><a href="../admin-egitimlerim/" class="nav-dropdown-item" data-page="admin-egitimlerim">Eğitimlerim</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-dropdown">
                         <button type="button" class="nav-link nav-dropdown-trigger active" data-page="admin-mulakatlar"><i class="fa-solid fa-microphone-lines mr-1.5 text-[0.85em]"></i>Mülakatlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">

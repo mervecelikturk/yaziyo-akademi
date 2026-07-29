@@ -212,7 +212,7 @@
             <!-- DEĞER ÖNERİLERİ -->
             <section class="ep-reveal-static">
                 <h2 class="font-poppins font-bold text-2xl mb-6 text-center">Neden YAZİYO Paketleri?</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
                     <div class="ep-value-card text-center">
                         <div class="w-12 h-12 rounded-xl bg-yaziyo-gold/15 text-yaziyo-gold flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-bolt"></i></div>
                         <h3 class="font-poppins font-bold mb-2">Daha hızlı öğren</h3>
@@ -229,9 +229,14 @@
                         <p class="text-sm text-light-text-secondary">Kişisel çalışma takvimi</p>
                     </div>
                     <div class="ep-value-card text-center">
-                        <div class="w-12 h-12 rounded-xl bg-orange-500/15 text-orange-400 flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-gamepad"></i></div>
-                        <h3 class="font-poppins font-bold mb-2">Sınav simülasyonu</h3>
-                        <p class="text-sm text-light-text-secondary">Gerçek sınav deneyimi</p>
+                        <div class="w-12 h-12 rounded-xl bg-orange-500/15 text-orange-400 flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-headset"></i></div>
+                        <h3 class="font-poppins font-bold mb-2">Canlı Destek</h3>
+                        <p class="text-sm text-light-text-secondary">Anlık yardım ve soru çözüm desteği</p>
+                    </div>
+                    <div class="ep-value-card text-center">
+                        <div class="w-12 h-12 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-user-graduate"></i></div>
+                        <h3 class="font-poppins font-bold mb-2">Birebir Koçluk</h3>
+                        <p class="text-sm text-light-text-secondary">Kişisel mentorluk ve takip</p>
                     </div>
                 </div>
             </section>
@@ -247,6 +252,7 @@
                 <button type="button" id="ep-drawer-close" class="w-9 h-9 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="flex-grow overflow-y-auto custom-scrollbar p-5 space-y-6">
+                <div id="ep-drawer-rating" class="hidden"></div>
                 <p id="ep-drawer-desc" class="text-sm text-light-text-secondary leading-relaxed"></p>
                 <div>
                     <h3 class="text-[10px] font-bold uppercase tracking-widest text-yaziyo-gold mb-3">Modüller</h3>
@@ -258,6 +264,7 @@
                 </div>
             </div>
             <div class="p-5 border-t border-light-border dark:border-dark-border shrink-0 ep-glass">
+                <p id="ep-drawer-validity" class="text-xs text-light-text-secondary mb-3"></p>
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-sm text-light-text-secondary">Fiyat</span>
                     <span id="ep-drawer-price" class="text-2xl font-poppins font-bold text-yaziyo-gold"></span>
