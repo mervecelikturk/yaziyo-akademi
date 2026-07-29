@@ -156,6 +156,23 @@ html.dark {
     --yaziyo-inverse-text-hex: #0F172A;
 }
 
+/* Gece modunda Tailwind light-* metin sınıfları (dark: varyantsız) okunabilir kalsın */
+html.dark .text-light-text {
+    color: rgb(var(--yaziyo-text-rgb));
+}
+
+html.dark .text-light-text-secondary {
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+}
+
+html.dark .text-light-text-secondary\/30 {
+    color: rgb(var(--yaziyo-text-secondary-rgb) / 0.3);
+}
+
+html.dark .text-light-text-secondary\/50 {
+    color: rgb(var(--yaziyo-text-secondary-rgb) / 0.5);
+}
+
 /* ============================================ */
 /* FORM KONTROLLERİ — focus flash önleme         */
 /* box-shadow none→gold animasyonu beyaz halka   */

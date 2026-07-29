@@ -62,7 +62,7 @@ function renderFeatured() {
         ? `<img src="${escapeHtml(p.coverUrl)}" alt="" class="w-full h-full object-cover rounded-3xl">`
         : `<div class="w-40 h-40 sm:w-52 sm:h-52 rounded-3xl ep-glass flex flex-col items-center justify-center shadow-2xl border border-yaziyo-gold/20">
                 <i class="fa-solid fa-graduation-cap text-5xl sm:text-6xl text-yaziyo-gold mb-2"></i>
-                <span class="text-xs font-bold uppercase tracking-wider text-light-text-secondary">${escapeHtml(p.category)}</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">${escapeHtml(p.category)}</span>
            </div>`;
 
     el.innerHTML = `
@@ -120,21 +120,21 @@ function renderGrid() {
         <article class="ep-package-card ep-reveal" data-package-id="${p.id}" style="transition-delay: ${Math.min(i * 50, 300)}ms">
             <div class="flex items-start justify-between gap-2 mb-3">
                 ${badgeHtml(p.badge)}
-                <span class="text-[10px] font-bold uppercase text-light-text-secondary">${escapeHtml(p.category)}</span>
+                <span class="text-[10px] font-bold uppercase text-light-text-secondary dark:text-dark-text-secondary">${escapeHtml(p.category)}</span>
             </div>
             <h3 class="font-poppins font-bold text-lg text-light-text dark:text-dark-text mb-2 line-clamp-2">${escapeHtml(p.title)}</h3>
             ${ratingStarsHtml(p.ratingAvg, p.ratingCount) ? `<div class="mb-2">${ratingStarsHtml(p.ratingAvg, p.ratingCount)}</div>` : ''}
             <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary line-clamp-2 mb-4 flex-grow">${escapeHtml(p.description)}</p>
             <ul class="space-y-1.5 mb-4">
                 ${(p.features || []).slice(0, 4).map((f) => `
-                    <li class="text-xs text-light-text-secondary flex items-start gap-1.5">
+                    <li class="text-xs text-light-text-secondary dark:text-dark-text-secondary flex items-start gap-1.5">
                         <i class="fa-solid fa-check text-yaziyo-gold mt-0.5 text-[10px]"></i><span class="line-clamp-1">${escapeHtml(f)}</span>
                     </li>`).join('')}
             </ul>
             <div class="pt-4 border-t border-light-border dark:border-dark-border flex flex-wrap items-center justify-between gap-3">
                 <div class="min-w-0">
                     <span class="text-xl sm:text-2xl font-poppins font-bold text-yaziyo-gold break-all">${formatPrice(p.price)}</span>
-                    ${p.price > 0 ? '<span class="text-[10px] text-light-text-secondary block">tek sefer</span>' : ''}
+                    ${p.price > 0 ? '<span class="text-[10px] text-light-text-secondary dark:text-dark-text-secondary block">tek sefer</span>' : ''}
                 </div>
                 <button type="button" class="shrink-0 min-h-10 px-4 py-2 rounded-lg border border-yaziyo-gold/40 text-yaziyo-gold text-sm font-bold hover:bg-yaziyo-gold hover:text-slate-900 transition-all" data-package-open="${p.id}">
                     İncele
@@ -177,13 +177,13 @@ function openDrawer(pkg) {
             <li class="flex items-start gap-2 text-sm py-2 border-b border-light-border dark:border-dark-border last:border-0 min-w-0">
                 <i class="fa-solid fa-layer-group text-yaziyo-gold text-xs mt-1 shrink-0"></i><span class="break-words min-w-0">${escapeHtml(m)}</span>
             </li>`).join('')
-        : '<li class="text-sm text-light-text-secondary py-2">Modül bilgisi eklenmemiş.</li>';
+        : '<li class="text-sm text-light-text-secondary dark:text-dark-text-secondary py-2">Modül bilgisi eklenmemiş.</li>';
     els.drawerLearn.innerHTML = (pkg.learn || []).length
         ? (pkg.learn || []).map((l) => `
-            <li class="flex items-start gap-2 text-sm text-light-text-secondary min-w-0">
+            <li class="flex items-start gap-2 text-sm text-light-text-secondary dark:text-dark-text-secondary min-w-0">
                 <i class="fa-solid fa-lightbulb text-yaziyo-gold mt-1 text-xs shrink-0"></i><span class="break-words min-w-0">${escapeHtml(l)}</span>
             </li>`).join('')
-        : '<li class="text-sm text-light-text-secondary">Henüz öğrenme hedefi eklenmemiş.</li>';
+        : '<li class="text-sm text-light-text-secondary dark:text-dark-text-secondary">Henüz öğrenme hedefi eklenmemiş.</li>';
 
     if (soldOut) {
         els.drawerCta.textContent = 'Kontenjan dolu';
@@ -353,7 +353,7 @@ function showSetupBanner() {
     grid.innerHTML = `
         <div class="col-span-full max-w-xl mx-auto text-center py-12 px-6 rounded-2xl border border-orange-500/20 bg-orange-500/5">
             <i class="fa-solid fa-database text-3xl text-orange-500 mb-3"></i>
-            <p class="text-sm text-light-text-secondary">Paketler yüklenemedi. Veritabanı kurulumu gerekebilir.</p>
+            <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary">Paketler yüklenemedi. Veritabanı kurulumu gerekebilir.</p>
         </div>`;
 }
 
