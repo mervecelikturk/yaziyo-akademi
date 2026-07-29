@@ -11,9 +11,6 @@ import {
 } from './lib/egitimPaketleriApi.js';
 
 let PACKAGES = [];
-let activeCategory = 'Tümü';
-let searchQuery = '';
-let sortBy = 'popular';
 let selectedPackage = null;
 
 const els = {};
@@ -37,57 +34,15 @@ function getFeatured() {
     return PACKAGES[0] || null;
 }
 
-function getCategories() {
-    const cats = new Set(PACKAGES.map((p) => p.category).filter(Boolean));
-    return ['Tümü', ...Array.from(cats).sort((a, b) => a.localeCompare(b, 'tr'))];
-}
-
-function filterPackages() {
+function listPackages() {
     const featured = getFeatured();
-    let list = PACKAGES.filter((p) => !featured || p.id !== featured.id);
-
-    if (activeCategory !== 'Tümü') {
-        list = list.filter((p) => p.category === activeCategory);
-    }
-
-    const q = searchQuery.toLowerCase().trim();
-    if (q) {
-        list = list.filter((p) =>
-            `${p.title} ${p.description} ${p.category}`.toLowerCase().includes(q));
-    }
-
-    list = [...list];
-    if (sortBy === 'popular') {
-        list.sort((a, b) => (b.popular ? 1 : 0) - (a.popular ? 1 : 0) || b.price - a.price);
-    } else if (sortBy === 'new') {
-        list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-    } else if (sortBy === 'price-asc') {
-        list.sort((a, b) => a.price - b.price);
-    } else if (sortBy === 'price-desc') {
-        list.sort((a, b) => b.price - a.price);
-    }
-
-    return list;
+    return PACKAGES.filter((p) => !featured || p.id !== featured.id);
 }
 
 function formatPrice(price) {
     const n = Number(price) || 0;
     if (n <= 0) return 'Ücretsiz';
     return `₺${n.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`;
-}
-
-function renderCategoryFilters() {
-    const container = els.filterContainer;
-    if (!container) return;
-
-    const categories = getCategories();
-    container.innerHTML = categories.map((cat) => `
-        <button type="button" class="ep-filter-pill${cat === activeCategory ? ' ep-filter-pill-active' : ''}" data-category="${escapeHtml(cat)}">${escapeHtml(cat)}</button>
-    `).join('');
-
-    container.querySelectorAll('.ep-filter-pill').forEach((btn) => {
-        btn.addEventListener('click', () => setCategory(btn.dataset.category));
-    });
 }
 
 function renderFeatured() {
@@ -139,7 +94,7 @@ function renderFeatured() {
 }
 
 function renderGrid() {
-    const list = filterPackages();
+    const list = listPackages();
     const grid = els.grid;
     const empty = els.gridEmpty;
     const packagesSection = els.packagesSection;
@@ -155,8 +110,7 @@ function renderGrid() {
 
     if (!list.length) {
         grid.innerHTML = '';
-        empty?.classList.remove('hidden');
-        if (empty) empty.textContent = 'Aramanızla eşleşen paket bulunamadı.';
+        empty?.classList.add('hidden');
         return;
     }
 
@@ -324,12 +278,6 @@ function closeDrawer() {
     selectedPackage = null;
 }
 
-function setCategory(cat) {
-    activeCategory = cat;
-    renderCategoryFilters();
-    renderGrid();
-}
-
 function observeReveal() {
     const nodes = document.querySelectorAll('.ep-reveal:not(.ep-revealed)');
     if (!('IntersectionObserver' in window)) {
@@ -352,16 +300,6 @@ function scrollToSection(id) {
 }
 
 function bindEvents() {
-    els.search?.addEventListener('input', (e) => {
-        searchQuery = e.target.value;
-        renderGrid();
-    });
-
-    els.sort?.addEventListener('change', (e) => {
-        sortBy = e.target.value;
-        renderGrid();
-    });
-
     els.btnExplore?.addEventListener('click', () => scrollToSection('ep-packages'));
 
     document.addEventListener('click', (e) => {
@@ -425,9 +363,6 @@ function cacheElements() {
     els.grid = document.getElementById('ep-package-grid');
     els.gridEmpty = document.getElementById('ep-grid-empty');
     els.packagesSection = document.getElementById('ep-packages');
-    els.filterContainer = document.getElementById('ep-category-filters');
-    els.search = document.getElementById('ep-search');
-    els.sort = document.getElementById('ep-sort');
     els.btnExplore = document.getElementById('ep-btn-explore');
     els.drawer = document.getElementById('ep-drawer');
     els.drawerBackdrop = document.getElementById('ep-drawer-backdrop');
@@ -453,25 +388,10 @@ async function loadPackages() {
     PACKAGES = data || [];
 }
 
-function syncFilterStickyOffset() {
-    const header = document.getElementById('main-header');
-    if (!header) return;
-    const h = Math.ceil(header.getBoundingClientRect().height);
-    if (h > 0) {
-        document.documentElement.style.setProperty('--yaziyo-header-offset', `${h}px`);
-    }
-}
-
 async function init() {
     cacheElements();
     bindEvents();
-    syncFilterStickyOffset();
-    window.addEventListener('resize', syncFilterStickyOffset);
-    // Navbar mount sonrası header yüksekliği değişebilir
-    setTimeout(syncFilterStickyOffset, 50);
-    setTimeout(syncFilterStickyOffset, 300);
     await loadPackages();
-    renderCategoryFilters();
     renderFeatured();
     renderGrid();
     observeReveal();

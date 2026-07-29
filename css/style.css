@@ -1522,67 +1522,6 @@ html:not(.dark) .theme-icon-moon {
     50% { transform: translateY(-12px); }
 }
 
-.ep-filter-bar {
-    position: sticky;
-    top: var(--yaziyo-header-offset, 6.25rem);
-    z-index: 40;
-    padding: 0.75rem 0;
-    background: rgba(var(--yaziyo-bg-rgb), 0.92);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
-}
-
-@media (min-width: 1024px) {
-    .ep-filter-bar { top: var(--yaziyo-header-offset, 7.5rem); }
-}
-
-.ep-filter-scroll {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    flex-grow: 1;
-    min-width: 0;
-}
-
-.ep-filter-scroll::-webkit-scrollbar {
-    display: none;
-}
-
-.ep-filter-pill {
-    flex-shrink: 0;
-    padding: 0.5rem 1rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    border-radius: 9999px;
-    border: 1px solid rgb(var(--yaziyo-border-rgb));
-    background: rgb(var(--yaziyo-card-rgb));
-    color: rgb(var(--yaziyo-text-secondary-rgb));
-    transition: all 0.25s ease-out;
-    white-space: nowrap;
-}
-
-.ep-filter-pill:hover {
-    border-color: var(--yaziyo-gold-hex);
-    color: var(--yaziyo-gold-hex);
-}
-
-@media (hover: hover) {
-    .ep-filter-pill:hover {
-        transform: translateY(-1px);
-    }
-}
-
-.ep-filter-pill-active {
-    background: linear-gradient(135deg, var(--yaziyo-gold-hex), #ca8a04);
-    border-color: transparent;
-    color: #0f172a;
-    box-shadow: 0 4px 16px rgba(var(--yaziyo-gold-rgb), 0.35);
-}
-
 .ep-featured {
     position: relative;
     border-radius: 1.25rem;

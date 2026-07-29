@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 
 <head>
@@ -163,27 +163,6 @@
             </div>
         </section>
 
-        <!-- FİLTRE -->
-        <div class="ep-filter-bar">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col lg:flex-row lg:items-center gap-4">
-                    <div class="ep-filter-scroll" id="ep-category-filters"></div>
-                    <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto lg:shrink-0 min-w-0">
-                        <div class="relative flex-grow lg:w-48 min-w-0">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-light-text-secondary text-sm"></i>
-                            <input id="ep-search" type="search" placeholder="Paket ara..." class="w-full min-w-0 pl-9 pr-3 py-2 rounded-lg text-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-yaziyo-gold/40">
-                        </div>
-                        <select id="ep-sort" class="w-full sm:w-auto min-w-0 py-2 px-3 rounded-lg text-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-yaziyo-gold/40">
-                            <option value="popular">En Popüler</option>
-                            <option value="new">En Yeni</option>
-                            <option value="price-asc">Fiyat (Artan)</option>
-                            <option value="price-desc">Fiyat (Azalan)</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-16 sm:space-y-20">
             <!-- ÖNE ÇIKAN -->
             <section id="ep-featured-section" class="ep-reveal-static hidden">
@@ -194,22 +173,17 @@
             <section id="ep-packages" class="ep-reveal-static">
                 <h2 class="font-poppins font-bold text-2xl mb-6">Tüm Paketler</h2>
                 <div id="ep-package-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
-                <p id="ep-grid-empty" class="hidden text-center py-16 text-light-text-secondary">Aramanızla eşleşen paket bulunamadı.</p>
+                <p id="ep-grid-empty" class="hidden text-center py-16 text-light-text-secondary">Henüz eğitim paketi eklenmedi.</p>
             </section>
 
             <!-- DEĞER ÖNERİLERİ -->
             <section class="ep-reveal-static">
                 <h2 class="font-poppins font-bold text-2xl mb-6 text-center">Neden YAZİYO Paketleri?</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     <div class="ep-value-card text-center">
                         <div class="w-12 h-12 rounded-xl bg-yaziyo-gold/15 text-yaziyo-gold flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-bolt"></i></div>
                         <h3 class="font-poppins font-bold mb-2">Daha hızlı öğren</h3>
                         <p class="text-sm text-light-text-secondary">Adaptif modüllerle tempoya uygun ilerleme</p>
-                    </div>
-                    <div class="ep-value-card text-center">
-                        <div class="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-chart-line"></i></div>
-                        <h3 class="font-poppins font-bold mb-2">Zayıf konuları tespit et</h3>
-                        <p class="text-sm text-light-text-secondary">AI destekli analiz ve öneriler</p>
                     </div>
                     <div class="ep-value-card text-center">
                         <div class="w-12 h-12 rounded-xl bg-green-500/15 text-green-400 flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-calendar-check"></i></div>
@@ -293,12 +267,6 @@
                         <a href="https://www.tiktok.com/@yaziyo.akademi?_r=1&_t=ZS-97OMpAkPoub" id="social-tiktok"
                             class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors" aria-label="TikTok" target="_blank" rel="noopener noreferrer">
                             <i class="fa-brands fa-tiktok text-lg"></i>
-                        </a>
-                        <a href="https://www.facebook.com/profile.php?id=61591456372093&mibextid=wwXIfr&mibextid=wwXIfr"
-                            id="social-facebook"
-                            class="social-icon text-light-text-secondary dark:text-dark-text-secondary hover:text-yaziyo-gold dark:hover:text-yaziyo-gold transition-colors"
-                            aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-                            <i class="fa-brands fa-facebook text-lg"></i>
                         </a>
                         <a href="https://x.com/yaziyoakademi?s=21"
                             id="social-x"
