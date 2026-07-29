@@ -66,7 +66,13 @@ html.is-logged-in #eg-auth-gate { display: none !important; }
     background: rgb(var(--yaziyo-card-rgb));
     border: 1px solid rgb(var(--yaziyo-border-rgb));
     border-radius: 1.25rem;
-    padding: 1.25rem 1.35rem;
+    padding: 1rem 1.1rem;
+}
+
+@media (min-width: 640px) {
+    .eg-card {
+        padding: 1.25rem 1.35rem;
+    }
 }
 
 .eg-card-title {
@@ -148,10 +154,40 @@ html.is-logged-in #eg-auth-gate { display: none !important; }
     .eg-chart-wrap { grid-template-columns: 1.2fr 0.8fr; }
 }
 
+.eg-task-meta select,
+.eg-task-select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.65rem;
+    border: 1px solid rgb(var(--yaziyo-border-rgb));
+    background: rgb(var(--yaziyo-bg-rgb) / 0.6);
+    color: rgb(var(--yaziyo-text-rgb));
+}
+
+@media (min-width: 480px) {
+    .eg-task-meta select,
+    .eg-task-select {
+        width: auto;
+        min-width: 10rem;
+    }
+}
+
 .eg-line-chart,
 .eg-donut-chart {
     width: 100%;
     max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.eg-donut-chart {
+    width: min(100%, 200px);
+    height: auto;
+    margin-inline: auto;
+    aspect-ratio: 1;
 }
 
 .eg-calendar-item {

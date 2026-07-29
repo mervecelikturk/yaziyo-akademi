@@ -55,15 +55,28 @@
             width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; font-family: 'Inter', sans-serif;
             font-size: 0.875rem; transition: all 0.3s ease; background-color: rgb(var(--yaziyo-bg-rgb) / 0.5);
             border: 2px solid rgb(var(--yaziyo-border-rgb) / 0.8); color: rgb(var(--yaziyo-text-rgb));
+            min-width: 0; max-width: 100%;
+        }
+        .admin-form-input[type="datetime-local"],
+        .admin-form-input[type="date"],
+        .admin-form-input[type="time"] {
+            font-size: 16px;
         }
         .admin-form-input:focus, .admin-form-select:focus, .admin-form-textarea:focus {
             outline: none; border-color: rgb(var(--yaziyo-gold-rgb)); box-shadow: 0 0 0 4px rgb(var(--yaziyo-gold-rgb) / 0.15);
         }
         .admin-form-textarea { min-height: 90px; resize: vertical; }
+        .admin-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
         .admin-tab {
             padding: 0.65rem 1rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 700;
             font-family: 'Poppins', sans-serif; border: 1px solid rgb(var(--yaziyo-border-rgb));
-            white-space: nowrap;
+            white-space: nowrap; min-height: 2.75rem;
         }
         .admin-tab-active {
             background: linear-gradient(to right, #f97316, #ea580c); color: white; border-color: transparent;
@@ -115,7 +128,7 @@
             </div>
 
             <!-- Sekmeler -->
-            <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-2 mb-6">
+            <div class="admin-tabs">
                 <button type="button" class="admin-tab admin-tab-active" data-admin-tab="profil">Profil / Ana Sayfa</button>
                 <button type="button" class="admin-tab" data-admin-tab="notlar">Günlük Notlar</button>
                 <button type="button" class="admin-tab" data-admin-tab="gorevler">Görevler</button>
@@ -144,7 +157,7 @@
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Hedef 3dk metin neti</label>
                             <input id="field-hedef-3dk" type="number" min="1" value="90" class="admin-form-input">
                         </div>
-                        <div class="sm:col-span-2">
+                        <div class="sm:col-span-2 min-w-0">
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Sonraki görüşme (tarih/saat)</label>
                             <input id="field-gorusme" type="datetime-local" class="admin-form-input">
                         </div>
@@ -199,7 +212,7 @@
             <div id="tab-takvim" class="admin-panel hidden space-y-4">
                 <form id="takvim-form" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 space-y-4">
                     <input type="hidden" id="takvim-edit-id">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Başlık</label>
                             <input id="takvim-baslik" type="text" class="admin-form-input" value="Görüşme">
@@ -211,11 +224,11 @@
                                 <option value="online_ders">Online ders</option>
                             </select>
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Başlangıç</label>
                             <input id="takvim-baslangic" type="datetime-local" required class="admin-form-input">
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Bitiş</label>
                             <input id="takvim-bitis" type="datetime-local" required class="admin-form-input">
                         </div>
@@ -238,20 +251,20 @@
             <div id="tab-etut" class="admin-panel hidden space-y-4">
                 <form id="etut-form" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 space-y-4">
                     <input type="hidden" id="etut-edit-id">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="sm:col-span-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Başlık</label>
                             <input id="etut-baslik" type="text" class="admin-form-input" value="Etüt Odası">
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Başlangıç</label>
                             <input id="etut-baslangic" type="datetime-local" required class="admin-form-input">
                         </div>
-                        <div>
+                        <div class="min-w-0">
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Bitiş</label>
                             <input id="etut-bitis" type="datetime-local" required class="admin-form-input">
                         </div>
-                        <div class="sm:col-span-2">
+                        <div class="md:col-span-2 min-w-0">
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Google Meet linki</label>
                             <input id="etut-meet" type="url" required class="admin-form-input" placeholder="https://meet.google.com/...">
                         </div>
@@ -291,7 +304,7 @@
         </div>
     </main>
 
-    <div id="admin-toast" class="hidden fixed bottom-6 right-6 z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl"></div>
+    <div id="admin-toast" class="hidden fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl" style="bottom: max(1rem, env(safe-area-inset-bottom, 0px))"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/lib/adminPaths.js"></script>

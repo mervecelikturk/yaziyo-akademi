@@ -158,9 +158,6 @@
                         <button type="button" id="ep-btn-explore" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl hover:shadow-glow-gold transition-all hover:scale-[1.02]">
                             Paketleri Keşfet <i class="fa-solid fa-arrow-down"></i>
                         </button>
-                        <button type="button" id="ep-btn-compare" class="inline-flex items-center gap-2 px-6 py-3 ep-glass text-light-text dark:text-dark-text font-poppins font-bold rounded-xl border border-light-border dark:border-dark-border hover:border-yaziyo-gold transition-all">
-                            Karşılaştır
-                        </button>
                     </div>
                 </div>
             </div>
@@ -170,13 +167,13 @@
         <div class="ep-filter-bar">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col lg:flex-row lg:items-center gap-4">
-                    <div class="flex gap-2 overflow-x-auto pb-1 custom-scrollbar flex-grow" id="ep-category-filters"></div>
-                    <div class="flex gap-2 shrink-0">
-                        <div class="relative flex-grow lg:w-48">
+                    <div class="ep-filter-scroll" id="ep-category-filters"></div>
+                    <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto lg:shrink-0 min-w-0">
+                        <div class="relative flex-grow lg:w-48 min-w-0">
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-light-text-secondary text-sm"></i>
-                            <input id="ep-search" type="search" placeholder="Paket ara..." class="w-full pl-9 pr-3 py-2 rounded-lg text-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-yaziyo-gold/40">
+                            <input id="ep-search" type="search" placeholder="Paket ara..." class="w-full min-w-0 pl-9 pr-3 py-2 rounded-lg text-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-yaziyo-gold/40">
                         </div>
-                        <select id="ep-sort" class="py-2 px-3 rounded-lg text-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-yaziyo-gold/40">
+                        <select id="ep-sort" class="w-full sm:w-auto min-w-0 py-2 px-3 rounded-lg text-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-yaziyo-gold/40">
                             <option value="popular">En Popüler</option>
                             <option value="new">En Yeni</option>
                             <option value="price-asc">Fiyat (Artan)</option>
@@ -198,15 +195,6 @@
                 <h2 class="font-poppins font-bold text-2xl mb-6">Tüm Paketler</h2>
                 <div id="ep-package-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
                 <p id="ep-grid-empty" class="hidden text-center py-16 text-light-text-secondary">Aramanızla eşleşen paket bulunamadı.</p>
-            </section>
-
-            <!-- KARŞILAŞTIRMA -->
-            <section id="ep-comparison" class="ep-reveal-static">
-                <h2 class="font-poppins font-bold text-2xl mb-2">Paket Karşılaştırması</h2>
-                <p class="text-sm text-light-text-secondary mb-6">İhtiyacınıza göre plan seçin</p>
-                <div class="rounded-2xl border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card overflow-x-auto custom-scrollbar">
-                    <div id="ep-compare-table-wrap" class="p-2"></div>
-                </div>
             </section>
 
             <!-- DEĞER ÖNERİLERİ -->
@@ -247,36 +235,36 @@
     <div id="ep-drawer" class="ep-drawer" role="dialog" aria-modal="true" aria-labelledby="ep-drawer-title">
         <div id="ep-drawer-backdrop" class="ep-drawer-backdrop"></div>
         <div class="ep-drawer-panel">
-            <div class="flex items-center justify-between p-5 border-b border-light-border dark:border-dark-border shrink-0">
-                <h2 id="ep-drawer-title" class="font-poppins font-bold text-lg pr-8">Paket</h2>
-                <button type="button" id="ep-drawer-close" class="w-9 h-9 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex items-center justify-between p-5 border-b border-light-border dark:border-dark-border shrink-0 gap-3">
+                <h2 id="ep-drawer-title" class="font-poppins font-bold text-lg pr-2 min-w-0 break-words">Paket</h2>
+                <button type="button" id="ep-drawer-close" class="w-11 h-11 shrink-0 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="flex-grow overflow-y-auto custom-scrollbar p-5 space-y-6">
+            <div class="flex-grow overflow-y-auto custom-scrollbar p-5 space-y-6 min-w-0">
                 <div id="ep-drawer-rating" class="hidden"></div>
-                <p id="ep-drawer-desc" class="text-sm text-light-text-secondary leading-relaxed"></p>
+                <p id="ep-drawer-desc" class="text-sm text-light-text-secondary leading-relaxed break-words"></p>
                 <div>
                     <h3 class="text-[10px] font-bold uppercase tracking-widest text-yaziyo-gold mb-3">Modüller</h3>
-                    <ul id="ep-drawer-modules" class="rounded-xl border border-light-border dark:border-dark-border px-4"></ul>
+                    <ul id="ep-drawer-modules" class="rounded-xl border border-light-border dark:border-dark-border px-4 min-w-0"></ul>
                 </div>
                 <div>
                     <h3 class="text-[10px] font-bold uppercase tracking-widest text-yaziyo-gold mb-3">Neler Öğreneceksin?</h3>
-                    <ul id="ep-drawer-learn" class="space-y-2"></ul>
+                    <ul id="ep-drawer-learn" class="space-y-2 min-w-0"></ul>
                 </div>
             </div>
-            <div class="p-5 border-t border-light-border dark:border-dark-border shrink-0 ep-glass">
-                <p id="ep-drawer-validity" class="text-xs text-light-text-secondary mb-3"></p>
-                <div class="flex items-center justify-between mb-3">
+            <div class="ep-drawer-footer ep-glass">
+                <p id="ep-drawer-validity" class="text-xs text-light-text-secondary mb-3 break-words"></p>
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <span class="text-sm text-light-text-secondary">Fiyat</span>
-                    <span id="ep-drawer-price" class="text-2xl font-poppins font-bold text-yaziyo-gold"></span>
+                    <span id="ep-drawer-price" class="text-xl sm:text-2xl font-poppins font-bold text-yaziyo-gold break-all"></span>
                 </div>
-                <button type="button" id="ep-drawer-cta" class="w-full py-3.5 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl hover:shadow-glow-gold transition-all">
+                <button type="button" id="ep-drawer-cta" class="w-full min-h-11 py-3.5 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl hover:shadow-glow-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none">
                     Satın Al / Başla
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="ep-toast" class="hidden fixed bottom-6 right-6 z-[130] px-5 py-3 rounded-xl bg-yaziyo-card border border-yaziyo-border text-sm font-semibold shadow-2xl transition-opacity"></div>
+    <div id="ep-toast" class="hidden fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[130] px-5 py-3 rounded-xl bg-yaziyo-card border border-yaziyo-border text-sm font-semibold shadow-2xl transition-opacity" style="bottom: max(1rem, env(safe-area-inset-bottom, 0px))"></div>
 
     <footer id="main-footer"
         class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border transition-colors duration-300">

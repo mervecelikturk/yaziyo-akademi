@@ -46,9 +46,10 @@ function showToast(message, type = 'success') {
     const toast = els.toast;
     if (!toast) return;
     toast.textContent = message;
-    toast.className = `fixed bottom-6 right-6 z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl ${
+    toast.className = `fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl ${
         type === 'error' ? 'bg-red-500 text-white' : 'bg-yaziyo-gold text-slate-900'
     }`;
+    toast.style.bottom = 'max(1rem, env(safe-area-inset-bottom, 0px))';
     toast.classList.remove('hidden');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => toast.classList.add('hidden'), 3200);
@@ -108,9 +109,20 @@ async function loadUsers() {
         return;
     }
     users = data || [];
+    selectedUserId = '';
+
+    if (!els.userSelect) return;
+
+    if (!users.length) {
+        els.userSelect.disabled = true;
+        els.userSelect.innerHTML = '<option value="">Henüz hiç kullanıcı yok</option>';
+        return;
+    }
+
+    els.userSelect.disabled = false;
     els.userSelect.innerHTML = '<option value="">— Kullanıcı seçin —</option>'
         + users.map((u) =>
-            `<option value="${u.id}">${escapeHtml(userDisplayName(u))} (${escapeHtml(u.email || '')})</option>`
+            `<option value="${u.id}">${escapeHtml(userDisplayName(u))}</option>`
         ).join('');
 }
 

@@ -26,8 +26,10 @@
         'mulakat-simulasyonu': 'mulakatlar',
         becayis: 'becayis',
         'egitim-paketleri': 'egitim-paketleri',
+        egitimlerim: 'egitimlerim',
         haberler: 'haberler',
         'kpss-calismasi': 'kpss-calismasi',
+        'live-chat': 'live-chat',
         iletisim: 'iletisim',
         'giris-kayit': '',
         'sifre-sifirla': '',
@@ -243,8 +245,10 @@
                     </li>
                     <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'becayis')}" data-page="becayis">Becayiş</a></li>
                     <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'egitim-paketleri')}" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'egitimlerim')}" data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
                     <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'haberler')}" data-page="haberler">Haberler</a></li>
                     <li><a href="${paths.pageHref('kpssCalismasi.html')}" class="nav-link${ac(active, 'kpss-calismasi')}" data-page="kpss-calismasi">KPSS Çalışması</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'live-chat')}" data-page="live-chat" title="Eğitim paketi satın alındığında açılır">Live Chat</a></li>
                     <li><a href="${paths.pageHref('iletisim.html')}" class="nav-link${ac(active, 'iletisim')}" data-page="iletisim">İletişim</a></li>
                 </ul>
                 <div class="lg:hidden flex items-center justify-between py-2">
@@ -284,8 +288,10 @@
                         </li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'becayis')}" data-page="becayis">Becayiş</a></li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'egitim-paketleri')}" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'egitimlerim')}" data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'haberler')}" data-page="haberler">Haberler</a></li>
                         <li><a href="${paths.pageHref('kpssCalismasi.html')}" class="mobile-nav-link${ac(active, 'kpss-calismasi')}" data-page="kpss-calismasi">KPSS Çalışması</a></li>
+                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'live-chat')}" data-page="live-chat" title="Eğitim paketi satın alındığında açılır">Live Chat</a></li>
                         <li><a href="${paths.pageHref('iletisim.html')}" class="mobile-nav-link${ac(active, 'iletisim')}" data-page="iletisim">İletişim</a></li>
                     </ul>
                 </div>
@@ -307,17 +313,66 @@
         return true;
     }
 
+    function loadPackageNavAccessScript() {
+        if (global.YaziyoPackageNavAccess) return Promise.resolve();
+        const src = getPaths().assetHref
+            ? getPaths().assetHref('js/packageNavAccess.js')
+            : '../../js/packageNavAccess.js';
+        return new Promise((resolve) => {
+            const finish = () => resolve();
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) {
+                if (global.YaziyoPackageNavAccess) return finish();
+                existing.addEventListener('load', finish);
+                existing.addEventListener('error', finish);
+                // Script zaten yüklenmiş olabilir; kısa poll
+                let n = 0;
+                const t = setInterval(() => {
+                    if (global.YaziyoPackageNavAccess || ++n > 40) {
+                        clearInterval(t);
+                        finish();
+                    }
+                }, 25);
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = finish;
+            script.onerror = finish;
+            document.head.appendChild(script);
+        });
+    }
+
+    async function applyPackageGatedNav() {
+        await loadPackageNavAccessScript();
+        if (!global.YaziyoPackageNavAccess?.syncPackageNavAccess) return;
+        global.YaziyoPackageNavAccess.lockPackageNav?.();
+        await global.YaziyoPackageNavAccess.syncPackageNavAccess();
+    }
+
     function boot() {
         const mounted = mountSharedHeader();
-        if (mounted && global.YaziyoPageStatus) {
+        if (!mounted) return false;
+
+        if (global.YaziyoPageStatus) {
             global.YaziyoPageStatus.applyToNavbar();
             applyNavActive(resolveActiveNav());
+            const afterStatus = () => applyPackageGatedNav().then(() => {
+                applyNavActive(resolveActiveNav());
+            }).catch(() => { /* ignore */ });
+
             if (typeof global.YaziyoPageStatus.syncFromRemote === 'function') {
                 global.YaziyoPageStatus.syncFromRemote().then(() => {
                     global.YaziyoPageStatus.applyToNavbar();
-                    applyNavActive(resolveActiveNav());
-                }).catch(() => { /* ignore */ });
+                    return afterStatus();
+                }).catch(() => afterStatus());
+            } else {
+                afterStatus();
             }
+        } else {
+            applyPackageGatedNav().then(() => {
+                applyNavActive(resolveActiveNav());
+            }).catch(() => { /* ignore */ });
         }
         return mounted;
     }

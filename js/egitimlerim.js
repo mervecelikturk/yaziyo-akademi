@@ -29,7 +29,8 @@ import {
 } from './lib/egitimlerimApi.js';
 import {
     submitPaketDegerlendirme,
-    fetchKullaniciPaketDegerlendirme
+    fetchKullaniciPaketDegerlendirme,
+    userHasPurchasedPaket
 } from './lib/egitimPaketleriApi.js';
 
 let currentUser = null;
@@ -65,9 +66,10 @@ function showToast(msg, type = 'success') {
     const t = els.toast;
     if (!t) return;
     t.textContent = msg;
-    t.className = `fixed bottom-6 right-6 z-[130] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl ${
+    t.className = `fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[130] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl ${
         type === 'error' ? 'bg-red-500 text-white' : 'bg-yaziyo-gold text-slate-900'
     }`;
+    t.style.bottom = 'max(1rem, env(safe-area-inset-bottom, 0px))';
     t.classList.remove('hidden');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => t.classList.add('hidden'), 3200);
@@ -76,6 +78,7 @@ function showToast(msg, type = 'success') {
 function showLoggedIn(user) {
     document.documentElement.classList.add('is-logged-in');
     els.authGate?.classList.add('hidden');
+    els.packageGate?.classList.add('hidden');
     els.main?.classList.remove('hidden');
     const name = user?.user_metadata?.site_full_name
         || user?.user_metadata?.full_name
@@ -88,6 +91,14 @@ function showLoggedIn(user) {
 function showLoggedOut() {
     document.documentElement.classList.remove('is-logged-in');
     els.authGate?.classList.remove('hidden');
+    els.packageGate?.classList.add('hidden');
+    els.main?.classList.add('hidden');
+}
+
+function showPackageGate() {
+    document.documentElement.classList.add('is-logged-in');
+    els.authGate?.classList.add('hidden');
+    els.packageGate?.classList.remove('hidden');
     els.main?.classList.add('hidden');
 }
 
@@ -235,7 +246,7 @@ function renderGorevler() {
                 <p class="text-sm text-light-text-secondary">${escapeHtml(g.aciklama || '')}</p>
                 <div class="eg-task-meta flex flex-wrap items-center justify-between gap-2">
                     <span><i class="fa-regular fa-clock mr-1"></i>~${g.tahmini_sure_dk || 15} dk</span>
-                    <select class="admin-form-select text-xs py-1.5 px-2 rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg" data-gorev-durum="${g.id}">
+                    <select class="eg-task-select" data-gorev-durum="${g.id}">
                         ${opts}
                     </select>
                 </div>
@@ -260,14 +271,16 @@ function drawLineChart(canvas, values, labels, hedef) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    const w = canvas.clientWidth || 320;
-    const h = canvas.height || 180;
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, w, h);
+    const cssH = 180;
+    const w = Math.max(canvas.clientWidth || 280, 200);
+    canvas.style.height = `${cssH}px`;
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(cssH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, cssH);
 
-    const pad = 28;
+    const h = cssH;
+    const pad = w < 340 ? 20 : 28;
     const maxVal = Math.max(hedef || 0, ...values, 1) * 1.15;
     const stepX = (w - pad * 2) / Math.max(values.length - 1, 1);
 
@@ -306,6 +319,7 @@ function drawLineChart(canvas, values, labels, hedef) {
     });
     ctx.stroke();
 
+    const showEvery = values.length > 6 && w < 400 ? 2 : 1;
     values.forEach((v, i) => {
         const x = pad + i * stepX;
         const y = h - pad - ((v / maxVal) * (h - pad * 2));
@@ -313,10 +327,13 @@ function drawLineChart(canvas, values, labels, hedef) {
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
         ctx.fill();
+        if (i % showEvery !== 0 && i !== values.length - 1) return;
         ctx.fillStyle = '#94a3b8';
         ctx.font = '10px Inter, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(labels[i] || '', x, h - 8);
+        const label = labels[i] || '';
+        const shortLabel = w < 360 && label.length > 6 ? `${label.slice(0, 5)}…` : label;
+        ctx.fillText(shortLabel, x, h - 8);
         ctx.fillText(String(v ?? '—'), x, y - 8);
     });
 }
@@ -325,10 +342,12 @@ function drawDonutChart(canvas, percent) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    const size = Math.min(canvas.clientWidth || 200, 200);
-    canvas.width = size * dpr;
-    canvas.height = size * dpr;
-    ctx.scale(dpr, dpr);
+    const size = Math.min(canvas.clientWidth || 180, 200);
+    canvas.style.width = `${size}px`;
+    canvas.style.height = `${size}px`;
+    canvas.width = Math.floor(size * dpr);
+    canvas.height = Math.floor(size * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, size, size);
 
     const cx = size / 2;
@@ -353,6 +372,28 @@ function drawDonutChart(canvas, percent) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${Math.round(p * 100)}%`, cx, cy);
+}
+
+let lastIlerlemeChart = null;
+let chartResizeObserver = null;
+
+function redrawIlerlemeCharts() {
+    if (!lastIlerlemeChart) return;
+    const { lineValues, labels, hedef, ort } = lastIlerlemeChart;
+    drawLineChart(els.lineChart, lineValues, labels, hedef);
+    drawDonutChart(els.donutChart, ort);
+}
+
+function bindChartResize() {
+    if (chartResizeObserver || typeof ResizeObserver === 'undefined') return;
+    const target = els.lineChart?.parentElement || els.lineChart;
+    if (!target) return;
+    let t = null;
+    chartResizeObserver = new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(redrawIlerlemeCharts, 120);
+    });
+    chartResizeObserver.observe(target);
 }
 
 async function loadIlerleme() {
@@ -382,17 +423,16 @@ async function loadIlerleme() {
         Number(min3) || 0,
         Number(max3) || 0
     ];
-    drawLineChart(
-        els.lineChart,
-        lineValues,
-        ['Min hız', 'Max hız', 'Min 3dk', 'Max 3dk'],
-        Math.max(hedefH, hedef3)
-    );
-
+    const labels = ['Min hız', 'Max hız', 'Min 3dk', 'Max 3dk'];
+    const hedef = Math.max(hedefH, hedef3);
     const hizPct = maxH != null ? Math.min(100, (Number(maxH) / hedefH) * 100) : 0;
     const metinPct = max3 != null ? Math.min(100, (Number(max3) / hedef3) * 100) : 0;
     const ort = (hizPct + metinPct) / 2;
+
+    lastIlerlemeChart = { lineValues, labels, hedef, ort };
+    drawLineChart(els.lineChart, lineValues, labels, hedef);
     drawDonutChart(els.donutChart, ort);
+    bindChartResize();
 }
 
 /* ---------- Takvim ---------- */
@@ -568,6 +608,7 @@ async function indirBelge(id) {
 
 function cacheElements() {
     els.authGate = document.getElementById('eg-auth-gate');
+    els.packageGate = document.getElementById('eg-package-gate');
     els.main = document.getElementById('eg-main-content');
     els.menuToggle = document.getElementById('eg-menu-toggle');
     els.menuList = document.getElementById('eg-menu-list');
@@ -715,6 +756,13 @@ async function init() {
     }
 
     currentUser = result.user;
+
+    const hasPackage = await userHasPurchasedPaket(supabase);
+    if (!hasPackage) {
+        showPackageGate();
+        return;
+    }
+
     showLoggedIn(currentUser);
     await loadAnaSayfa();
 }

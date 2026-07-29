@@ -14,6 +14,7 @@
         'becayis.html': 'becayis',
         'egitimPaketleri.html': 'egitim-paketleri',
         'egitimlerim.html': 'egitimlerim',
+        'liveChat.html': 'live-chat',
         'adminEgitimlerim.html': 'admin-egitimlerim',
         'girisKayit.html': 'giris-kayit',
         'haberler.html': 'haberler',

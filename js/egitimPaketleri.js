@@ -10,17 +10,6 @@ import {
     BADGE_OPTIONS
 } from './lib/egitimPaketleriApi.js';
 
-const COMPARISON = {
-    plans: ['Temel', 'Pro', 'Premium'],
-    rows: [
-        { name: 'Video Ders', values: [true, true, true] },
-        { name: 'AI Analiz', values: [false, true, true] },
-        { name: 'Deneme Sınavı', values: [true, true, true] },
-        { name: 'Özel Plan', values: [false, true, true] },
-        { name: 'Mentor Desteği', values: [false, false, true] }
-    ]
-};
-
 let PACKAGES = [];
 let activeCategory = 'Tümü';
 let searchQuery = '';
@@ -127,18 +116,18 @@ function renderFeatured() {
                 <span class="inline-flex self-start items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-yaziyo-gold/15 text-yaziyo-gold border border-yaziyo-gold/30 mb-4">
                     <i class="fa-solid fa-fire"></i> Öne Çıkan Paket
                 </span>
-                <h2 class="font-poppins font-bold text-2xl sm:text-3xl text-light-text dark:text-dark-text mb-3">${escapeHtml(p.title)}</h2>
+                <h2 class="font-poppins font-bold text-2xl sm:text-3xl text-light-text dark:text-dark-text mb-3 break-words">${escapeHtml(p.title)}</h2>
                 ${ratingStarsHtml(p.ratingAvg, p.ratingCount, { size: 'lg' }) ? `<div class="mb-3">${ratingStarsHtml(p.ratingAvg, p.ratingCount, { size: 'lg' })}</div>` : ''}
-                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6 leading-relaxed">${escapeHtml(p.description)}</p>
+                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mb-6 leading-relaxed break-words">${escapeHtml(p.description)}</p>
                 <ul class="space-y-2 mb-8">
                     ${(p.features || []).slice(0, 5).map((f) => `
-                        <li class="flex items-center gap-2 text-sm text-light-text dark:text-dark-text">
-                            <i class="fa-solid fa-circle-check text-yaziyo-gold text-xs"></i>${escapeHtml(f)}
+                        <li class="flex items-start gap-2 text-sm text-light-text dark:text-dark-text min-w-0">
+                            <i class="fa-solid fa-circle-check text-yaziyo-gold text-xs mt-1 shrink-0"></i><span class="break-words">${escapeHtml(f)}</span>
                         </li>`).join('')}
                 </ul>
                 <div class="flex flex-wrap items-center gap-4">
-                    <span class="text-2xl font-poppins font-bold text-yaziyo-gold">${formatPrice(p.price)}</span>
-                    <button type="button" class="ep-cta-pulse inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl hover:shadow-glow-gold transition-all" data-package-start="${p.id}">
+                    <span class="text-xl sm:text-2xl font-poppins font-bold text-yaziyo-gold break-all">${formatPrice(p.price)}</span>
+                    <button type="button" class="ep-cta-pulse inline-flex items-center justify-center gap-2 min-h-11 px-6 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl hover:shadow-glow-gold transition-all" data-package-start="${p.id}">
                         İncele <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </div>
@@ -188,12 +177,12 @@ function renderGrid() {
                         <i class="fa-solid fa-check text-yaziyo-gold mt-0.5 text-[10px]"></i><span class="line-clamp-1">${escapeHtml(f)}</span>
                     </li>`).join('')}
             </ul>
-            <div class="pt-4 border-t border-light-border dark:border-dark-border flex items-center justify-between gap-3">
-                <div>
-                    <span class="text-2xl font-poppins font-bold text-yaziyo-gold">${formatPrice(p.price)}</span>
+            <div class="pt-4 border-t border-light-border dark:border-dark-border flex flex-wrap items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <span class="text-xl sm:text-2xl font-poppins font-bold text-yaziyo-gold break-all">${formatPrice(p.price)}</span>
                     ${p.price > 0 ? '<span class="text-[10px] text-light-text-secondary block">tek sefer</span>' : ''}
                 </div>
-                <button type="button" class="px-4 py-2 rounded-lg border border-yaziyo-gold/40 text-yaziyo-gold text-sm font-bold hover:bg-yaziyo-gold hover:text-slate-900 transition-all" data-package-open="${p.id}">
+                <button type="button" class="shrink-0 min-h-10 px-4 py-2 rounded-lg border border-yaziyo-gold/40 text-yaziyo-gold text-sm font-bold hover:bg-yaziyo-gold hover:text-slate-900 transition-all" data-package-open="${p.id}">
                     İncele
                 </button>
             </div>
@@ -201,41 +190,6 @@ function renderGrid() {
     `).join('');
 
     observeReveal();
-}
-
-function renderComparison() {
-    const el = els.compareWrap;
-    const section = els.comparisonSection;
-    if (!el) return;
-
-    if (!PACKAGES.length) {
-        section?.classList.add('hidden');
-        return;
-    }
-    section?.classList.remove('hidden');
-
-    const planHeaders = COMPARISON.plans.map((plan) => `
-        <th class="text-center font-poppins font-bold text-sm ${plan === 'Pro' ? 'text-yaziyo-gold' : ''}">${escapeHtml(plan)}</th>`).join('');
-
-    const rows = COMPARISON.rows.map((row) => `
-        <tr>
-            <td>${escapeHtml(row.name)}</td>
-            ${row.values.map((v, i) => `
-                <td class="text-center ${COMPARISON.plans[i] === 'Pro' ? 'bg-yaziyo-gold/5' : ''}">
-                    ${v ? '<i class="fa-solid fa-circle-check text-green-500"></i>' : '<i class="fa-solid fa-xmark text-red-400/70"></i>'}
-                </td>`).join('')}
-        </tr>`).join('');
-
-    el.innerHTML = `
-        <table class="ep-compare-table w-full text-sm">
-            <thead>
-                <tr class="bg-light-bg/50 dark:bg-dark-bg/50">
-                    <th class="text-left text-light-text-secondary text-xs uppercase">Özellik</th>
-                    ${planHeaders}
-                </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-        </table>`;
 }
 
 function openDrawer(pkg) {
@@ -266,18 +220,26 @@ function openDrawer(pkg) {
     }
     els.drawerModules.innerHTML = (pkg.modules || []).length
         ? (pkg.modules || []).map((m) => `
-            <li class="flex items-center gap-2 text-sm py-2 border-b border-light-border dark:border-dark-border last:border-0">
-                <i class="fa-solid fa-layer-group text-yaziyo-gold text-xs"></i>${escapeHtml(m)}
+            <li class="flex items-start gap-2 text-sm py-2 border-b border-light-border dark:border-dark-border last:border-0 min-w-0">
+                <i class="fa-solid fa-layer-group text-yaziyo-gold text-xs mt-1 shrink-0"></i><span class="break-words min-w-0">${escapeHtml(m)}</span>
             </li>`).join('')
         : '<li class="text-sm text-light-text-secondary py-2">Modül bilgisi eklenmemiş.</li>';
     els.drawerLearn.innerHTML = (pkg.learn || []).length
         ? (pkg.learn || []).map((l) => `
-            <li class="flex items-start gap-2 text-sm text-light-text-secondary">
-                <i class="fa-solid fa-lightbulb text-yaziyo-gold mt-1 text-xs"></i>${escapeHtml(l)}
+            <li class="flex items-start gap-2 text-sm text-light-text-secondary min-w-0">
+                <i class="fa-solid fa-lightbulb text-yaziyo-gold mt-1 text-xs shrink-0"></i><span class="break-words min-w-0">${escapeHtml(l)}</span>
             </li>`).join('')
         : '<li class="text-sm text-light-text-secondary">Henüz öğrenme hedefi eklenmemiş.</li>';
 
-    els.drawerCta.textContent = 'Satın Al / Başla';
+    if (soldOut) {
+        els.drawerCta.textContent = 'Kontenjan dolu';
+        els.drawerCta.disabled = true;
+        els.drawerCta.classList.add('opacity-50', 'cursor-not-allowed');
+    } else {
+        els.drawerCta.textContent = 'Satın Al / Başla';
+        els.drawerCta.disabled = false;
+        els.drawerCta.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
     delete els.drawerCta.dataset.href;
     if (pkg.contentUrl) {
         els.drawerCta.dataset.contentUrl = pkg.contentUrl;
@@ -401,7 +363,6 @@ function bindEvents() {
     });
 
     els.btnExplore?.addEventListener('click', () => scrollToSection('ep-packages'));
-    els.btnCompare?.addEventListener('click', () => scrollToSection('ep-comparison'));
 
     document.addEventListener('click', (e) => {
         const actionBtn = e.target.closest('[data-package-open], [data-package-start]');
@@ -435,11 +396,12 @@ function showToast(msg, type = 'success') {
     const t = els.toast;
     if (!t) return;
     t.textContent = msg;
-    t.className = `fixed bottom-6 right-6 z-[130] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-opacity ${
+    t.className = `fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[130] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl transition-opacity ${
         type === 'error'
             ? 'bg-red-500 text-white border border-red-400'
             : 'bg-yaziyo-card border border-yaziyo-border'
     }`;
+    t.style.bottom = 'max(1rem, env(safe-area-inset-bottom, 0px))';
     t.classList.remove('hidden', 'opacity-0');
     clearTimeout(showToast._t1);
     clearTimeout(showToast._t2);
@@ -467,9 +429,6 @@ function cacheElements() {
     els.search = document.getElementById('ep-search');
     els.sort = document.getElementById('ep-sort');
     els.btnExplore = document.getElementById('ep-btn-explore');
-    els.btnCompare = document.getElementById('ep-btn-compare');
-    els.compareWrap = document.getElementById('ep-compare-table-wrap');
-    els.comparisonSection = document.getElementById('ep-comparison');
     els.drawer = document.getElementById('ep-drawer');
     els.drawerBackdrop = document.getElementById('ep-drawer-backdrop');
     els.drawerClose = document.getElementById('ep-drawer-close');
@@ -494,14 +453,27 @@ async function loadPackages() {
     PACKAGES = data || [];
 }
 
+function syncFilterStickyOffset() {
+    const header = document.getElementById('main-header');
+    if (!header) return;
+    const h = Math.ceil(header.getBoundingClientRect().height);
+    if (h > 0) {
+        document.documentElement.style.setProperty('--yaziyo-header-offset', `${h}px`);
+    }
+}
+
 async function init() {
     cacheElements();
     bindEvents();
+    syncFilterStickyOffset();
+    window.addEventListener('resize', syncFilterStickyOffset);
+    // Navbar mount sonrası header yüksekliği değişebilir
+    setTimeout(syncFilterStickyOffset, 50);
+    setTimeout(syncFilterStickyOffset, 300);
     await loadPackages();
     renderCategoryFilters();
     renderFeatured();
     renderGrid();
-    renderComparison();
     observeReveal();
     document.querySelectorAll('.ep-reveal-static').forEach((n) => n.classList.add('ep-revealed'));
 }

@@ -67,7 +67,8 @@ function showToast(message, type = 'success') {
     const toast = els.toast;
     if (!toast) return;
     toast.textContent = message;
-    toast.className = `fixed bottom-6 right-6 z-[200] px-5 py-3 rounded-xl font-inter text-sm font-semibold shadow-2xl transition-all duration-300 ${type === 'error' ? 'bg-red-500 text-white' : 'bg-yaziyo-gold text-slate-900'}`;
+    toast.className = `fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[200] px-5 py-3 rounded-xl font-inter text-sm font-semibold shadow-2xl transition-all duration-300 ${type === 'error' ? 'bg-red-500 text-white' : 'bg-yaziyo-gold text-slate-900'}`;
+    toast.style.bottom = 'max(1rem, env(safe-area-inset-bottom, 0px))';
     toast.classList.remove('hidden', 'opacity-0');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => {
@@ -80,6 +81,7 @@ function openModal(modalEl) {
     if (!modalEl) return;
     modalEl.classList.remove('hidden');
     modalEl.classList.add('flex');
+    document.body.style.overflow = 'hidden';
     requestAnimationFrame(() => {
         modalEl.querySelector('[data-backdrop]')?.classList.remove('opacity-0');
         modalEl.querySelector('[data-panel]')?.classList.remove('opacity-0', 'scale-95');
@@ -96,6 +98,10 @@ function closeModal(modalEl) {
     setTimeout(() => {
         modalEl.classList.remove('flex');
         modalEl.classList.add('hidden');
+        if (!document.getElementById('package-modal')?.classList.contains('flex')
+            && !document.getElementById('delete-modal')?.classList.contains('flex')) {
+            document.body.style.overflow = '';
+        }
     }, 280);
 }
 
@@ -210,8 +216,8 @@ function renderTable() {
                 <td class="px-6 py-4 text-center">${p.featured ? '<i class="fa-solid fa-star text-yaziyo-gold"></i>' : '—'}</td>
                 <td class="px-6 py-4 text-right">
                     <div class="inline-flex gap-2">
-                        <button type="button" class="w-8 h-8 rounded-lg border border-light-border dark:border-dark-border hover:border-yaziyo-gold hover:text-yaziyo-gold transition-all" data-edit="${p.id}" title="Düzenle"><i class="fa-solid fa-pen text-xs"></i></button>
-                        <button type="button" class="w-8 h-8 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all" data-delete="${p.id}" title="Sil"><i class="fa-solid fa-trash text-xs"></i></button>
+                        <button type="button" class="w-11 h-11 rounded-lg border border-light-border dark:border-dark-border hover:border-yaziyo-gold hover:text-yaziyo-gold transition-all" data-edit="${p.id}" title="Düzenle"><i class="fa-solid fa-pen text-xs"></i></button>
+                        <button type="button" class="w-11 h-11 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500 hover:text-white transition-all" data-delete="${p.id}" title="Sil"><i class="fa-solid fa-trash text-xs"></i></button>
                     </div>
                 </td>
             </tr>`;
@@ -228,9 +234,9 @@ function renderYetkiCheckboxes(selected = []) {
             <p class="text-[10px] font-bold uppercase tracking-wider text-yaziyo-gold mb-2">${escapeHtml(group.group)}</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 ${group.items.map((item) => `
-                    <label class="flex items-start gap-2 text-sm cursor-pointer rounded-lg px-2 py-1.5 hover:bg-light-bg/60 dark:hover:bg-dark-bg/60">
+                    <label class="flex items-start gap-2 text-sm cursor-pointer rounded-lg px-2 py-2.5 min-h-11 hover:bg-light-bg/60 dark:hover:bg-dark-bg/60">
                         <input type="checkbox" class="mt-0.5 rounded border-light-border text-yaziyo-gold focus:ring-yaziyo-gold" data-yetki-id="${escapeHtml(item.id)}" ${set.has(item.id) ? 'checked' : ''}>
-                        <span>${escapeHtml(item.label)}</span>
+                        <span class="break-words">${escapeHtml(item.label)}</span>
                     </label>
                 `).join('')}
             </div>

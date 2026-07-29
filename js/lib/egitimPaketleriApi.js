@@ -344,3 +344,44 @@ export async function fetchKullaniciPaketDegerlendirme(paketId, userId, client =
         .maybeSingle();
     return { data, error };
 }
+
+/** Süresi dolmamış aktif paket var mı? */
+export async function userHasActivePaket(client = supabase) {
+    if (!client) return false;
+    const { data: { session } } = await client.auth.getSession();
+    if (!session?.user) return false;
+
+    const { data, error } = await client
+        .from('egitim_paketi_satin_almalar')
+        .select('id')
+        .eq('kullanici_id', session.user.id)
+        .gt('bitis_tarihi', new Date().toISOString())
+        .limit(1)
+        .maybeSingle();
+
+    if (error) {
+        console.warn('Aktif paket kontrolü:', error.message || error);
+        return false;
+    }
+    return !!data;
+}
+
+/** En az bir kez paket satın almış mı? (navbar Eğitimlerim / Live Chat) */
+export async function userHasPurchasedPaket(client = supabase) {
+    if (!client) return false;
+    const { data: { session } } = await client.auth.getSession();
+    if (!session?.user) return false;
+
+    const { data, error } = await client
+        .from('egitim_paketi_satin_almalar')
+        .select('id')
+        .eq('kullanici_id', session.user.id)
+        .limit(1)
+        .maybeSingle();
+
+    if (error) {
+        console.warn('Paket satın alma kontrolü:', error.message || error);
+        return false;
+    }
+    return !!data;
+}

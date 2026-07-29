@@ -72,7 +72,10 @@
             background: rgb(var(--yaziyo-card-rgb)); border: 1px solid rgb(var(--yaziyo-border-rgb));
             border-radius: 1rem; padding: 1.25rem; transition: all 0.3s ease;
         }
-        .admin-stat-card:hover { border-color: var(--yaziyo-gold-hex); transform: translateY(-2px); }
+        .admin-stat-card:hover { border-color: var(--yaziyo-gold-hex); }
+        @media (hover: hover) {
+            .admin-stat-card:hover { transform: translateY(-2px); }
+        }
     </style>
 </head>
 
@@ -223,11 +226,12 @@
             </button>
         </div>
 
-        <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-bg/30 dark:bg-dark-bg/30">
+        <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden admin-table-card">
+            <div class="px-4 sm:px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-bg/30 dark:bg-dark-bg/30 flex items-center justify-between gap-2">
                 <h2 class="text-sm font-poppins font-bold text-light-text-secondary uppercase tracking-wider">Paket Listesi</h2>
+                <p class="text-[10px] text-light-text-secondary sm:hidden">Yana kaydırın →</p>
             </div>
-            <div class="overflow-x-auto custom-scrollbar">
+            <div class="overflow-x-auto custom-scrollbar admin-table-scroll">
                 <table class="w-full text-left border-collapse min-w-[720px]">
                     <thead>
                         <tr class="bg-light-bg/50 dark:bg-dark-bg/50 border-b border-light-border dark:border-dark-border">
@@ -247,14 +251,14 @@
     </main>
 
     <!-- PAKET MODALI -->
-    <div id="package-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4">
+    <div id="package-modal" class="fixed inset-0 z-[120] hidden items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
         <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
-        <div data-panel class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto custom-scrollbar bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-2xl opacity-0 scale-95 transition-all duration-300">
-            <div class="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-card/95 dark:bg-dark-card/95 backdrop-blur-md">
-                <h2 id="package-modal-title" class="font-poppins font-bold text-lg">Yeni Eğitim Paketi</h2>
-                <button type="button" data-close-modal class="w-9 h-9 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+        <div data-panel class="relative w-full max-w-2xl max-h-[min(92dvh,92vh)] overflow-y-auto custom-scrollbar bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-t-2xl sm:rounded-2xl shadow-2xl opacity-0 scale-95 transition-all duration-300 mt-auto sm:mt-0" style="padding-bottom: env(safe-area-inset-bottom, 0px)">
+            <div class="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-card/95 dark:bg-dark-card/95 backdrop-blur-md">
+                <h2 id="package-modal-title" class="font-poppins font-bold text-lg min-w-0 break-words">Yeni Eğitim Paketi</h2>
+                <button type="button" data-close-modal class="w-11 h-11 shrink-0 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="package-form" class="p-6 space-y-5">
+            <form id="package-form" class="p-4 sm:p-6 space-y-5">
                 <div>
                     <label for="field-title" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Paket Başlığı *</label>
                     <input id="field-title" type="text" required class="admin-form-input" placeholder="Örn: Zabıt Katipliği Pro Paket">
@@ -328,29 +332,29 @@
                         </div>
                     </div>
                     <p class="text-[11px] text-light-text-secondary mb-3">Satın alan kullanıcıda hangi özelliklerin aktif olacağını detaylı seçin.</p>
-                    <div id="field-yetkiler" class="space-y-4 max-h-64 overflow-y-auto custom-scrollbar rounded-xl border border-light-border dark:border-dark-border p-3 sm:p-4"></div>
+                    <div id="field-yetkiler" class="space-y-4 max-h-none sm:max-h-64 overflow-visible sm:overflow-y-auto custom-scrollbar rounded-xl border border-light-border dark:border-dark-border p-3 sm:p-4"></div>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <label class="flex items-center gap-2 text-sm cursor-pointer">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer min-h-11">
                         <input id="field-active" type="checkbox" checked class="rounded border-light-border text-yaziyo-gold focus:ring-yaziyo-gold">
                         <span>Yayında</span>
                     </label>
-                    <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer min-h-11">
                         <input id="field-featured" type="checkbox" class="rounded border-light-border text-yaziyo-gold focus:ring-yaziyo-gold">
                         <span>Öne Çıkan</span>
                     </label>
-                    <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <label class="flex items-center gap-2 text-sm cursor-pointer min-h-11">
                         <input id="field-popular" type="checkbox" class="rounded border-light-border text-yaziyo-gold focus:ring-yaziyo-gold">
                         <span>Popüler</span>
                     </label>
-                    <div>
+                    <div class="min-w-0">
                         <label for="field-sort" class="block text-[10px] font-bold uppercase text-light-text-secondary mb-1">Sıra</label>
                         <input id="field-sort" type="number" value="0" class="admin-form-input py-2">
                     </div>
                 </div>
-                <div class="flex gap-3 pt-2">
-                    <button type="button" data-close-modal class="flex-1 py-3 rounded-xl border border-light-border dark:border-dark-border font-bold text-sm">İptal</button>
-                    <button type="submit" id="btn-save-package" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm hover:shadow-lg transition-all">Kaydet</button>
+                <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+                    <button type="button" data-close-modal class="flex-1 min-h-11 py-3 rounded-xl border border-light-border dark:border-dark-border font-bold text-sm">İptal</button>
+                    <button type="submit" id="btn-save-package" class="flex-1 min-h-11 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm hover:shadow-lg transition-all">Kaydet</button>
                 </div>
             </form>
         </div>
@@ -370,7 +374,7 @@
         </div>
     </div>
 
-    <div id="admin-toast" class="hidden fixed bottom-6 right-6 z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl"></div>
+    <div id="admin-toast" class="hidden fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl" style="bottom: max(1rem, env(safe-area-inset-bottom, 0px))"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../../js/lib/adminPaths.js"></script>
     <script src="../../js/pageStatus.js"></script>

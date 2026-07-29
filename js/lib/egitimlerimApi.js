@@ -463,13 +463,27 @@ export async function deleteBelge(id, client = supabase) {
     return { error };
 }
 
-/* ---------- Kullanıcı listesi (admin seçici) ---------- */
+/* ---------- Kullanıcı listesi (admin seçici: yalnızca paket satın alanlar) ---------- */
 
 export async function fetchKullaniciListesi(client = supabase) {
     if (!client) return { data: [], error: null };
+
+    const { data: purchases, error: purchaseError } = await client
+        .from('egitim_paketi_satin_almalar')
+        .select('kullanici_id');
+
+    if (purchaseError) return { data: [], error: purchaseError };
+
+    const ids = [...new Set(
+        (purchases || []).map((row) => row.kullanici_id).filter(Boolean)
+    )];
+    if (!ids.length) return { data: [], error: null };
+
     const { data, error } = await client
         .from('kullanicilar')
         .select('id, email, full_name, created_at')
+        .in('id', ids)
         .order('full_name', { ascending: true });
+
     return { data: data || [], error };
 }
