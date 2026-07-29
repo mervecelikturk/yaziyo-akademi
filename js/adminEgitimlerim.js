@@ -308,12 +308,11 @@ function resetEtutForm() {
 /* ---------- Belgeler / PDF ---------- */
 
 function syncBelgeAlici() {
-    const u = selectedUser();
-    els.belgeAlici.value = userDisplayName(u);
+    if (els.belgeAlici) els.belgeAlici.value = '';
     pendingPdfBase64 = null;
     pendingPdfFileName = '';
-    els.btnBelgeGonder.disabled = true;
-    els.belgePdfStatus.textContent = '';
+    if (els.btnBelgeGonder) els.btnBelgeGonder.disabled = true;
+    if (els.belgePdfStatus) els.belgePdfStatus.textContent = '';
 }
 
 function createCertificatePdf(tur, aliciAdi) {
@@ -620,9 +619,14 @@ function bindEvents() {
 
     els.btnPdfOlustur?.addEventListener('click', () => {
         if (!requireUser()) return;
+        const alici = (els.belgeAlici.value || '').trim();
+        if (!alici) {
+            showToast('Alıcı adını yazın', 'error');
+            els.belgeAlici?.focus();
+            return;
+        }
         try {
             const tur = els.belgeTur.value;
-            const alici = els.belgeAlici.value || userDisplayName(selectedUser());
             pendingPdfBase64 = createCertificatePdf(tur, alici);
             pendingPdfFileName = `${tur}_${alici.replace(/\s+/g, '_')}.pdf`;
             els.btnBelgeGonder.disabled = false;
@@ -639,6 +643,12 @@ function bindEvents() {
             showToast('Önce PDF oluşturun', 'error');
             return;
         }
+        const alici = (els.belgeAlici.value || '').trim();
+        if (!alici) {
+            showToast('Alıcı adını yazın', 'error');
+            els.belgeAlici?.focus();
+            return;
+        }
         const tur = els.belgeTur.value;
         const { error } = await gonderBelge({
             kullanici_id: selectedUserId,
@@ -646,7 +656,7 @@ function bindEvents() {
             baslik: BELGE_TURLERI[tur]?.label || 'Belge',
             dosya_adi: pendingPdfFileName,
             dosya_base64: pendingPdfBase64,
-            alici_adi: els.belgeAlici.value
+            alici_adi: alici
         });
         if (error) {
             showToast(error.message || 'Gönderilemedi', 'error');
@@ -655,6 +665,7 @@ function bindEvents() {
         pendingPdfBase64 = null;
         els.btnBelgeGonder.disabled = true;
         els.belgePdfStatus.textContent = '';
+        els.belgeAlici.value = '';
         await loadBelgeler();
         showToast('Belge kullanıcıya gönderildi');
     });
@@ -672,6 +683,12 @@ function bindEvents() {
     });
 
     els.belgeTur?.addEventListener('change', () => {
+        pendingPdfBase64 = null;
+        els.btnBelgeGonder.disabled = true;
+        els.belgePdfStatus.textContent = '';
+    });
+
+    els.belgeAlici?.addEventListener('input', () => {
         pendingPdfBase64 = null;
         els.btnBelgeGonder.disabled = true;
         els.belgePdfStatus.textContent = '';

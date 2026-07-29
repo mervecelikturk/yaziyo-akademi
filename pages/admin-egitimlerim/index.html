@@ -277,7 +277,7 @@
             <!-- SEKME: Belgeler -->
             <div id="tab-belgeler" class="admin-panel hidden space-y-4">
                 <form id="belge-form" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 space-y-4">
-                    <p class="text-xs text-light-text-secondary">Akış: Kullanıcı seç → Belge türü seç → İsim otomatik dolar → PDF oluştur → Gönder</p>
+                    <p class="text-xs text-light-text-secondary">Akış: Kullanıcı seç → Belge türü seç → Alıcı adını yaz → PDF oluştur → Gönder</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Belge türü</label>
@@ -288,8 +288,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Alıcı adı (otomatik)</label>
-                            <input id="belge-alici" type="text" class="admin-form-input" readonly>
+                            <label class="block text-xs font-bold uppercase text-light-text-secondary mb-2">Alıcı adı</label>
+                            <input id="belge-alici" type="text" class="admin-form-input" placeholder="Belgede görünecek adı yazın" autocomplete="off" required>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-3">
