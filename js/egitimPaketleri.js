@@ -5,7 +5,6 @@ import {
     fetchPublishedPaketler,
     isTableMissingError,
     isPaketSoldOut,
-    purchasePaket,
     ratingStarsHtml,
     BADGE_OPTIONS
 } from './lib/egitimPaketleriApi.js';
@@ -205,71 +204,9 @@ function openDrawer(pkg) {
     document.body.style.overflow = 'hidden';
 }
 
-function getLoginRedirectUrl() {
-    const next = encodeURIComponent(window.location.href);
-    return `../giris-kayit/?redirect=${next}`;
-}
-
-async function handlePurchaseClick() {
+function handlePurchaseClick() {
     if (!selectedPackage) return;
-
-    if (isPaketSoldOut(selectedPackage)) {
-        showToast('Şu an aktif değil.', 'error');
-        return;
-    }
-
-    els.drawerCta.disabled = true;
-    const prevLabel = els.drawerCta.textContent;
-    els.drawerCta.textContent = 'İşleniyor...';
-
-    try {
-        const { data, error } = await purchasePaket(selectedPackage.id);
-
-        if (error) {
-            showToast(error.message || 'Satın alma başarısız.', 'error');
-            return;
-        }
-
-        if (!data?.success) {
-            if (data?.code === 'auth') {
-                showToast('Satın almak için giriş yapmalısınız.');
-                setTimeout(() => {
-                    window.location.href = getLoginRedirectUrl();
-                }, 900);
-                return;
-            }
-            showToast(data?.message || 'Şu an aktif değil.', 'error');
-            if (data?.code === 'sold_out' || data?.code === 'inactive') {
-                selectedPackage.salesCount = selectedPackage.maxSales;
-                const idx = PACKAGES.findIndex((p) => p.id === selectedPackage.id);
-                if (idx >= 0) PACKAGES[idx] = { ...PACKAGES[idx], salesCount: PACKAGES[idx].maxSales };
-                if (els.drawerValidity) {
-                    els.drawerValidity.textContent = 'Bu paket için kontenjan dolmuştur.';
-                }
-            }
-            return;
-        }
-
-        selectedPackage.salesCount = (selectedPackage.salesCount || 0) + 1;
-        const idx = PACKAGES.findIndex((p) => p.id === selectedPackage.id);
-        if (idx >= 0) {
-            PACKAGES[idx] = {
-                ...PACKAGES[idx],
-                salesCount: (PACKAGES[idx].salesCount || 0) + 1
-            };
-        }
-
-        const days = data.gecerlilik_gun || selectedPackage.validityDays || 30;
-        showToast(`${selectedPackage.title} satın alındı — ${days} gün geçerli.`);
-
-        const contentUrl = data.icerik_url || selectedPackage.contentUrl || els.drawerCta.dataset.contentUrl;
-        if (contentUrl) {
-            window.open(contentUrl, '_blank', 'noopener');
-        }
-    } finally {
-        els.drawerCta.disabled = false;
-        els.drawerCta.textContent = prevLabel;
-    }
+    showToast('Henüz aktif değil.', 'error');
 }
 
 function closeDrawer() {

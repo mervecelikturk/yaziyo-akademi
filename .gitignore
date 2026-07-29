@@ -1,1 +1,10 @@
 supabase/password_reset_setup.sql
+supabase/reset_password_email_template.html
+images/_originals/
+node_modules/
+_test_16.ico
+scripts/remove-supabase-cdn.py
+scripts/add-admin-supabase-cdn.py
+_test_48.ico
+_test_32.ico
+/supabase
