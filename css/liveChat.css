@@ -1,0 +1,536 @@
+/**
+ * YAZİYO — Live Chat floating widget (Eğitimlerim)
+ * Tema değişkenleri: --yaziyo-* (style.css)
+ */
+
+.lc-root {
+    --lc-z: 120;
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+    z-index: var(--lc-z);
+    font-family: 'Inter', system-ui, sans-serif;
+    pointer-events: none;
+}
+
+.lc-root * {
+    box-sizing: border-box;
+}
+
+.lc-fab,
+.lc-panel {
+    pointer-events: auto;
+}
+
+/* ---- Floating bubble ---- */
+.lc-fab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 3.5rem;
+    min-height: 3.5rem;
+    padding: 0.65rem 0.9rem;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    color: var(--yaziyo-inverse-text-hex);
+    background: linear-gradient(145deg, rgb(var(--yaziyo-gold-rgb)), rgb(180 90 8));
+    box-shadow:
+        0 10px 28px rgb(var(--yaziyo-gold-rgb) / 0.35),
+        0 2px 8px rgb(0 0 0 / 0.12);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    animation: lc-fab-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lc-fab:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow:
+        0 14px 32px rgb(var(--yaziyo-gold-rgb) / 0.42),
+        0 4px 12px rgb(0 0 0 / 0.14);
+}
+
+.lc-fab:active {
+    transform: scale(0.97);
+}
+
+.lc-fab-emoji {
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.lc-fab-count {
+    display: none;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.01em;
+}
+
+.lc-fab.has-unread .lc-fab-count {
+    display: inline;
+}
+
+.lc-fab-badge {
+    position: absolute;
+    top: -0.2rem;
+    right: -0.15rem;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: rgb(220 38 38);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    font-family: 'Poppins', sans-serif;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgb(var(--yaziyo-card-rgb));
+    box-shadow: 0 2px 8px rgb(220 38 38 / 0.4);
+}
+
+.lc-fab.has-unread .lc-fab-badge {
+    display: inline-flex;
+    animation: lc-pulse 1.6s ease-in-out infinite;
+}
+
+/* ---- Panel ---- */
+.lc-panel {
+    position: absolute;
+    right: 0;
+    bottom: calc(3.5rem + 0.75rem);
+    width: min(22.5rem, calc(100vw - 2rem));
+    height: min(32rem, calc(100dvh - 6.5rem));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 1.15rem;
+    background: rgb(var(--yaziyo-card-rgb));
+    color: rgb(var(--yaziyo-text-rgb));
+    border: 1px solid rgb(var(--yaziyo-border-rgb));
+    box-shadow:
+        0 24px 48px rgb(0 0 0 / 0.18),
+        0 8px 20px rgb(0 0 0 / 0.08);
+    transform-origin: bottom right;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(12px) scale(0.96);
+    transition:
+        opacity 0.22s ease,
+        transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+        visibility 0.22s;
+}
+
+.lc-panel.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.lc-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    background: linear-gradient(
+        180deg,
+        rgb(var(--yaziyo-gold-rgb) / 0.14),
+        rgb(var(--yaziyo-card-rgb))
+    );
+    border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
+}
+
+.lc-header-main {
+    min-width: 0;
+}
+
+.lc-header-name {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.25;
+}
+
+.lc-online-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: rgb(148 163 184);
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgb(var(--yaziyo-card-rgb));
+}
+
+.lc-online-dot.on {
+    background: rgb(var(--yaziyo-green-rgb));
+    box-shadow:
+        0 0 0 2px rgb(var(--yaziyo-card-rgb)),
+        0 0 0 4px rgb(var(--yaziyo-green-rgb) / 0.25);
+}
+
+.lc-header-status {
+    margin-top: 0.2rem;
+    font-size: 0.72rem;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+}
+
+.lc-header-last {
+    font-size: 0.7rem;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    margin-top: 0.15rem;
+}
+
+.lc-close {
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: 0.65rem;
+    background: rgb(var(--yaziyo-bg-rgb) / 0.8);
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.lc-close:hover {
+    background: rgb(var(--yaziyo-border-rgb));
+    color: rgb(var(--yaziyo-text-rgb));
+}
+
+/* ---- Messages ---- */
+.lc-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.85rem 0.85rem 0.5rem;
+    background:
+        radial-gradient(circle at 10% 0%, rgb(var(--yaziyo-gold-rgb) / 0.06), transparent 45%),
+        rgb(var(--yaziyo-bg-rgb));
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+.lc-messages::-webkit-scrollbar {
+    width: 5px;
+}
+.lc-messages::-webkit-scrollbar-thumb {
+    background: rgb(var(--yaziyo-gold-rgb) / 0.35);
+    border-radius: 999px;
+}
+
+.lc-day {
+    display: flex;
+    justify-content: center;
+    margin: 0.65rem 0;
+}
+
+.lc-day span {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    background: rgb(var(--yaziyo-card-rgb) / 0.9);
+    border: 1px solid rgb(var(--yaziyo-border-rgb));
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+}
+
+.lc-row {
+    display: flex;
+    margin-bottom: 0.45rem;
+}
+
+.lc-row.mine {
+    justify-content: flex-end;
+}
+
+.lc-row.theirs {
+    justify-content: flex-start;
+}
+
+.lc-bubble {
+    max-width: min(85%, 17rem);
+    padding: 0.55rem 0.75rem 0.4rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    word-break: break-word;
+    position: relative;
+}
+
+.lc-row.mine .lc-bubble {
+    background: linear-gradient(160deg, rgb(var(--yaziyo-gold-rgb)), rgb(180 98 10));
+    color: var(--yaziyo-inverse-text-hex);
+    border-bottom-right-radius: 0.3rem;
+}
+
+.lc-row.theirs .lc-bubble {
+    background: rgb(var(--yaziyo-card-rgb));
+    color: rgb(var(--yaziyo-text-rgb));
+    border: 1px solid rgb(var(--yaziyo-border-rgb));
+    border-bottom-left-radius: 0.3rem;
+}
+
+.lc-bubble a {
+    color: inherit;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.lc-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+    font-size: 0.65rem;
+    opacity: 0.8;
+}
+
+.lc-seen {
+    font-weight: 700;
+}
+
+.lc-media-img {
+    display: block;
+    max-width: min(100%, 10.5rem);
+    max-height: 8.5rem;
+    width: auto;
+    height: auto;
+    object-fit: cover;
+    border-radius: 0.65rem;
+    margin-bottom: 0.25rem;
+    cursor: pointer;
+}
+
+.lc-file-link {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+/* Compact custom audio (no native ⋮ menu) */
+.lc-audio-player {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 8.5rem;
+    max-width: 12rem;
+    padding: 0.28rem 0.45rem 0.28rem 0.25rem;
+    border-radius: 999px;
+    background: rgb(var(--yaziyo-bg-rgb) / 0.55);
+    border: 1px solid rgb(var(--yaziyo-border-rgb) / 0.7);
+}
+
+.lc-row.mine .lc-audio-player {
+    background: rgb(0 0 0 / 0.12);
+    border-color: rgb(0 0 0 / 0.08);
+}
+
+.lc-audio-player audio {
+    display: none !important;
+}
+
+.lc-audio-btn {
+    width: 1.55rem;
+    height: 1.55rem;
+    border: none;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    background: rgb(var(--yaziyo-gold-rgb));
+    color: var(--yaziyo-inverse-text-hex);
+    font-size: 0.55rem;
+    padding: 0;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.lc-row.mine .lc-audio-btn {
+    background: rgb(var(--yaziyo-inverse-text-hex) / 0.92);
+    color: rgb(var(--yaziyo-gold-rgb));
+}
+
+.lc-audio-btn:hover { transform: scale(1.05); }
+.lc-audio-btn:active { transform: scale(0.96); }
+
+.lc-audio-meta {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.lc-audio-line {
+    width: 100%;
+    min-width: 4.5rem;
+    height: 3px;
+    border-radius: 999px;
+    background: rgb(var(--yaziyo-gold-rgb) / 0.25);
+    overflow: hidden;
+}
+
+.lc-row.mine .lc-audio-line {
+    background: rgb(var(--yaziyo-inverse-text-hex) / 0.28);
+}
+
+.lc-audio-line-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: inherit;
+    background: rgb(var(--yaziyo-gold-rgb));
+    transition: width 0.1s linear;
+}
+
+.lc-row.mine .lc-audio-line-fill {
+    background: rgb(var(--yaziyo-inverse-text-hex) / 0.9);
+}
+
+.lc-audio-dur {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    opacity: 0.95;
+    white-space: nowrap;
+}
+
+.lc-typing {
+    min-height: 1.25rem;
+    padding: 0 0.85rem 0.35rem;
+    font-size: 0.72rem;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    font-style: italic;
+    background: rgb(var(--yaziyo-bg-rgb));
+}
+
+.lc-typing[hidden] {
+    display: none !important;
+}
+
+/* ---- Composer ---- */
+.lc-composer {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.45rem;
+    padding: 0.65rem 0.75rem;
+    border-top: 1px solid rgb(var(--yaziyo-border-rgb));
+    background: rgb(var(--yaziyo-card-rgb));
+}
+
+.lc-input {
+    flex: 1;
+    min-height: 2.5rem;
+    max-height: 6.5rem;
+    resize: none;
+    border-radius: 0.9rem;
+    border: 1.5px solid rgb(var(--yaziyo-border-rgb));
+    background: rgb(var(--yaziyo-bg-rgb));
+    color: rgb(var(--yaziyo-text-rgb));
+    padding: 0.55rem 0.8rem;
+    font-size: 0.875rem;
+    font-family: inherit;
+    line-height: 1.35;
+}
+
+.lc-input:focus {
+    outline: none;
+    border-color: rgb(var(--yaziyo-gold-rgb));
+    box-shadow: 0 0 0 3px rgb(var(--yaziyo-gold-rgb) / 0.18);
+}
+
+.lc-input::placeholder {
+    color: rgb(var(--yaziyo-text-secondary-rgb) / 0.75);
+}
+
+.lc-send {
+    flex-shrink: 0;
+    width: 2.6rem;
+    height: 2.6rem;
+    border: none;
+    border-radius: 0.9rem;
+    background: linear-gradient(145deg, rgb(var(--yaziyo-gold-rgb)), rgb(180 90 8));
+    color: var(--yaziyo-inverse-text-hex);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.lc-send:hover {
+    transform: scale(1.04);
+}
+
+.lc-send:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.lc-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    font-size: 0.85rem;
+}
+
+.lc-empty i {
+    display: block;
+    font-size: 1.75rem;
+    color: rgb(var(--yaziyo-gold-rgb));
+    margin-bottom: 0.65rem;
+}
+
+@keyframes lc-fab-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes lc-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+/* Mobile: nearly full-height sheet on the right */
+@media (max-width: 480px) {
+    .lc-root {
+        right: max(0.65rem, env(safe-area-inset-right, 0px));
+        bottom: max(0.65rem, env(safe-area-inset-bottom, 0px));
+    }
+
+    .lc-panel {
+        width: min(100vw - 1.3rem, 22.5rem);
+        height: min(78dvh, 34rem);
+        bottom: calc(3.5rem + 0.55rem);
+    }
+
+    .lc-fab {
+        min-width: 3.25rem;
+        min-height: 3.25rem;
+    }
+}
+
+/* Toast ile çakışmayı azalt */
+#eg-toast {
+    z-index: 130;
+}

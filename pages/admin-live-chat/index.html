@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="YAZİYO Yönetici Paneli - Live Chat.">
+    <title>Live Chat - Admin - YAZİYO</title>
+    <link rel="icon" type="image/png" href="../../images/favicon-48.png" sizes="48x48">
+    <link rel="icon" href="../../favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="../../images/logo.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="../../images/logo.png">
+
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:site_name" content="YAZİYO">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Live Chat - Admin - YAZİYO">
+    <meta property="og:description" content="YAZİYO Yönetici Paneli - Live Chat.">
+    <meta property="og:url" content="https://yaziyoakademi.com/pages/admin-live-chat/">
+    <meta property="og:image" content="https://yaziyoakademi.com/images/logo.png">
+    <link rel="canonical" href="https://yaziyoakademi.com/pages/admin-live-chat/">
+
+    <script>
+        (function () {
+            if (!sessionStorage.getItem('yaziyo-session-active')) {
+                localStorage.setItem('yaziyo-theme', 'light');
+                sessionStorage.setItem('yaziyo-session-active', 'true');
+            }
+            const savedTheme = localStorage.getItem('yaziyo-theme');
+            if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+        })();
+    </script>
+    <script src="../../js/authBoot.js"></script>
+    <script src="../../js/lib/sitePaths.js"></script>
+    <script src="../../js/lib/adminPaths.js"></script>
+    <script type="module" src="../../js/auth.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/solid.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/adminLiveChat.css">
+</head>
+
+<body class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300"
+    data-yaziyo-admin-nav-active="admin-live-chat">
+
+    <header id="main-header" data-yaziyo-admin-header="1"
+        class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
+    </header>
+
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <div class="mb-5">
+                <p class="text-[10px] font-bold uppercase tracking-widest text-yaziyo-gold mb-1">Yönetici</p>
+                <h1 class="font-poppins font-extrabold text-2xl sm:text-3xl">Live Chat</h1>
+                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
+                    Paketli öğrencilerle Eğitimlerim üzerinden anlık sohbet.
+                </p>
+            </div>
+
+            <div id="alc-missing" class="hidden eg-card rounded-2xl border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card p-6 text-sm">
+                <p class="font-semibold mb-2">Live Chat tabloları henüz kurulmadı.</p>
+                <p class="text-light-text-secondary">Supabase SQL Editor'da <code class="text-yaziyo-gold">sql/028_live_chat.sql</code> dosyasını çalıştırın.</p>
+            </div>
+
+            <div id="alc-app" class="alc-layout">
+                <aside class="alc-list-card">
+                    <div class="alc-list-head">
+                        <h2>Konuşmalar</h2>
+                        <input type="search" id="alc-search" class="alc-search" placeholder="Öğrenci ara..." autocomplete="off">
+                    </div>
+                    <div id="alc-convo-list" class="alc-convo-list"></div>
+                </aside>
+
+                <section class="alc-chat-card">
+                    <div id="alc-chat-placeholder" class="alc-chat-empty">
+                        <div>
+                            <i class="fa-regular fa-comments text-3xl text-yaziyo-gold mb-3 block"></i>
+                            Sohbet başlatmak için soldan bir öğrenci seçin.
+                        </div>
+                    </div>
+
+                    <div id="alc-chat-active" class="hidden flex flex-col flex-1 min-h-0">
+                        <div class="alc-chat-head">
+                            <h2 id="alc-user-name">Öğrenci</h2>
+                            <div class="alc-chat-head-meta">
+                                <span><span class="alc-dot" id="alc-user-dot"></span> <span id="alc-user-status">—</span></span>
+                                <span id="alc-user-last">Son görülme: —</span>
+                                <span id="alc-user-email" class="truncate"></span>
+                            </div>
+                        </div>
+                        <div id="alc-messages" class="alc-messages"></div>
+                        <div class="alc-typing" id="alc-typing" hidden>Yazıyor...</div>
+                        <div class="alc-composer">
+                            <div class="alc-tools">
+                                <button type="button" class="alc-tool" id="alc-btn-image" title="Görsel"><i class="fa-solid fa-image"></i> Görsel</button>
+                                <button type="button" class="alc-tool" id="alc-btn-file" title="Dosya"><i class="fa-solid fa-paperclip"></i> Dosya</button>
+                                <button type="button" class="alc-tool" id="alc-btn-audio" title="Ses kaydı"><i class="fa-solid fa-microphone"></i> Ses</button>
+                                <button type="button" class="alc-tool" id="alc-btn-link" title="Meet / Zoom"><i class="fa-solid fa-video"></i> Bağlantı</button>
+                            </div>
+                            <form id="alc-form" class="alc-compose-row">
+                                <textarea id="alc-input" class="alc-input" rows="1" maxlength="4000" placeholder="Mesaj yaz..."></textarea>
+                                <button type="submit" class="alc-send" id="alc-send" disabled aria-label="Gönder">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </form>
+                            <input type="file" id="alc-file-image" accept="image/*" class="hidden">
+                            <input type="file" id="alc-file-any" class="hidden">
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <div id="alc-link-modal" class="alc-link-modal" aria-hidden="true">
+        <div class="alc-link-box" role="dialog" aria-labelledby="alc-link-title">
+            <h3 id="alc-link-title">Görüşme bağlantısı</h3>
+            <label for="alc-link-label">Başlık (isteğe bağlı)</label>
+            <input id="alc-link-label" type="text" placeholder="Örn: Google Meet" maxlength="80">
+            <label for="alc-link-url">Meet / Zoom URL</label>
+            <input id="alc-link-url" type="url" placeholder="https://meet.google.com/...">
+            <div class="alc-link-actions">
+                <button type="button" class="alc-btn" id="alc-link-cancel">İptal</button>
+                <button type="button" class="alc-btn primary" id="alc-link-send">Paylaş</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alc-toast" class="hidden fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[150] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl"></div>
+
+    <footer id="main-footer" class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <p class="text-center text-light-text-secondary text-xs">© 2026 YAZİYO AKADEMİ. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Live Chat artık Eğitimlerim Yönetimi içinde bir sekme
+        window.location.replace('../admin-egitimlerim/?tab=livechat');
+    </script>
+</body>
+</html>

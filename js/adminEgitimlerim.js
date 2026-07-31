@@ -1,8 +1,9 @@
 /**
  * YAZİYO — Admin Eğitimlerim yönetimi
- * Sekmeler: profil, notlar, görevler, takvim, etüt, belgeler
+ * Sekmeler: profil, paketler, notlar, görevler, takvim, etüt, belgeler, livechat
  */
 import { requireAdminAccess } from './lib/adminAuth.js';
+import { initSupabaseClient } from './lib/supabase.js';
 import {
     BASARI_ROZETLERI,
     NOT_EMOJILERI,
@@ -28,11 +29,20 @@ import {
     gonderBelge,
     deleteBelge
 } from './lib/egitimlerimApi.js';
+import {
+    fetchKullaniciPaketleri,
+    cancelKullaniciPaketi
+} from './lib/egitimPaketleriApi.js';
+import { createAdminLiveChatPanel } from './lib/adminLiveChatPanel.js';
 
 let users = [];
 let selectedUserId = '';
 let pendingPdfBase64 = null;
 let pendingPdfFileName = '';
+let liveChatPanel = null;
+let liveChatReady = false;
+let syncingUserFromChat = false;
+let activeTab = 'profil';
 
 const els = {};
 
@@ -94,10 +104,47 @@ function requireUser() {
 }
 
 function switchTab(id) {
+    activeTab = id;
     document.querySelectorAll('.admin-panel').forEach((p) => p.classList.add('hidden'));
     document.querySelectorAll('.admin-tab').forEach((t) => t.classList.remove('admin-tab-active'));
     document.getElementById(`tab-${id}`)?.classList.remove('hidden');
     document.querySelector(`[data-admin-tab="${id}"]`)?.classList.add('admin-tab-active');
+}
+
+async function ensureLiveChatPanel() {
+    if (!liveChatPanel) {
+        liveChatPanel = createAdminLiveChatPanel({
+            showToast,
+            onUserSelect(userId) {
+                if (!els.userSelect || els.userSelect.value === userId) return;
+                syncingUserFromChat = true;
+                els.userSelect.value = userId;
+                selectedUserId = userId;
+                syncBelgeAlici();
+                syncingUserFromChat = false;
+            },
+        });
+    }
+    if (!liveChatReady) {
+        const result = await liveChatPanel.start();
+        liveChatReady = !!result?.ok;
+    }
+    return liveChatReady;
+}
+
+async function openLiveChatForSelectedUser() {
+    const ready = await ensureLiveChatPanel();
+    if (!ready || !liveChatPanel) return;
+    if (!selectedUserId) {
+        await liveChatPanel.loadConversations();
+        return;
+    }
+    const u = selectedUser();
+    await liveChatPanel.openForUser(selectedUserId, {
+        user_name: userDisplayName(u),
+        email: u?.email || '',
+        full_name: u?.full_name || '',
+    });
 }
 
 /* ---------- Kullanıcı listesi ---------- */
@@ -124,6 +171,61 @@ async function loadUsers() {
         + users.map((u) =>
             `<option value="${u.id}">${escapeHtml(userDisplayName(u))}</option>`
         ).join('');
+}
+
+/* ---------- Paketler ---------- */
+
+function paketDurumLabel(p) {
+    if (p.durum === 'iptal_edildi') return { text: 'İptal edildi', cls: 'bg-red-500/15 text-red-600' };
+    if (p.suresiDoldu) return { text: 'Süresi doldu', cls: 'bg-slate-500/15 text-slate-600 dark:text-slate-300' };
+    return { text: 'Aktif', cls: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' };
+}
+
+async function loadPaketler() {
+    if (!selectedUserId) {
+        els.paketList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Kullanıcı seçin.</p>';
+        return;
+    }
+    const { data, error } = await fetchKullaniciPaketleri(selectedUserId);
+    if (error) {
+        els.paketList.innerHTML = `<p class="px-5 py-8 text-center text-sm text-red-500">${escapeHtml(error.message)}</p>`;
+        return;
+    }
+    if (!data.length) {
+        els.paketList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Bu kullanıcının paketi yok.</p>';
+        return;
+    }
+    els.paketList._cache = data;
+    els.paketList.innerHTML = data.map((p) => {
+        const durum = paketDurumLabel(p);
+        const kalan = p.durum === 'aktif' && !p.suresiDoldu && p.kalanGun != null
+            ? `${p.kalanGun} gün kaldı`
+            : '';
+        const canCancel = p.durum === 'aktif';
+        return `
+            <div class="px-5 py-4 flex flex-wrap items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <p class="font-poppins font-bold text-sm">${escapeHtml(p.paketAdi)}</p>
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${durum.cls}">${durum.text}</span>
+                    </div>
+                    <p class="text-xs text-light-text-secondary">
+                        Başlangıç: ${formatDateTime(p.baslangic)} · Bitiş: ${formatDateTime(p.bitis)}
+                        ${kalan ? ` · ${escapeHtml(kalan)}` : ''}
+                        ${p.iptalEdildiAt ? ` · İptal: ${formatDateTime(p.iptalEdildiAt)}` : ''}
+                    </p>
+                    <p class="text-xs text-light-text-secondary mt-0.5">
+                        ${Number(p.fiyat || 0).toLocaleString('tr-TR')} ₺ · ${p.gecerlilikGun || '—'} gün
+                    </p>
+                </div>
+                ${canCancel ? `
+                    <button type="button"
+                        class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-red-500/40 text-red-600 text-xs font-bold hover:bg-red-500/10"
+                        data-cancel-paket="${p.id}">
+                        <i class="fa-solid fa-ban"></i> İptal et
+                    </button>` : ''}
+            </div>`;
+    }).join('');
 }
 
 /* ---------- Profil ---------- */
@@ -380,18 +482,28 @@ async function loadBelgeler() {
 }
 
 async function onUserChange() {
+    if (syncingUserFromChat) return;
     selectedUserId = els.userSelect.value;
     syncBelgeAlici();
     resetGorevForm();
     resetTakvimForm();
-    if (!selectedUserId) return;
+    if (!selectedUserId) {
+        if (els.paketList) {
+            els.paketList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Kullanıcı seçin.</p>';
+        }
+        return;
+    }
     await Promise.all([
         loadProfil(),
+        loadPaketler(),
         loadNotlar(),
         loadGorevler(),
         loadTakvim(),
         loadBelgeler()
     ]);
+    if (activeTab === 'livechat') {
+        await openLiveChatForSelectedUser();
+    }
 }
 
 function cacheElements() {
@@ -433,6 +545,7 @@ function cacheElements() {
     els.btnBelgeGonder = document.getElementById('btn-belge-gonder');
     els.belgePdfStatus = document.getElementById('belge-pdf-status');
     els.belgeList = document.getElementById('admin-belge-list');
+    els.paketList = document.getElementById('admin-paket-list');
 }
 
 function bindEvents() {
@@ -445,10 +558,30 @@ function bindEvents() {
             if (id === 'belgeler') await loadBelgeler();
             if (id === 'notlar') await loadNotlar();
             if (id === 'gorevler') await loadGorevler();
+            if (id === 'paketler') await loadPaketler();
+            if (id === 'livechat') await openLiveChatForSelectedUser();
         });
     });
 
     els.userSelect?.addEventListener('change', onUserChange);
+
+    els.paketList?.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-cancel-paket]');
+        if (!btn) return;
+        if (!requireUser()) return;
+        const paket = (els.paketList._cache || []).find((x) => x.id === btn.dataset.cancelPaket);
+        const ad = paket?.paketAdi || 'paketi';
+        if (!confirm(`“${ad}” iptal edilsin mi?\n\nKullanıcı bu pakete erişimi kaybeder.`)) return;
+        btn.disabled = true;
+        const { error } = await cancelKullaniciPaketi(btn.dataset.cancelPaket);
+        if (error) {
+            showToast(error.message || 'İptal başarısız', 'error');
+            btn.disabled = false;
+            return;
+        }
+        await loadPaketler();
+        showToast('Paket iptal edildi');
+    });
 
     els.profilForm?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -697,12 +830,22 @@ function bindEvents() {
 
 async function init() {
     if (!(await requireAdminAccess())) return;
+    await initSupabaseClient();
     cacheElements();
     fillRozetSelect();
     bindEvents();
     await loadUsers();
     await loadEtut();
     await loadTakvim();
+
+    // Eğitimlerim yönetimindeyken admin çevrimiçi görünsün (sekme açılmasa da)
+    await ensureLiveChatPanel();
+
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    if (tab === 'livechat') {
+        switchTab('livechat');
+        await openLiveChatForSelectedUser();
+    }
 }
 
 if (document.readyState === 'loading') {

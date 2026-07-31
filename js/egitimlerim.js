@@ -32,6 +32,7 @@ import {
     fetchKullaniciPaketDegerlendirme,
     userHasPurchasedPaket
 } from './lib/egitimPaketleriApi.js';
+import { mountLiveChatWidget } from './liveChatWidget.js';
 
 let currentUser = null;
 let gorevler = [];
@@ -69,7 +70,10 @@ function showToast(msg, type = 'success') {
     t.className = `fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[130] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl ${
         type === 'error' ? 'bg-red-500 text-white' : 'bg-yaziyo-gold text-slate-900'
     }`;
-    t.style.bottom = 'max(1rem, env(safe-area-inset-bottom, 0px))';
+    // Live Chat FAB ile çakışmasın
+    t.style.bottom = document.getElementById('lc-root')
+        ? 'max(5.25rem, calc(env(safe-area-inset-bottom, 0px) + 4.25rem))'
+        : 'max(1rem, env(safe-area-inset-bottom, 0px))';
     t.classList.remove('hidden');
     clearTimeout(showToast._t);
     showToast._t = setTimeout(() => t.classList.add('hidden'), 3200);
@@ -755,6 +759,11 @@ async function init() {
 
     showLoggedIn(currentUser);
     await loadAnaSayfa();
+    try {
+        await mountLiveChatWidget(currentUser);
+    } catch (err) {
+        console.warn('Live chat başlatılamadı:', err);
+    }
 }
 
 if (document.readyState === 'loading') {

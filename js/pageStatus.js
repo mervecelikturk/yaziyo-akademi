@@ -197,7 +197,7 @@
         document.querySelectorAll('#main-navbar a').forEach((link) => {
             if (isProtectedAdminNavLink(link)) return;
             const pageId = (link.dataset.page || '').toLowerCase();
-            if (pageId === 'egitimlerim' || pageId === 'live-chat') return;
+            if (pageId === 'egitimlerim') return;
             if (normalizeNavText(link) !== navLabel) return;
 
             if (!link.dataset.originalHref) {
@@ -217,7 +217,7 @@
 
     function applyDirectLink(pageId, active, href) {
         // Paket kapılı sayfalar admin pageStatus ile yönetilmez
-        if (pageId === 'egitimlerim' || pageId === 'live-chat') return;
+        if (pageId === 'egitimlerim') return;
 
         document.querySelectorAll(`#main-navbar [data-page="${pageId}"]`).forEach((el) => {
             if (el.tagName !== 'A') return;

@@ -10,6 +10,7 @@
         'admin-haberler': 'admin-haberler',
         'admin-egitim-paketleri': 'admin-egitim-paketleri',
         'admin-egitimlerim': 'admin-egitimlerim',
+        'admin-live-chat': 'admin-egitimlerim',
         'admin-sozlu-mulakat': 'admin-sozlu-mulakat',
         'admin-mulakat-simulasyonu': 'admin-mulakat-simulasyonu',
         mesajlar: 'mesajlar',

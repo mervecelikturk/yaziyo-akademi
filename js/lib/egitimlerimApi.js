@@ -244,13 +244,39 @@ export function buildGunlukGorevOzeti(gorevler = []) {
 
 export async function fetchKullaniciPaketOzeti(userId, client = supabase) {
     if (!client || !userId) return { data: null, error: null };
-    const { data, error } = await client
+
+    // Önce aktif paket; durum kolonu yoksa tüm kayıtlardan en sonuncusu
+    let data = null;
+    let error = null;
+
+    const aktifQuery = await client
         .from('egitim_paketi_satin_almalar')
-        .select('id, paket_id, satin_alma_tarihi, bitis_tarihi, gecerlilik_gun, fiyat, egitim_paketleri(baslik)')
+        .select('id, paket_id, satin_alma_tarihi, bitis_tarihi, gecerlilik_gun, fiyat, durum, egitim_paketleri(baslik)')
         .eq('kullanici_id', userId)
+        .eq('durum', 'aktif')
         .order('satin_alma_tarihi', { ascending: false })
         .limit(1)
         .maybeSingle();
+
+    if (aktifQuery.error) {
+        const msg = (aktifQuery.error.message || '').toLowerCase();
+        if (msg.includes('durum') || aktifQuery.error.code === '42703') {
+            const fallback = await client
+                .from('egitim_paketi_satin_almalar')
+                .select('id, paket_id, satin_alma_tarihi, bitis_tarihi, gecerlilik_gun, fiyat, egitim_paketleri(baslik)')
+                .eq('kullanici_id', userId)
+                .order('satin_alma_tarihi', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            data = fallback.data;
+            error = fallback.error;
+        } else {
+            return { data: null, error: aktifQuery.error };
+        }
+    } else {
+        data = aktifQuery.data;
+        error = null;
+    }
 
     if (error) return { data: null, error };
     if (!data) return { data: null, error: null };
@@ -266,7 +292,8 @@ export async function fetchKullaniciPaketOzeti(userId, client = supabase) {
             bitis,
             kalanGun: kalan,
             gecerlilikGun: data.gecerlilik_gun,
-            suresiDoldu: kalan != null && kalan < 0
+            suresiDoldu: kalan != null && kalan < 0,
+            durum: data.durum || 'aktif'
         },
         error: null
     };

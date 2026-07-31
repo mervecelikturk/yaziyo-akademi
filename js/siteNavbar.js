@@ -29,7 +29,6 @@
         egitimlerim: 'egitimlerim',
         haberler: 'haberler',
         'kpss-calismasi': 'kpss-calismasi',
-        'live-chat': 'live-chat',
         iletisim: 'iletisim',
         'giris-kayit': '',
         'sifre-sifirla': '',
@@ -248,7 +247,6 @@
                     <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'egitimlerim')}" data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
                     <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'haberler')}" data-page="haberler">Haberler</a></li>
                     <li><a href="${paths.pageHref('kpssCalismasi.html')}" class="nav-link${ac(active, 'kpss-calismasi')}" data-page="kpss-calismasi">KPSS Çalışması</a></li>
-                    <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'live-chat')}" data-page="live-chat" title="Eğitim paketi satın alındığında açılır">Live Chat</a></li>
                     <li><a href="${paths.pageHref('iletisim.html')}" class="nav-link${ac(active, 'iletisim')}" data-page="iletisim">İletişim</a></li>
                 </ul>
                 <div class="lg:hidden flex items-center justify-between py-2">
@@ -291,7 +289,6 @@
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'egitimlerim')}" data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'haberler')}" data-page="haberler">Haberler</a></li>
                         <li><a href="${paths.pageHref('kpssCalismasi.html')}" class="mobile-nav-link${ac(active, 'kpss-calismasi')}" data-page="kpss-calismasi">KPSS Çalışması</a></li>
-                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'live-chat')}" data-page="live-chat" title="Eğitim paketi satın alındığında açılır">Live Chat</a></li>
                         <li><a href="${paths.pageHref('iletisim.html')}" class="mobile-nav-link${ac(active, 'iletisim')}" data-page="iletisim">İletişim</a></li>
                     </ul>
                 </div>

@@ -45,6 +45,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/regular.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/brands.min.css">
     <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="../../css/adminLiveChat.css">
     <!-- PDF şablon üretimi (belgeler) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -130,11 +131,13 @@
             <!-- Sekmeler -->
             <div class="admin-tabs">
                 <button type="button" class="admin-tab admin-tab-active" data-admin-tab="profil">Profil / Ana Sayfa</button>
+                <button type="button" class="admin-tab" data-admin-tab="paketler">Paketler</button>
                 <button type="button" class="admin-tab" data-admin-tab="notlar">Günlük Notlar</button>
                 <button type="button" class="admin-tab" data-admin-tab="gorevler">Görevler</button>
                 <button type="button" class="admin-tab" data-admin-tab="takvim">Takvim</button>
                 <button type="button" class="admin-tab" data-admin-tab="etut">Etüt Odaları</button>
                 <button type="button" class="admin-tab" data-admin-tab="belgeler">Belgeler</button>
+                <button type="button" class="admin-tab" data-admin-tab="livechat">Live Chat</button>
             </div>
 
             <!-- SEKME: Profil -->
@@ -164,6 +167,19 @@
                     </div>
                     <button type="submit" class="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm">Profili Kaydet</button>
                 </form>
+            </div>
+
+            <!-- SEKME: Paketler -->
+            <div id="tab-paketler" class="admin-panel hidden">
+                <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl overflow-hidden">
+                    <div class="px-5 py-4 border-b border-light-border dark:border-dark-border">
+                        <h2 class="text-sm font-poppins font-bold uppercase tracking-wider text-light-text-secondary">Kullanıcı paketleri</h2>
+                        <p class="text-xs text-light-text-secondary mt-1">Seçili kullanıcının satın aldığı paketleri görüntüleyin veya iptal edin.</p>
+                    </div>
+                    <div id="admin-paket-list" class="divide-y divide-light-border dark:divide-dark-border max-h-[32rem] overflow-y-auto custom-scrollbar">
+                        <p class="px-5 py-8 text-center text-sm text-light-text-secondary">Kullanıcı seçin.</p>
+                    </div>
+                </div>
             </div>
 
             <!-- SEKME: Notlar -->
@@ -301,8 +317,83 @@
                 <div id="admin-belge-list" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5"></div>
             </div>
 
+            <!-- SEKME: Live Chat -->
+            <div id="tab-livechat" class="admin-panel hidden space-y-4">
+                <div id="alc-missing" class="hidden rounded-2xl border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card p-6 text-sm">
+                    <p class="font-semibold mb-2">Live Chat tabloları henüz kurulmadı.</p>
+                    <p class="text-light-text-secondary">Supabase SQL Editor'da <code class="text-yaziyo-gold">sql/028_live_chat.sql</code> dosyasını çalıştırın.</p>
+                </div>
+
+                <div id="alc-app" class="alc-layout">
+                    <aside class="alc-list-card">
+                        <div class="alc-list-head">
+                            <h2>Konuşmalar</h2>
+                            <input type="search" id="alc-search" class="alc-search" placeholder="Öğrenci ara..." autocomplete="off">
+                        </div>
+                        <div id="alc-convo-list" class="alc-convo-list"></div>
+                    </aside>
+
+                    <section class="alc-chat-card">
+                        <div id="alc-chat-placeholder" class="alc-chat-empty">
+                            <div>
+                                <i class="fa-regular fa-comments text-3xl text-yaziyo-gold mb-3 block"></i>
+                                Üstten kullanıcı seçin veya soldan bir konuşma açın.
+                            </div>
+                        </div>
+
+                        <div id="alc-chat-active" class="hidden flex flex-col flex-1 min-h-0">
+                            <div class="alc-chat-head">
+                                <h2 id="alc-user-name">Öğrenci</h2>
+                                <div class="alc-chat-head-meta">
+                                    <span><span class="alc-dot" id="alc-user-dot"></span> <span id="alc-user-status">—</span></span>
+                                    <span id="alc-user-last" hidden></span>
+                                    <span id="alc-user-email" class="truncate"></span>
+                                </div>
+                            </div>
+                            <div id="alc-messages" class="alc-messages"></div>
+                            <div class="alc-typing" id="alc-typing" hidden>Yazıyor...</div>
+                            <div class="alc-composer">
+                                <div class="alc-tools">
+                                    <button type="button" class="alc-tool" id="alc-btn-attach" title="Görsel veya dosya"><i class="fa-solid fa-paperclip"></i> Dosya / Görsel</button>
+                                    <button type="button" class="alc-tool" id="alc-btn-audio" title="Ses kaydı"><i class="fa-solid fa-microphone"></i> Ses</button>
+                                    <button type="button" class="alc-tool" id="alc-btn-link" title="Meet / Zoom"><i class="fa-solid fa-video"></i> Bağlantı</button>
+                                </div>
+                                <div id="alc-pending" class="alc-pending hidden">
+                                    <div id="alc-pending-preview" class="alc-pending-preview"></div>
+                                    <div class="alc-pending-actions">
+                                        <button type="button" class="alc-btn" id="alc-pending-cancel">İptal</button>
+                                        <button type="button" class="alc-btn primary" id="alc-pending-send">Gönder</button>
+                                    </div>
+                                </div>
+                                <form id="alc-form" class="alc-compose-row">
+                                    <textarea id="alc-input" class="alc-input" rows="1" maxlength="4000" placeholder="Mesaj yaz..."></textarea>
+                                    <button type="submit" class="alc-send" id="alc-send" disabled aria-label="Gönder">
+                                        <i class="fa-solid fa-paper-plane"></i>
+                                    </button>
+                                </form>
+                                <input type="file" id="alc-file-attach" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip,text/plain" class="hidden">
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
         </div>
     </main>
+
+    <div id="alc-link-modal" class="alc-link-modal" aria-hidden="true">
+        <div class="alc-link-box" role="dialog" aria-labelledby="alc-link-title">
+            <h3 id="alc-link-title">Görüşme bağlantısı</h3>
+            <label for="alc-link-label">Başlık (isteğe bağlı)</label>
+            <input id="alc-link-label" type="text" placeholder="Örn: Google Meet" maxlength="80">
+            <label for="alc-link-url">Meet / Zoom URL</label>
+            <input id="alc-link-url" type="url" placeholder="https://meet.google.com/...">
+            <div class="alc-link-actions">
+                <button type="button" class="alc-btn" id="alc-link-cancel">İptal</button>
+                <button type="button" class="alc-btn primary" id="alc-link-send">Paylaş</button>
+            </div>
+        </div>
+    </div>
 
     <div id="admin-toast" class="hidden fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[200] px-5 py-3 rounded-xl font-semibold text-sm shadow-2xl" style="bottom: max(1rem, env(safe-area-inset-bottom, 0px))"></div>
 

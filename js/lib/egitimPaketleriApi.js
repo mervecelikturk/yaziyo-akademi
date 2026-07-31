@@ -355,18 +355,31 @@ export async function userHasActivePaket(client = supabase) {
         .from('egitim_paketi_satin_almalar')
         .select('id')
         .eq('kullanici_id', session.user.id)
+        .eq('durum', 'aktif')
         .gt('bitis_tarihi', new Date().toISOString())
         .limit(1)
         .maybeSingle();
 
     if (error) {
+        // durum kolonu yoksa (eski şema) bitiş tarihiyle dene
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('durum') || error.code === '42703') {
+            const fallback = await client
+                .from('egitim_paketi_satin_almalar')
+                .select('id')
+                .eq('kullanici_id', session.user.id)
+                .gt('bitis_tarihi', new Date().toISOString())
+                .limit(1)
+                .maybeSingle();
+            return !!fallback.data;
+        }
         console.warn('Aktif paket kontrolü:', error.message || error);
         return false;
     }
     return !!data;
 }
 
-/** En az bir kez paket satın almış mı? (navbar Eğitimlerim / Live Chat) */
+/** En az bir aktif (iptal edilmemiş) paket var mı? (navbar Eğitimlerim) */
 export async function userHasPurchasedPaket(client = supabase) {
     if (!client) return false;
     const { data: { session } } = await client.auth.getSession();
@@ -376,12 +389,107 @@ export async function userHasPurchasedPaket(client = supabase) {
         .from('egitim_paketi_satin_almalar')
         .select('id')
         .eq('kullanici_id', session.user.id)
+        .eq('durum', 'aktif')
         .limit(1)
         .maybeSingle();
 
     if (error) {
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('durum') || error.code === '42703') {
+            const fallback = await client
+                .from('egitim_paketi_satin_almalar')
+                .select('id')
+                .eq('kullanici_id', session.user.id)
+                .limit(1)
+                .maybeSingle();
+            return !!fallback.data;
+        }
         console.warn('Paket satın alma kontrolü:', error.message || error);
         return false;
     }
     return !!data;
+}
+
+/**
+ * Kullanıcının tüm paket satın alımları (admin).
+ */
+export async function fetchKullaniciPaketleri(userId, client = supabase) {
+    if (!client || !userId) return { data: [], error: null };
+
+    let { data, error } = await client
+        .from('egitim_paketi_satin_almalar')
+        .select('id, paket_id, fiyat, gecerlilik_gun, satin_alma_tarihi, bitis_tarihi, durum, iptal_edildi_at, egitim_paketleri(baslik)')
+        .eq('kullanici_id', userId)
+        .order('satin_alma_tarihi', { ascending: false });
+
+    if (error) {
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('durum') || error.code === '42703') {
+            const fallback = await client
+                .from('egitim_paketi_satin_almalar')
+                .select('id, paket_id, fiyat, gecerlilik_gun, satin_alma_tarihi, bitis_tarihi, egitim_paketleri(baslik)')
+                .eq('kullanici_id', userId)
+                .order('satin_alma_tarihi', { ascending: false });
+            data = fallback.data;
+            error = fallback.error;
+        }
+    }
+
+    if (error) return { data: [], error };
+
+    const now = Date.now();
+    return {
+        data: (data || []).map((row) => {
+            const bitisMs = row.bitis_tarihi ? new Date(row.bitis_tarihi).getTime() : 0;
+            const iptal = row.durum === 'iptal_edildi';
+            const suresiDoldu = !iptal && bitisMs > 0 && bitisMs <= now;
+            const kalanGun = !iptal && bitisMs > 0
+                ? Math.ceil((bitisMs - now) / (1000 * 60 * 60 * 24))
+                : null;
+            return {
+                id: row.id,
+                paketId: row.paket_id,
+                paketAdi: row.egitim_paketleri?.baslik || 'Eğitim Paketi',
+                fiyat: Number(row.fiyat) || 0,
+                gecerlilikGun: row.gecerlilik_gun,
+                baslangic: row.satin_alma_tarihi,
+                bitis: row.bitis_tarihi,
+                durum: row.durum || 'aktif',
+                iptalEdildiAt: row.iptal_edildi_at || null,
+                suresiDoldu,
+                kalanGun
+            };
+        }),
+        error: null
+    };
+}
+
+/**
+ * Yönetici: kullanıcının paketini iptal eder (RPC).
+ */
+export async function cancelKullaniciPaketi(satinAlmaId, client = supabase) {
+    if (!client || !satinAlmaId) {
+        return { data: null, error: new Error('Geçersiz istek') };
+    }
+
+    const { data, error } = await client.rpc('iptal_egitim_paketi', {
+        p_satin_alma_id: satinAlmaId
+    });
+
+    if (error) {
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('iptal_egitim_paketi') || msg.includes('schema cache') || error.code === 'PGRST202') {
+            return {
+                data: null,
+                error: new Error('Paket iptal sistemi henüz kurulmamış. sql/027_paket_iptal.sql dosyasını çalıştırın.')
+            };
+        }
+        return { data: null, error };
+    }
+
+    if (data && data.success === false) {
+        return { data, error: new Error(data.message || 'Paket iptal edilemedi') };
+    }
+
+    return { data, error: null };
 }

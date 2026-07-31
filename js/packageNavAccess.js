@@ -1,9 +1,9 @@
 /**
  * YAZİYO — Paket satın alımına bağlı navbar erişimi
- * Eğitimlerim + Live Chat: admin pageStatus ile değil, aktif paket ile açılır.
+ * Eğitimlerim: admin pageStatus ile değil, aktif paket ile açılır.
  */
 (function (global) {
-    const PACKAGE_NAV_IDS = ['egitimlerim', 'live-chat'];
+    const PACKAGE_NAV_IDS = ['egitimlerim'];
 
     function getPaths() {
         return global.YaziyoPaths || {
@@ -14,8 +14,6 @@
     function resolveHref(pageId) {
         const paths = getPaths();
         if (pageId === 'egitimlerim') return paths.pageHref('egitimlerim.html');
-        // Live Chat sayfası henüz yok — yalnızca navda görünür
-        if (pageId === 'live-chat') return 'javascript:void(0)';
         return 'javascript:void(0)';
     }
 
@@ -24,20 +22,11 @@
         const target = resolveHref(pageId);
 
         if (active) {
-            if (pageId === 'live-chat') {
-                // Sayfa yok: görsel olarak açılır, tıklanınca boş kalır
-                link.dataset.originalHref = 'javascript:void(0)';
-                link.setAttribute('href', 'javascript:void(0)');
-                link.classList.remove('disabled', 'cursor-not-allowed');
-                link.removeAttribute('aria-disabled');
-                link.title = 'Live Chat yakında';
-            } else {
-                link.dataset.originalHref = target;
-                link.setAttribute('href', target);
-                link.classList.remove('disabled', 'cursor-not-allowed');
-                link.removeAttribute('aria-disabled');
-                link.removeAttribute('title');
-            }
+            link.dataset.originalHref = target;
+            link.setAttribute('href', target);
+            link.classList.remove('disabled', 'cursor-not-allowed');
+            link.removeAttribute('aria-disabled');
+            link.removeAttribute('title');
             link.dataset.packageUnlocked = '1';
         } else {
             if (!link.dataset.originalHref && target && !target.startsWith('javascript')) {
