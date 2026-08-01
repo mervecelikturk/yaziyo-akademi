@@ -171,18 +171,25 @@ export async function fetchMessages(konusmaId, { limit = 120 } = {}, client = su
     return { data: data || [], error };
 }
 
-export async function sendTextMessage(konusmaId, text, { isAdmin = false } = {}, client = supabase) {
+async function resolveAuthUserId(client, userId = null) {
+    if (userId) return userId;
+    // getSession local; getUser ağ isteği yapar — sohbette gecikme yaratmasın
+    const { data: { session } } = await client.auth.getSession();
+    return session?.user?.id || null;
+}
+
+export async function sendTextMessage(konusmaId, text, { isAdmin = false, userId = null } = {}, client = supabase) {
     const icerik = String(text || '').trim();
     if (!client || !konusmaId || !icerik) {
         return { data: null, error: new Error('Mesaj boş olamaz') };
     }
 
-    const { data: { user } } = await client.auth.getUser();
-    if (!user) return { data: null, error: new Error('Oturum gerekli') };
+    const uid = await resolveAuthUserId(client, userId);
+    if (!uid) return { data: null, error: new Error('Oturum gerekli') };
 
     const row = {
         konusma_id: konusmaId,
-        gonderen_id: user.id,
+        gonderen_id: uid,
         gonderen_rol: isAdmin ? 'admin' : 'kullanici',
         tip: 'text',
         icerik: icerik.slice(0, 4000),
@@ -326,17 +333,36 @@ export async function deleteChatMessage(message, client = supabase) {
     return { error };
 }
 
+const signedUrlCache = new Map();
+const signedUrlInflight = new Map();
+
 export async function getSignedFileUrl(path, client = supabase) {
     if (!client || !path) return null;
     if (/^https?:\/\//i.test(path)) return path;
-    const { data, error } = await client.storage
+    if (signedUrlCache.has(path)) return signedUrlCache.get(path);
+    if (signedUrlInflight.has(path)) return signedUrlInflight.get(path);
+
+    const pending = client.storage
         .from(BUCKET)
-        .createSignedUrl(path, 60 * 60);
-    if (error) {
-        console.warn('Live chat signed URL:', error.message || error);
-        return null;
-    }
-    return data?.signedUrl || null;
+        .createSignedUrl(path, 60 * 60)
+        .then(({ data, error }) => {
+            signedUrlInflight.delete(path);
+            if (error) {
+                console.warn('Live chat signed URL:', error.message || error);
+                return null;
+            }
+            const url = data?.signedUrl || null;
+            if (url) signedUrlCache.set(path, url);
+            return url;
+        })
+        .catch((err) => {
+            signedUrlInflight.delete(path);
+            console.warn('Live chat signed URL:', err?.message || err);
+            return null;
+        });
+
+    signedUrlInflight.set(path, pending);
+    return pending;
 }
 
 export async function markMessagesSeen(konusmaId, viewerRole, client = supabase) {
@@ -366,10 +392,10 @@ export async function fetchUnreadCountForUser(konusmaId, client = supabase) {
     return count || 0;
 }
 
-export async function upsertPresence(payload, client = supabase) {
+export async function upsertPresence(payload, client = supabase, userId = null) {
     if (!client) return { error: new Error('İstemci yok') };
-    const { data: { user } } = await client.auth.getUser();
-    if (!user) return { error: new Error('Oturum gerekli') };
+    const uid = await resolveAuthUserId(client, userId);
+    if (!uid) return { error: new Error('Oturum gerekli') };
 
     const online = payload.cevrimici !== false;
     const now = new Date().toISOString();
@@ -380,13 +406,13 @@ export async function upsertPresence(payload, client = supabase) {
         const { data: existing } = await client
             .from('live_chat_presence')
             .select('son_gorulme')
-            .eq('kullanici_id', user.id)
+            .eq('kullanici_id', uid)
             .maybeSingle();
         sonGorulme = existing?.son_gorulme || now;
     }
 
     const row = {
-        kullanici_id: user.id,
+        kullanici_id: uid,
         cevrimici: online,
         son_gorulme: sonGorulme,
         yaziyor_konusma_id: payload.yaziyor_konusma_id ?? null,

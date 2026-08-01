@@ -758,12 +758,13 @@ async function init() {
     }
 
     showLoggedIn(currentUser);
-    await loadAnaSayfa();
-    try {
-        await mountLiveChatWidget(currentUser);
-    } catch (err) {
+
+    // Live chat FAB ana sayfa verisini beklemesin
+    mountLiveChatWidget(currentUser).catch((err) => {
         console.warn('Live chat başlatılamadı:', err);
-    }
+    });
+
+    await loadAnaSayfa();
 }
 
 if (document.readyState === 'loading') {

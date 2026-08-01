@@ -1,6 +1,7 @@
 /**
  * YAZİYO — Eğitimlerim Live Chat floating widget
  * Yalnızca /egitimlerim rotasında ve paket sahibi kullanıcıda aktif.
+ * FAB hemen çizilir; konuşma/mesajlar arka planda yüklenir.
  */
 import { supabase } from './lib/supabase.js';
 import {
@@ -39,24 +40,56 @@ function linkify(text) {
     );
 }
 
+function mediaPlaceholder(tip) {
+    if (tip === 'image') return '<span class="lc-media-pending">Görsel yükleniyor…</span>';
+    if (tip === 'audio') return '<span class="lc-media-pending">Ses yükleniyor…</span>';
+    return '<span class="lc-media-pending">Dosya yükleniyor…</span>';
+}
+
+function parseAudioDuration(msg) {
+    let durSec = msg.sure_sn;
+    if (durSec != null) return durSec;
+    const m = String(msg.icerik || '').match(/(\d+)\s*sn/i)
+        || String(msg.icerik || '').match(/(\d+):(\d{2})/);
+    if (!m) return null;
+    return m[2] != null
+        ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10)
+        : parseInt(m[1], 10);
+}
+
+function buildMediaBody(msg, url) {
+    if (msg.tip === 'image') {
+        return url
+            ? `<img class="lc-media-img" src="${escapeHtml(url)}" alt="Görsel" loading="lazy">`
+            : escapeHtml(msg.icerik || 'Görsel');
+    }
+    if (msg.tip === 'audio') {
+        const durSec = parseAudioDuration(msg);
+        return url
+            ? buildAudioPlayerHtml(url, durSec != null ? durSec : 'Ses', 'lc')
+            : `<span class="lc-audio-dur">🎤 ${escapeHtml(formatAudioDurationLabel(durSec || 0))}</span>`;
+    }
+    if (msg.tip === 'file') {
+        const name = escapeHtml(msg.dosya_adi || msg.icerik || 'Dosya');
+        return url
+            ? `<a class="lc-file-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-paperclip"></i> ${name}</a>`
+            : `<span class="lc-file-link"><i class="fa-solid fa-paperclip"></i> ${name}</span>`;
+    }
+    return linkify(msg.icerik || '');
+}
+
 export async function mountLiveChatWidget(user) {
     if (!user?.id) return null;
     if (document.getElementById('lc-root')) return null;
 
-    const { data: convo, error: convoErr } = await ensureUserConversation(user.id);
-    if (convoErr) {
-        if (!isLiveChatMissingError(convoErr)) {
-            console.warn('Live chat konuşma:', convoErr.message || convoErr);
-        }
-        return null;
-    }
-    if (!convo) return null;
-
-    const coachName = await fetchCoachName(user.id);
+    let coachName = 'Koçunuz';
+    let convo = null;
     let messages = [];
     let unread = 0;
     let adminPresence = null;
     let open = false;
+    let ready = false;
+    let renderToken = 0;
     let unsubMsg = () => {};
     let unsubPresence = () => {};
     let typingTimer = null;
@@ -64,6 +97,7 @@ export async function mountLiveChatWidget(user) {
     let presenceUiTimer = null;
     const signedCache = new Map();
 
+    // FAB'ı ağ beklemeden hemen göster
     const root = document.createElement('div');
     root.id = 'lc-root';
     root.className = 'lc-root';
@@ -81,11 +115,16 @@ export async function mountLiveChatWidget(user) {
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="lc-messages" id="lc-messages"></div>
+            <div class="lc-messages" id="lc-messages">
+                <div class="lc-empty lc-loading-state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Sohbet yükleniyor...
+                </div>
+            </div>
             <div class="lc-typing" id="lc-typing" hidden>Yazıyor...</div>
             <form class="lc-composer" id="lc-form">
                 <textarea class="lc-input" id="lc-input" rows="1" maxlength="4000"
-                    placeholder="Mesaj yaz..." aria-label="Mesaj"></textarea>
+                    placeholder="Mesaj yaz..." aria-label="Mesaj" disabled></textarea>
                 <button type="submit" class="lc-send" id="lc-send" aria-label="Gönder" disabled>
                     <i class="fa-solid fa-paper-plane"></i>
                 </button>
@@ -132,6 +171,7 @@ export async function mountLiveChatWidget(user) {
         els.onlineDot.classList.toggle('on', view.online);
         els.statusText.textContent = view.statusText;
 
+        if (!convo) return;
         const typing = isTypingActive(adminPresence, convo.id);
         els.typing.hidden = !typing;
         if (typing) els.typing.textContent = `${coachName} yazıyor...`;
@@ -145,7 +185,40 @@ export async function mountLiveChatWidget(user) {
         return url;
     }
 
-    async function renderMessages() {
+    function buildMessageHtml(msg, mediaUrl = null) {
+        const mine = msg.gonderen_rol === 'kullanici';
+        let body = '';
+        if (msg.tip === 'text' || msg.tip === 'link') {
+            body = linkify(msg.icerik || '');
+        } else if (msg.tip === 'image' || msg.tip === 'audio' || msg.tip === 'file') {
+            if (mediaUrl || !msg.dosya_url) {
+                body = buildMediaBody(msg, mediaUrl);
+            } else if (signedCache.has(msg.dosya_url)) {
+                body = buildMediaBody(msg, signedCache.get(msg.dosya_url));
+            } else {
+                body = mediaPlaceholder(msg.tip);
+            }
+        } else {
+            body = linkify(msg.icerik || '');
+        }
+
+        const seen = mine && msg.goruldu
+            ? '<span class="lc-seen">Görüldü</span>'
+            : '';
+        return `
+            <div class="lc-row ${mine ? 'mine' : 'theirs'}" data-msg-id="${escapeHtml(msg.id)}">
+                <div class="lc-bubble">
+                    <div class="lc-body">${body}</div>
+                    <div class="lc-meta">
+                        <span>${escapeHtml(formatMessageTime(msg.created_at))}</span>
+                        ${seen}
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    function paintMessages(opts = {}) {
+        const { scroll = true } = opts;
         if (!messages.length) {
             els.messages.innerHTML = `
                 <div class="lc-empty">
@@ -163,59 +236,33 @@ export async function mountLiveChatWidget(user) {
                 lastDay = day;
                 html += `<div class="lc-day"><span>${escapeHtml(day)}</span></div>`;
             }
-            const mine = msg.gonderen_rol === 'kullanici';
-            let body = '';
-            if (msg.tip === 'text') {
-                body = linkify(msg.icerik || '');
-            } else if (msg.tip === 'link') {
-                body = linkify(msg.icerik || '');
-            } else if (msg.tip === 'image') {
-                const url = await resolveMedia(msg);
-                body = url
-                    ? `<img class="lc-media-img" src="${escapeHtml(url)}" alt="Görsel" loading="lazy">`
-                    : escapeHtml(msg.icerik || 'Görsel');
-            } else if (msg.tip === 'audio') {
-                const url = await resolveMedia(msg);
-                let durSec = msg.sure_sn;
-                if (durSec == null) {
-                    const m = String(msg.icerik || '').match(/(\d+)\s*sn/i)
-                        || String(msg.icerik || '').match(/(\d+):(\d{2})/);
-                    if (m) {
-                        durSec = m[2] != null
-                            ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10)
-                            : parseInt(m[1], 10);
-                    }
-                }
-                body = url
-                    ? buildAudioPlayerHtml(url, durSec != null ? durSec : 'Ses', 'lc')
-                    : `<span class="lc-audio-dur">🎤 ${escapeHtml(formatAudioDurationLabel(durSec || 0))}</span>`;
-            } else if (msg.tip === 'file') {
-                const url = await resolveMedia(msg);
-                const name = escapeHtml(msg.dosya_adi || msg.icerik || 'Dosya');
-                body = url
-                    ? `<a class="lc-file-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-paperclip"></i> ${name}</a>`
-                    : `<span class="lc-file-link"><i class="fa-solid fa-paperclip"></i> ${name}</span>`;
-            } else {
-                body = linkify(msg.icerik || '');
-            }
-
-            const seen = mine && msg.goruldu
-                ? '<span class="lc-seen">Görüldü</span>'
-                : '';
-            html += `
-                <div class="lc-row ${mine ? 'mine' : 'theirs'}">
-                    <div class="lc-bubble">
-                        <div class="lc-body">${body}</div>
-                        <div class="lc-meta">
-                            <span>${escapeHtml(formatMessageTime(msg.created_at))}</span>
-                            ${seen}
-                        </div>
-                    </div>
-                </div>`;
+            html += buildMessageHtml(msg);
         }
         els.messages.innerHTML = html;
         bindAudioPlayerRoot(els.messages);
-        els.messages.scrollTop = els.messages.scrollHeight;
+        if (scroll) els.messages.scrollTop = els.messages.scrollHeight;
+    }
+
+    async function hydrateMedia() {
+        const token = ++renderToken;
+        const need = messages.filter((m) =>
+            m.dosya_url
+            && (m.tip === 'image' || m.tip === 'audio' || m.tip === 'file')
+            && !signedCache.has(m.dosya_url));
+        if (!need.length) return;
+
+        await Promise.all(need.map((m) => resolveMedia(m)));
+        if (token !== renderToken) return;
+
+        // Sadece medya gövdelerini yerinde güncelle — tüm listeyi yeniden çizme
+        for (const msg of need) {
+            const url = signedCache.get(msg.dosya_url);
+            if (!url) continue;
+            const row = els.messages.querySelector(`[data-msg-id="${msg.id}"] .lc-body`);
+            if (!row) continue;
+            row.innerHTML = buildMediaBody(msg, url);
+        }
+        bindAudioPlayerRoot(els.messages);
     }
 
     function upsertLocalMessage(msg) {
@@ -232,7 +279,7 @@ export async function mountLiveChatWidget(user) {
     }
 
     async function refreshUnread() {
-        if (open) {
+        if (!convo || open) {
             setUnread(0);
             return;
         }
@@ -245,14 +292,29 @@ export async function mountLiveChatWidget(user) {
         els.panel.classList.add('open');
         els.panel.setAttribute('aria-hidden', 'false');
         els.fab.setAttribute('aria-expanded', 'true');
-        await markMessagesSeen(convo.id, 'kullanici');
-        messages = messages.map((m) => (
-            m.gonderen_rol === 'admin' ? { ...m, goruldu: true } : m
-        ));
         setUnread(0);
-        await renderMessages();
-        els.input.focus();
-        await upsertPresence({ cevrimici: true, yaziyor_konusma_id: null });
+
+        if (!ready) {
+            els.messages.innerHTML = `
+                <div class="lc-empty lc-loading-state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    Sohbet yükleniyor...
+                </div>`;
+        } else {
+            messages = messages.map((m) => (
+                m.gonderen_rol === 'admin' ? { ...m, goruldu: true } : m
+            ));
+            paintMessages();
+            hydrateMedia();
+            if (convo) {
+                markMessagesSeen(convo.id, 'kullanici').catch(() => {});
+            }
+            els.input.focus();
+        }
+
+        if (convo) {
+            upsertPresence({ cevrimici: true, yaziyor_konusma_id: null }, supabase, user.id);
+        }
     }
 
     function closePanel() {
@@ -269,26 +331,38 @@ export async function mountLiveChatWidget(user) {
         else openPanel();
     }
 
-    async function loadInitial() {
-        const [{ data }, { data: presence }] = await Promise.all([
+    async function loadConversationData() {
+        const [{ data }, { data: presence }, unreadCount] = await Promise.all([
             fetchMessages(convo.id),
             fetchAdminPresence(),
+            fetchUnreadCountForUser(convo.id),
         ]);
         messages = data || [];
         adminPresence = presence;
         updatePresenceUI();
-        await renderMessages();
-        await refreshUnread();
+        if (!open) setUnread(unreadCount);
+        if (open) {
+            messages = messages.map((m) => (
+                m.gonderen_rol === 'admin' ? { ...m, goruldu: true } : m
+            ));
+            paintMessages();
+            hydrateMedia();
+            markMessagesSeen(convo.id, 'kullanici').catch(() => {});
+            els.input.focus();
+        } else {
+            // Medya URL'lerini arka planda ısıt
+            hydrateMedia();
+        }
     }
 
     async function heartbeat() {
+        if (!convo) return;
         await upsertPresence({
             cevrimici: true,
             yaziyor_konusma_id: open && document.activeElement === els.input && els.input.value.trim()
                 ? convo.id
                 : null,
-        });
-        // Presence bayatladıysa yeniden çek
+        }, supabase, user.id);
         const { data } = await fetchAdminPresence();
         if (data) {
             adminPresence = data;
@@ -301,12 +375,12 @@ export async function mountLiveChatWidget(user) {
 
     els.input.addEventListener('input', () => {
         const has = !!els.input.value.trim();
-        els.send.disabled = !has;
+        els.send.disabled = !has || !ready;
         els.input.style.height = 'auto';
         els.input.style.height = `${Math.min(els.input.scrollHeight, 104)}px`;
         clearTimeout(typingTimer);
-        if (has && open) {
-            upsertPresence({ cevrimici: true, yaziyor_konusma_id: convo.id });
+        if (has && open && convo) {
+            upsertPresence({ cevrimici: true, yaziyor_konusma_id: convo.id }, supabase, user.id);
             typingTimer = setTimeout(() => clearTyping(), 2800);
         } else {
             clearTyping();
@@ -322,22 +396,43 @@ export async function mountLiveChatWidget(user) {
 
     els.form.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (!ready || !convo) return;
         const text = els.input.value.trim();
         if (!text) return;
         els.send.disabled = true;
-        const { data, error } = await sendTextMessage(convo.id, text, { isAdmin: false });
-        if (error) {
-            console.warn('Mesaj gönderilemedi:', error.message || error);
-            els.send.disabled = false;
-            return;
-        }
+
+        // Optimistic bubble
+        const tempId = `tmp-${Date.now()}`;
+        const optimistic = {
+            id: tempId,
+            konusma_id: convo.id,
+            gonderen_id: user.id,
+            gonderen_rol: 'kullanici',
+            tip: 'text',
+            icerik: text,
+            goruldu: false,
+            created_at: new Date().toISOString(),
+        };
+        upsertLocalMessage(optimistic);
         els.input.value = '';
         els.input.style.height = 'auto';
         clearTyping();
-        if (data) {
-            upsertLocalMessage(data);
-            await renderMessages();
+        paintMessages();
+
+        const { data, error } = await sendTextMessage(convo.id, text, {
+            isAdmin: false,
+            userId: user.id,
+        });
+        if (error) {
+            console.warn('Mesaj gönderilemedi:', error.message || error);
+            removeLocalMessage(tempId);
+            paintMessages();
+            els.send.disabled = false;
+            return;
         }
+        removeLocalMessage(tempId);
+        if (data) upsertLocalMessage(data);
+        paintMessages();
         els.send.disabled = true;
     });
 
@@ -345,29 +440,53 @@ export async function mountLiveChatWidget(user) {
         if (e.key === 'Escape' && open) closePanel();
     });
 
+    // Ağ: konuşma + koç adı paralel
+    const [convoRes, name] = await Promise.all([
+        ensureUserConversation(user.id),
+        fetchCoachName(user.id),
+    ]);
+
+    coachName = name || 'Koçunuz';
+    els.coachName.textContent = coachName;
+
+    if (convoRes.error) {
+        if (!isLiveChatMissingError(convoRes.error)) {
+            console.warn('Live chat konuşma:', convoRes.error.message || convoRes.error);
+        }
+        root.remove();
+        return null;
+    }
+    if (!convoRes.data) {
+        root.remove();
+        return null;
+    }
+
+    convo = convoRes.data;
+    ready = true;
+    els.input.disabled = false;
+
     unsubMsg = subscribeConversation(convo.id, {
         onInsert: async (msg) => {
             upsertLocalMessage(msg);
             if (open) {
                 if (msg.gonderen_rol === 'admin') {
-                    await markMessagesSeen(convo.id, 'kullanici');
                     msg.goruldu = true;
+                    markMessagesSeen(convo.id, 'kullanici').catch(() => {});
                 }
-                await renderMessages();
+                paintMessages();
+                hydrateMedia();
             } else if (msg.gonderen_rol === 'admin') {
-                await refreshUnread();
-            } else {
-                await renderMessages();
+                refreshUnread();
             }
         },
-        onUpdate: async (msg) => {
+        onUpdate: (msg) => {
             upsertLocalMessage(msg);
-            if (open) await renderMessages();
+            if (open) paintMessages({ scroll: false });
         },
-        onDelete: async (old) => {
+        onDelete: (old) => {
             removeLocalMessage(old?.id);
-            await renderMessages();
-            await refreshUnread();
+            if (open) paintMessages({ scroll: false });
+            refreshUnread();
         },
     }, supabase);
 
@@ -386,19 +505,28 @@ export async function mountLiveChatWidget(user) {
         },
     }, supabase);
 
-    await upsertPresence({ cevrimici: true, yaziyor_konusma_id: null });
-    await loadInitial();
+    // Presence + mesajlar arka planda; FAB zaten görünür
+    upsertPresence({ cevrimici: true, yaziyor_konusma_id: null }, supabase, user.id);
+    loadConversationData().catch((err) => {
+        console.warn('Live chat mesajları:', err?.message || err);
+        if (open) {
+            els.messages.innerHTML = `
+                <div class="lc-empty">
+                    <i class="fa-regular fa-comments"></i>
+                    Mesajlar yüklenemedi. Tekrar deneyin.
+                </div>`;
+        }
+    });
+
     heartbeatTimer = setInterval(heartbeat, HEARTBEAT_MS);
-    // Heartbeat gelmese bile süre dolunca UI'ı çevrimdışına çek
     presenceUiTimer = setInterval(updatePresenceUI, 10_000);
 
     const goOffline = () => {
-        upsertPresence({ cevrimici: false, yaziyor_konusma_id: null });
+        upsertPresence({ cevrimici: false, yaziyor_konusma_id: null }, supabase, user.id);
     };
     window.addEventListener('pagehide', goOffline);
     window.addEventListener('beforeunload', goOffline);
     document.addEventListener('visibilitychange', () => {
-        // Sekme değiştirince hemen offline yapma (yanlış "çevrimdışı" hatası)
         if (document.visibilityState === 'visible') heartbeat();
         else clearTyping();
     });

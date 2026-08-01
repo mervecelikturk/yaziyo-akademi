@@ -11,6 +11,8 @@
         };
     }
 
+    const EGITIM_PAGES = ['egitim-paketleri', 'egitimlerim', 'egitimler'];
+
     const SLUG_TO_ACTIVE = {
         profil: 'profil',
         'hiz-testi': 'klavye-calismalari',
@@ -66,6 +68,14 @@
         return active === key ? ' open' : '';
     }
 
+    function egitimOpen(active) {
+        return EGITIM_PAGES.includes(active) ? ' open' : '';
+    }
+
+    function egitimParentActive(active) {
+        return EGITIM_PAGES.includes(active) ? ' active' : '';
+    }
+
     function linkSlug(href) {
         if (!href || href.startsWith('javascript')) return '';
         const parts = href.split('?')[0].split('#')[0].replace(/\/+$/, '').split('/').filter(Boolean);
@@ -109,6 +119,17 @@
                 menu.classList.add('open');
             }
         });
+
+        if (EGITIM_PAGES.includes(activeKey)) {
+            navbar.querySelectorAll('[data-page="egitimler"]').forEach((el) => {
+                el.classList.add('active');
+                if (el.classList.contains('mobile-dropdown-trigger')) {
+                    el.classList.add('open');
+                    el.closest('.mobile-dropdown')?.classList.add('open');
+                    el.nextElementSibling?.classList.add('open');
+                }
+            });
+        }
     }
 
     function patchStaticNavActive() {
@@ -243,8 +264,13 @@
                         </ul>
                     </li>
                     <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'becayis')}" data-page="becayis">Becayiş</a></li>
-                    <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'egitim-paketleri')}" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
-                    <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'egitimlerim')}" data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
+                    <li class="nav-dropdown">
+                        <button type="button" class="nav-link nav-dropdown-trigger${egitimParentActive(active)}" data-page="egitimler">Eğitim Paketleri <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled${ac(active, 'egitim-paketleri')}" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled${ac(active, 'egitimlerim')}" data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
+                        </ul>
+                    </li>
                     <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'haberler')}" data-page="haberler">Haberler</a></li>
                     <li><a href="${paths.pageHref('kpssCalismasi.html')}" class="nav-link${ac(active, 'kpss-calismasi')}" data-page="kpss-calismasi">KPSS Çalışması</a></li>
                     <li><a href="${paths.pageHref('iletisim.html')}" class="nav-link${ac(active, 'iletisim')}" data-page="iletisim">İletişim</a></li>
@@ -285,8 +311,13 @@
                             </ul>
                         </li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'becayis')}" data-page="becayis">Becayiş</a></li>
-                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'egitim-paketleri')}" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
-                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'egitimlerim')}" data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
+                        <li class="mobile-dropdown${egitimOpen(active)}">
+                            <button type="button" class="mobile-nav-link mobile-dropdown-trigger${egitimParentActive(active)} w-full text-left flex items-center justify-between" data-page="egitimler">Eğitim Paketleri <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu${egitimOpen(active)} flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]${ac(active, 'egitim-paketleri')}" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]${ac(active, 'egitimlerim')}" data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
+                            </ul>
+                        </li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'haberler')}" data-page="haberler">Haberler</a></li>
                         <li><a href="${paths.pageHref('kpssCalismasi.html')}" class="mobile-nav-link${ac(active, 'kpss-calismasi')}" data-page="kpss-calismasi">KPSS Çalışması</a></li>
                         <li><a href="${paths.pageHref('iletisim.html')}" class="mobile-nav-link${ac(active, 'iletisim')}" data-page="iletisim">İletişim</a></li>

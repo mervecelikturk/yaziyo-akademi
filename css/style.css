@@ -1658,25 +1658,29 @@ html:not(.dark) .theme-icon-moon {
 
 .ep-drawer-panel {
     position: absolute;
-    top: 0;
-    right: 0;
-    height: 100%;
-    height: 100dvh;
-    max-height: 100dvh;
-    width: 100%;
-    max-width: 28rem;
+    top: 50%;
+    left: 50%;
+    width: calc(100% - 1.5rem);
+    max-width: 44rem;
+    height: auto;
+    max-height: min(90dvh, 52rem);
     background: rgb(var(--yaziyo-card-rgb));
-    border-left: 1px solid rgb(var(--yaziyo-border-rgb));
-    transform: translateX(100%);
-    transition: transform 0.32s ease-out;
+    border: 1px solid rgb(var(--yaziyo-border-rgb));
+    border-radius: 1.25rem;
+    transform: translate(-50%, -46%) scale(0.96);
+    opacity: 0;
+    transition: transform 0.32s ease-out, opacity 0.28s ease;
     display: flex;
     flex-direction: column;
-    box-shadow: -12px 0 40px rgba(0, 0, 0, 0.25);
+    min-height: 0;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
 }
 
-@media (max-width: 639px) {
+@media (min-width: 640px) {
     .ep-drawer-panel {
-        max-width: 100%;
+        width: calc(100% - 2.5rem);
+        max-width: 48rem;
     }
 }
 
@@ -1688,7 +1692,8 @@ html:not(.dark) .theme-icon-moon {
 }
 
 .ep-drawer.ep-drawer-open .ep-drawer-panel {
-    transform: translateX(0);
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
 }
 
 .ep-cta-pulse {

@@ -304,6 +304,13 @@ export function createAdminLiveChatPanel(options = {}) {
             return;
         }
 
+        // Medya URL'lerini paralel çöz — sıralı await gecikmesini kaldır
+        await Promise.all(
+            messages
+                .filter((m) => m.dosya_url && (m.tip === 'image' || m.tip === 'audio' || m.tip === 'file'))
+                .map((m) => resolveMedia(m)),
+        );
+
         let html = '';
         let lastDay = '';
         for (const msg of messages) {
@@ -315,12 +322,12 @@ export function createAdminLiveChatPanel(options = {}) {
             const mine = msg.gonderen_rol === 'admin';
             let body = '';
             if (msg.tip === 'image') {
-                const url = await resolveMedia(msg);
+                const url = msg.dosya_url ? signedCache.get(msg.dosya_url) : null;
                 body = url
                     ? `<img class="alc-media-img" src="${escapeHtml(url)}" alt="Görsel" loading="lazy">`
                     : escapeHtml(msg.icerik || 'Görsel');
             } else if (msg.tip === 'audio') {
-                const url = await resolveMedia(msg);
+                const url = msg.dosya_url ? signedCache.get(msg.dosya_url) : null;
                 let durSec = msg.sure_sn;
                 if (durSec == null) {
                     const m = String(msg.icerik || '').match(/(\d+)\s*sn/i)
@@ -335,7 +342,7 @@ export function createAdminLiveChatPanel(options = {}) {
                     ? buildAudioPlayerHtml(url, durSec != null ? durSec : 'Ses', 'alc')
                     : `<span class="alc-audio-dur"><i class="fa-solid fa-microphone"></i> ${escapeHtml(formatAudioDurationLabel(durSec || 0))}</span>`;
             } else if (msg.tip === 'file') {
-                const url = await resolveMedia(msg);
+                const url = msg.dosya_url ? signedCache.get(msg.dosya_url) : null;
                 const name = escapeHtml(msg.dosya_adi || msg.icerik || 'Dosya');
                 body = url
                     ? `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-paperclip"></i> ${name}</a>`

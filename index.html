@@ -204,8 +204,14 @@
                         </ul>
                     </li>
                     <li><a href="javascript:void(0)" class="nav-link disabled" data-page="becayis">Becayiş</a></li>
-                    <li><a href="javascript:void(0)" class="nav-link disabled" data-page="egitim-paketleri">Eğitim
-                            Paketleri</a></li>
+                    <li class="nav-dropdown">
+                        <button class="nav-link nav-dropdown-trigger" data-page="egitimler">Eğitim Paketleri
+                            <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu">
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled" data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
+                        </ul>
+                    </li>
                     <li><a href="javascript:void(0)" class="nav-link disabled" data-page="haberler">Haberler</a></li>
                     <li><a href="pages/kpss-calismasi/" class="nav-link" data-page="kpss-calismasi">KPSS Çalışması</a></li>
                     <li><a href="pages/iletisim/" class="nav-link" data-page="iletisim">İletişim</a></li>
@@ -273,8 +279,18 @@
                         </li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled"
                                 data-page="becayis">Becayiş</a></li>
-                        <li><a href="javascript:void(0)" class="mobile-nav-link disabled"
-                                data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                        <li class="mobile-dropdown">
+                            <button
+                                class="mobile-nav-link mobile-dropdown-trigger w-full text-left flex items-center justify-between"
+                                data-page="egitimler">Eğitim Paketleri <i
+                                    class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu flex flex-col gap-1 pl-3 pt-1">
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]"
+                                        data-page="egitim-paketleri">Eğitim Paketleri</a></li>
+                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]"
+                                        data-page="egitimlerim" title="Eğitim paketi satın alındığında açılır">Eğitimlerim</a></li>
+                            </ul>
+                        </li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled"
                                 data-page="haberler">Haberler</a></li>
                         <li><a href="pages/kpss-calismasi/" class="mobile-nav-link" data-page="kpss-calismasi">KPSS
