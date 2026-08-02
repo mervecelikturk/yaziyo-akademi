@@ -1,13 +1,16 @@
 import { loadDersProgress, saveDersProgress, isDersUserLoggedIn } from './lib/derslerApi.js';
-import { createTypingHandGuide } from './lib/typingHandGuide.js';
+import { FINGER_LABELS, getFingerMap, normalizePressedKey } from './lib/keyboardLayouts.js';
 
 const PASS_RATE = 50;
+const SETTINGS_KEY = 'dlo-lesson-settings';
 const core = () => window.YaziyoKlavyeCore;
 const scroll = () => window.YaziyoTypingScroll;
 const texts = () => window.YaziyoDerslerMetinleri;
 
 const params = new URLSearchParams(window.location.search);
 const track = texts().resolveTrack(params);
+const layoutId = track === 'q' ? 'q' : 'f';
+const fingerMap = getFingerMap(layoutId);
 
 let progress = { tamamlanan_ders: 0, son_ders_no: 1 };
 let activeLessonNo = null;
@@ -19,32 +22,45 @@ let currentText = '';
 let wordsArray = [];
 let resultSaved = false;
 let lastResult = null;
+let lessonSettings = loadSettings();
 
-function isHandGuideTrack(t) {
-    return t === 'f' || t === 'q';
+function loadSettings() {
+    try {
+        const raw = sessionStorage.getItem(SETTINGS_KEY);
+        if (!raw) return { highlightKeys: true };
+        const parsed = JSON.parse(raw);
+        return { highlightKeys: parsed.highlightKeys !== false };
+    } catch {
+        return { highlightKeys: true };
+    }
 }
 
-function keyboardLayoutForTrack(t) {
-    return t === 'q' ? 'q' : 'f';
+function persistSettings() {
+    try {
+        sessionStorage.setItem(SETTINGS_KEY, JSON.stringify(lessonSettings));
+    } catch { /* ignore */ }
 }
-
-const fingerGuide = isHandGuideTrack(track)
-    ? createTypingHandGuide({ layoutId: keyboardLayoutForTrack(track) })
-    : null;
 
 const els = {
+    setup: document.getElementById('dlo-setup'),
     trackTitle: document.getElementById('dlo-track-title'),
     progressLabel: document.getElementById('dlo-progress-label'),
-    lessonList: document.getElementById('dlo-lesson-list'),
-    main: document.getElementById('dlo-main'),
-    workspace: document.getElementById('dlo-workspace'),
-    empty: document.getElementById('dlo-empty'),
+    lessonSelect: document.getElementById('dlo-lesson-select'),
     textContent: document.getElementById('dlo-text-content'),
     textCard: document.getElementById('dlo-text-card'),
     input: document.getElementById('dlo-input'),
     timerWrap: document.getElementById('dlo-timer-wrap'),
     timer: document.getElementById('dlo-timer'),
-    finishBtn: document.getElementById('dlo-finish-btn'),
+    exam: document.getElementById('dlo-exam'),
+    examExit: document.getElementById('dlo-exam-exit'),
+    nextKeyValue: document.getElementById('dlo-next-key-value'),
+    nextKeyFinger: document.getElementById('dlo-next-key-finger'),
+    lessonDd: document.getElementById('dlo-lesson-dd'),
+    lessonDdBtn: document.getElementById('dlo-lesson-dd-btn'),
+    lessonDdLabel: document.getElementById('dlo-lesson-dd-label'),
+    lessonDdMenu: document.getElementById('dlo-lesson-dd-menu'),
+    optKeys: document.getElementById('dlo-opt-keys'),
+    settingsStart: document.getElementById('dlo-settings-start'),
     result: document.getElementById('dlo-result'),
     resultHero: document.getElementById('dlo-result-hero'),
     resultRate: document.getElementById('dlo-result-rate'),
@@ -60,50 +76,7 @@ const els = {
     toast: document.getElementById('dlo-toast'),
     resultKazanim: document.getElementById('dlo-result-kazanim'),
     resultKazanimText: document.getElementById('dlo-result-kazanim-text'),
-    fingerHint: document.getElementById('dlo-finger-hint'),
-    fingerHintKey: document.getElementById('dlo-finger-hint-key'),
-    fingerHintFinger: document.getElementById('dlo-finger-hint-finger'),
 };
-
-function fingerHintHandClass(fingerId) {
-    if (!fingerId) return '';
-    if (fingerId === 'thumb') return 'is-thumb';
-    if (fingerId.startsWith('left_')) return 'is-left';
-    return 'is-right';
-}
-
-function updateFingerHintBar(hint) {
-    if (!isHandGuideTrack(track)) return;
-
-    if (!hint?.char) {
-        els.fingerHint?.classList.remove('is-visible');
-        if (els.fingerHintKey) els.fingerHintKey.textContent = '—';
-        if (els.fingerHintFinger) {
-            els.fingerHintFinger.textContent = '—';
-            els.fingerHintFinger.className = 'dlo-finger-hint-finger-name';
-        }
-        return;
-    }
-
-    els.fingerHint?.classList.add('is-visible');
-    if (els.fingerHintKey) {
-        els.fingerHintKey.textContent = hint.displayChar;
-        els.fingerHintKey.classList.remove('is-pulse');
-        void els.fingerHintKey.offsetWidth;
-        els.fingerHintKey.classList.add('is-pulse');
-    }
-    if (els.fingerHintFinger) {
-        els.fingerHintFinger.textContent = hint.label || '—';
-        els.fingerHintFinger.className = `dlo-finger-hint-finger-name ${fingerHintHandClass(hint.finger)}`;
-    }
-}
-
-function updateHandGuide() {
-    if (!fingerGuide || !isRunning) return;
-    const ref = currentText.trim().replace(/\s+/g, ' ');
-    const hint = fingerGuide.updateFromReference(ref, els.input.value.length);
-    updateFingerHintBar(hint);
-}
 
 function showToast(msg) {
     if (!els.toast) return;
@@ -116,6 +89,28 @@ function formatTime(sec) {
     const m = Math.floor(sec / 60).toString().padStart(2, '0');
     const s = (sec % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
+}
+
+function formatKeyLabel(ch) {
+    if (ch === ' ') return 'Boşluk';
+    if (ch === '\n') return 'Enter';
+    return String(ch).toLocaleUpperCase('tr-TR');
+}
+
+function fingerLabelForChar(ch) {
+    const key = normalizePressedKey(ch) ?? String(ch).toLocaleLowerCase('tr-TR');
+    const fingerId = fingerMap[key];
+    return fingerId ? (FINGER_LABELS[fingerId] || '—') : '—';
+}
+
+function setLessonDropdownOpen(open) {
+    if (!els.lessonDd) return;
+    els.lessonDd.classList.toggle('is-open', open);
+    els.lessonDdBtn?.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (els.lessonDdMenu) {
+        if (open) els.lessonDdMenu.removeAttribute('hidden');
+        else els.lessonDdMenu.setAttribute('hidden', '');
+    }
 }
 
 function lessonState(no) {
@@ -221,11 +216,37 @@ function isTextComplete(input) {
     return typed.length >= ref.length;
 }
 
+function guideIndex(typed, ref) {
+    const n = Math.min(typed.length, ref.length);
+    for (let i = 0; i < n; i += 1) {
+        if (typed[i] !== ref[i]) return i;
+    }
+    return typed.length;
+}
+
+function updateNextKeyHint() {
+    if (!isRunning) {
+        if (els.nextKeyValue) els.nextKeyValue.textContent = '—';
+        if (els.nextKeyFinger) els.nextKeyFinger.textContent = '—';
+        return;
+    }
+    const ref = currentText.trim().replace(/\s+/g, ' ');
+    const typed = els.input.value;
+    const idx = guideIndex(typed, ref);
+    if (idx >= ref.length) {
+        if (els.nextKeyValue) els.nextKeyValue.textContent = '—';
+        if (els.nextKeyFinger) els.nextKeyFinger.textContent = '—';
+        return;
+    }
+    const ch = ref[idx];
+    if (els.nextKeyValue) els.nextKeyValue.textContent = formatKeyLabel(ch);
+    if (els.nextKeyFinger) els.nextKeyFinger.textContent = fingerLabelForChar(ch);
+}
+
 function startTimer() {
     if (timerStarted) return;
     timerStarted = true;
     els.timerWrap?.classList.add('is-visible');
-    els.timerWrap?.removeAttribute('hidden');
     timerInterval = setInterval(() => {
         elapsedSec += 1;
         if (els.timer) els.timer.textContent = formatTime(elapsedSec);
@@ -239,12 +260,13 @@ function onTypingInput() {
 
     const inputVal = els.input.value;
     const C = core();
+
     updateCharHighlight(inputVal);
+    updateNextKeyHint();
 
     const activeIdx = C.getActiveWordIndexFromInput(inputVal, wordsArray.length);
     highlightActiveWord(activeIdx);
     syncScroll();
-    updateHandGuide();
 
     if (isTextComplete(inputVal)) {
         finishLesson();
@@ -258,100 +280,123 @@ function stopTimer() {
     }
 }
 
-function setUiMode(mode) {
-    if (!els.main) return;
-    els.main.dataset.dloMode = mode;
-    els.main.classList.toggle('is-lesson-active', mode === 'lesson');
-}
-
-function showLessonPicker() {
+function showSetup() {
     isRunning = false;
     timerStarted = false;
     stopTimer();
     elapsedSec = 0;
     if (els.timer) els.timer.textContent = '00:00';
-    setUiMode('picker');
     els.timerWrap?.classList.remove('is-visible');
-    els.timerWrap?.setAttribute('hidden', '');
-    els.finishBtn?.setAttribute('hidden', '');
-    els.workspace?.setAttribute('hidden', '');
-    els.empty?.removeAttribute('hidden');
-    els.input.value = '';
-    els.input.readOnly = true;
-    updateFingerHintBar(null);
+    closeExamScreen();
+    els.setup?.classList.remove('is-hidden');
+    if (els.input) {
+        els.input.value = '';
+        els.input.readOnly = true;
+    }
+    if (els.nextKeyValue) els.nextKeyValue.textContent = '—';
+    if (els.nextKeyFinger) els.nextKeyFinger.textContent = '—';
     activeLessonNo = null;
+    if (els.result?.classList.contains('hidden')) {
+        document.body.style.overflow = '';
+    }
+    syncStartButton();
 }
 
-function resetWorkspace() {
-    showLessonPicker();
+function openExamScreen() {
+    els.setup?.classList.add('is-hidden');
+    els.exam?.classList.add('is-open');
+    els.exam?.removeAttribute('hidden');
+    els.exam?.setAttribute(
+        'data-highlight',
+        lessonSettings.highlightKeys ? 'on' : 'off',
+    );
+    document.body.style.overflow = 'hidden';
 }
 
-function renderLessonList() {
-    const lessons = texts().tracks[track] || [];
-    els.trackTitle.textContent = texts().trackLabel(track);
-    els.progressLabel.textContent = `${progress.tamamlanan_ders} / ${texts().TOTAL} tamamlandı`;
-    els.lessonList.innerHTML = '';
-
-    lessons.forEach((lesson) => {
-        const state = lessonState(lesson.no);
-        const item = document.createElement('div');
-        item.className = 'dlo-lesson-item';
-        item.setAttribute('role', 'listitem');
-        if (state === 'locked') item.classList.add('is-locked');
-        if (lesson.no === activeLessonNo) item.classList.add('is-active');
-
-        const label = document.createElement('div');
-        label.className = 'dlo-lesson-label';
-        if (state === 'locked') {
-            label.innerHTML = `<i class="fa-solid fa-lock"></i><span>${lesson.title}</span>`;
-        } else if (state === 'completed') {
-            label.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${lesson.title}</span>`;
-        } else {
-            label.innerHTML = `<span>${lesson.title}</span>`;
-        }
-
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'dlo-lesson-action';
-
-        if (state === 'locked') {
-            btn.className += ' dlo-lesson-action--retry';
-            btn.textContent = 'Kilitli';
-            btn.disabled = true;
-        } else if (state === 'completed') {
-            btn.className += ' dlo-lesson-action--retry';
-            btn.textContent = 'Tekrar Et';
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                startLesson(lesson.no);
-            });
-        } else {
-            btn.className += ' dlo-lesson-action--start';
-            btn.textContent = 'Başla';
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                startLesson(lesson.no);
-            });
-        }
-
-        item.appendChild(label);
-        item.appendChild(btn);
-        els.lessonList.appendChild(item);
-    });
+function closeExamScreen() {
+    els.exam?.classList.remove('is-open');
+    els.exam?.setAttribute('hidden', '');
 }
 
 function getLesson(no) {
     return (texts().tracks[track] || []).find((l) => l.no === no);
 }
 
+function selectLesson(no, label) {
+    if (els.lessonSelect) els.lessonSelect.value = String(no);
+    if (els.lessonDdLabel) els.lessonDdLabel.textContent = label;
+    els.lessonDdMenu?.querySelectorAll('.dlo-lesson-dd-item').forEach((btn) => {
+        btn.classList.toggle('is-selected', Number(btn.dataset.no) === no);
+    });
+    setLessonDropdownOpen(false);
+    syncStartButton();
+}
+
+function fillLessonSelect(preferredNo) {
+    const lessons = texts().tracks[track] || [];
+    const menu = els.lessonDdMenu;
+    if (!menu || !els.lessonSelect) return;
+
+    menu.innerHTML = '';
+    let defaultNo = preferredNo || progress.tamamlanan_ders + 1;
+    if (defaultNo > texts().TOTAL) defaultNo = texts().TOTAL;
+    if (lessonState(defaultNo) === 'locked') defaultNo = Math.max(1, progress.tamamlanan_ders);
+
+    let selectedLabel = 'Ders seçin';
+    let selectedNo = 0;
+
+    lessons.forEach((lesson) => {
+        const state = lessonState(lesson.no);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'dlo-lesson-dd-item';
+        btn.dataset.no = String(lesson.no);
+        btn.setAttribute('role', 'option');
+
+        let label = lesson.title;
+        if (state === 'locked') {
+            label = `${lesson.title} (Kilitli)`;
+            btn.disabled = true;
+        } else if (state === 'completed') {
+            label = `${lesson.title} ✓`;
+        }
+        btn.textContent = label;
+
+        if (!btn.disabled && (lesson.no === defaultNo || !selectedNo)) {
+            selectedNo = lesson.no;
+            selectedLabel = label;
+        }
+
+        if (!btn.disabled) {
+            btn.addEventListener('click', () => selectLesson(lesson.no, label));
+        }
+        menu.appendChild(btn);
+    });
+
+    if (selectedNo) selectLesson(selectedNo, selectedLabel);
+    else {
+        els.lessonSelect.value = '';
+        if (els.lessonDdLabel) els.lessonDdLabel.textContent = 'Ders seçin';
+        syncStartButton();
+    }
+
+    if (els.progressLabel) {
+        els.progressLabel.textContent = `${progress.tamamlanan_ders} / ${texts().TOTAL} tamamlandı`;
+    }
+}
+
+function syncStartButton() {
+    const no = Number(els.lessonSelect?.value || 0);
+    const lesson = getLesson(no);
+    const locked = !lesson || lessonState(no) === 'locked' || !lesson.content?.trim();
+    if (els.settingsStart) els.settingsStart.disabled = locked;
+}
+
 function startLesson(no) {
     const lesson = getLesson(no);
     if (!lesson) return;
 
-    const state = lessonState(no);
-    if (state === 'locked') {
+    if (lessonState(no) === 'locked') {
         showToast('Önce bir önceki dersi tamamlayın.');
         return;
     }
@@ -366,25 +411,18 @@ function startLesson(no) {
     resultSaved = false;
     lastResult = null;
     prepareWordsDOM(currentText);
-    fingerGuide?.setLayout(keyboardLayoutForTrack(track));
 
-    setUiMode('lesson');
-    els.empty?.setAttribute('hidden', '');
-    els.workspace?.removeAttribute('hidden');
-    els.finishBtn?.removeAttribute('hidden');
+    openExamScreen();
+
     els.input.value = '';
     els.input.readOnly = false;
-    els.input.focus();
-
     isRunning = true;
     timerStarted = false;
     elapsedSec = 0;
     els.timerWrap?.classList.remove('is-visible');
-    els.timerWrap?.setAttribute('hidden', '');
     if (els.timer) els.timer.textContent = '00:00';
-    updateHandGuide();
-
-    renderLessonList();
+    updateNextKeyHint();
+    els.input.focus();
 }
 
 function computeResult() {
@@ -399,7 +437,6 @@ function computeResult() {
     const freq = letterFrequencyStats(wordsArray);
     const completedFully = isTextComplete(els.input.value);
     const passed = rate >= PASS_RATE && completedFully;
-    const canUnlockNext = passed;
 
     return {
         correct,
@@ -407,7 +444,7 @@ function computeResult() {
         total,
         rate,
         passed,
-        canUnlockNext,
+        canUnlockNext: passed,
         completedFully,
         freq,
         ders_no: activeLessonNo,
@@ -433,11 +470,7 @@ function showResult(result) {
         els.resultMessage.textContent = 'Tebrikler! Dersi başarıyla tamamladınız.';
         els.btnContinue.classList.remove('hidden');
         els.btnRetry.classList.remove('hidden');
-        if (result.ders_no < texts().TOTAL) {
-            els.btnContinue.textContent = 'Devam Et →';
-        } else {
-            els.btnContinue.textContent = 'Tüm Dersler Tamamlandı';
-        }
+        els.btnContinue.textContent = result.ders_no < texts().TOTAL ? 'Devam Et →' : 'Tüm Dersler Tamamlandı';
     } else if (result.rate >= PASS_RATE && !result.completedFully) {
         els.resultHero.classList.add('is-fail');
         els.resultMessage.textContent = 'Metni tamamlamadan bitirdiniz. Sonraki ders açılmaz; metni sonuna kadar yazın.';
@@ -474,12 +507,13 @@ async function finishLesson() {
     isRunning = false;
     stopTimer();
     els.timerWrap?.classList.remove('is-visible');
-    els.timerWrap?.setAttribute('hidden', '');
     els.input.readOnly = true;
-    updateFingerHintBar(null);
+    if (els.nextKeyValue) els.nextKeyValue.textContent = '—';
+    if (els.nextKeyFinger) els.nextKeyFinger.textContent = '—';
 
     const result = computeResult();
-    showLessonPicker();
+    showSetup();
+    fillLessonSelect(result.ders_no);
     showResult(result);
 
     if (result.canUnlockNext && result.ders_no > progress.tamamlanan_ders) {
@@ -497,65 +531,116 @@ async function finishLesson() {
             });
             progress.tamamlanan_ders = saved.tamamlanan_ders ?? result.ders_no;
             progress.son_ders_no = saved.son_ders_no ?? result.ders_no;
-            renderLessonList();
+            fillLessonSelect(result.ders_no + 1);
         } catch (e) {
             console.warn(e);
             progress.tamamlanan_ders = Math.max(progress.tamamlanan_ders, result.ders_no);
             progress.son_ders_no = result.ders_no;
-            renderLessonList();
+            fillLessonSelect(result.ders_no + 1);
         }
     }
 }
 
+function readSettingsFromForm() {
+    lessonSettings = {
+        highlightKeys: Boolean(els.optKeys?.checked),
+    };
+    persistSettings();
+}
+
 els.input?.addEventListener('input', onTypingInput);
 
-els.finishBtn?.addEventListener('click', () => finishLesson());
+els.examExit?.addEventListener('click', () => {
+    if (isRunning) finishLesson();
+});
+
+els.lessonDdBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = !els.lessonDd?.classList.contains('is-open');
+    setLessonDropdownOpen(open);
+});
+
+document.addEventListener('click', (e) => {
+    if (!els.lessonDd?.classList.contains('is-open')) return;
+    if (els.lessonDd.contains(/** @type {Node} */ (e.target))) return;
+    setLessonDropdownOpen(false);
+});
+
+els.settingsStart?.addEventListener('click', () => {
+    readSettingsFromForm();
+    const no = Number(els.lessonSelect?.value || 0);
+    if (no) startLesson(no);
+});
 
 document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    if (!els.result.classList.contains('hidden')) {
-        hideResult();
-        resetWorkspace();
-        renderLessonList();
+    if (e.key === 'Escape') {
+        if (els.lessonDd?.classList.contains('is-open')) {
+            e.preventDefault();
+            setLessonDropdownOpen(false);
+            return;
+        }
+        if (!els.result.classList.contains('hidden')) {
+            hideResult();
+            showSetup();
+            fillLessonSelect(lastResult?.ders_no);
+            return;
+        }
+        if (isRunning) {
+            e.preventDefault();
+            finishLesson();
+        }
         return;
     }
-    if (isRunning) {
-        e.preventDefault();
-        finishLesson();
+
+    if (e.key === 'Enter' && !isRunning && els.setup && !els.setup.classList.contains('is-hidden')) {
+        if (els.lessonDd?.classList.contains('is-open')) return;
+        if (document.activeElement === els.lessonDdBtn) return;
+        if (els.settingsStart && !els.settingsStart.disabled) {
+            e.preventDefault();
+            els.settingsStart.click();
+        }
     }
 });
 
 els.btnClose?.addEventListener('click', () => {
     hideResult();
-    resetWorkspace();
-    renderLessonList();
+    showSetup();
+    fillLessonSelect(lastResult?.ders_no);
 });
 
 els.btnRedo?.addEventListener('click', () => {
     hideResult();
     const no = lastResult?.ders_no;
-    if (no) startLesson(no);
+    if (!no) return;
+    fillLessonSelect(no);
+    readSettingsFromForm();
+    startLesson(no);
 });
 
 els.btnRetry?.addEventListener('click', () => {
     hideResult();
     const no = lastResult?.ders_no;
-    if (no) startLesson(no);
+    if (!no) return;
+    fillLessonSelect(no);
+    readSettingsFromForm();
+    startLesson(no);
 });
 
 els.btnContinue?.addEventListener('click', () => {
     hideResult();
     if (!lastResult?.canUnlockNext) {
-        resetWorkspace();
-        renderLessonList();
+        showSetup();
+        fillLessonSelect();
         return;
     }
-    const next = (lastResult?.ders_no || activeLessonNo || 0) + 1;
+    const next = (lastResult?.ders_no || 0) + 1;
     if (next <= texts().TOTAL && lessonState(next) !== 'locked') {
+        fillLessonSelect(next);
+        readSettingsFromForm();
         startLesson(next);
     } else {
-        resetWorkspace();
-        renderLessonList();
+        showSetup();
+        fillLessonSelect();
     }
 });
 
@@ -594,13 +679,22 @@ els.btnSave?.addEventListener('click', async () => {
     }
 });
 
-showLessonPicker();
-
 async function boot() {
     document.title = `${texts().trackLabel(track)} — YAZİYO`;
+    if (els.trackTitle) els.trackTitle.textContent = texts().trackLabel(track);
+
+    const back = document.getElementById('dlo-back-link');
+    if (back) back.href = '../dersler/';
+
+    if (els.optKeys) els.optKeys.checked = lessonSettings.highlightKeys;
+
     progress = await loadDersProgress(track);
-    showLessonPicker();
-    renderLessonList();
+    if (els.progressLabel) {
+        els.progressLabel.textContent = `${progress.tamamlanan_ders} / ${texts().TOTAL} tamamlandı`;
+    }
+
+    showSetup();
+    fillLessonSelect();
 }
 
 boot();

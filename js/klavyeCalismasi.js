@@ -809,7 +809,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleTimerBtn = document.getElementById('toggle-timer-btn');
     const timerToggleIcon = document.getElementById('timer-toggle-icon');
     const timerContainer = document.getElementById('timer-container');
-    const finishWorkspaceBtn = document.getElementById('finish-workspace-btn');
     const closeWorkspaceBtn = document.getElementById('close-workspace-btn');
     const exam2AdayNo = document.getElementById('exam2-aday-no');
     const exam2TimerDisplay = document.getElementById('exam2-timer-display');
@@ -855,7 +854,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (workspaceTitle) workspaceTitle.classList.remove('hidden');
         toggleTimerBtn?.classList.add('hidden');
         timerContainer?.classList.remove('hidden');
-        finishWorkspaceBtn?.classList.add('hidden');
         closeWorkspaceBtn?.classList.remove('hidden');
         if (userInput) {
             userInput.placeholder = defaultInputPlaceholder;
@@ -1789,9 +1787,6 @@ document.addEventListener('DOMContentLoaded', () => {
         closeWorkspaceBtn.addEventListener('click', closeWorkspace);
     }
 
-    if (finishWorkspaceBtn) {
-        finishWorkspaceBtn.addEventListener('click', closeWorkspace);
-    }
 
     if (exam2FinishBtn) {
         exam2FinishBtn.addEventListener('click', closeWorkspace);

@@ -313,9 +313,9 @@ export async function refreshKeyboardHeatmapPanel() {
     await loadHeatmapData();
 }
 
-/** Panel görünür olduğunda lazy load */
+/** Analiz paneli görünür olduğunda lazy load */
 export function setupHeatmapPanelLazyLoad(supabase) {
-    const menuBtn = $('menu-isi-haritasi');
+    const menuBtn = $('menu-analiz');
     if (!menuBtn) return;
 
     menuBtn.addEventListener('click', () => {

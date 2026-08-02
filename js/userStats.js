@@ -706,6 +706,70 @@ function formatExpectedWordsFromMistakes(mistakes) {
 }
 
 /**
+ * Son N çalışmanın yanlış kelimelerinden harf frekansı çıkarır.
+ * Beklenen harf ile yazılan harf farklıysa, çalışılması gereken harf olarak sayılır.
+ */
+export function analyzeLetterMistakesFromSessions(kayitlar, limit = 12) {
+    const counts = new Map();
+
+    const bump = (ch) => {
+        if (!ch || !/\p{L}/u.test(ch)) return;
+        const key = ch.toLocaleUpperCase('tr-TR');
+        counts.set(key, (counts.get(key) || 0) + 1);
+    };
+
+    for (const kayit of kayitlar || []) {
+        const mistakes = Array.isArray(kayit.yanlis_kelimeler) ? kayit.yanlis_kelimeler : [];
+        for (const m of mistakes) {
+            if (!m || typeof m !== 'object') continue;
+            const expected = getExpectedWordFromMistake(m);
+            const typed = m.user != null ? String(m.user).trim() : '';
+            if (!expected && !typed) continue;
+
+            const expChars = [...expected];
+            const typedChars = [...typed];
+            const len = Math.max(expChars.length, typedChars.length);
+
+            for (let i = 0; i < len; i++) {
+                const e = expChars[i] || '';
+                const t = typedChars[i] || '';
+                if (e.toLocaleLowerCase('tr-TR') === t.toLocaleLowerCase('tr-TR')) continue;
+                // Doğru yazılması gereken harf öncelikli öneri
+                if (e) bump(e);
+                else if (t) bump(t);
+            }
+        }
+    }
+
+    return [...counts.entries()]
+        .map(([letter, count]) => ({ letter, count }))
+        .sort((a, b) => b.count - a.count || a.letter.localeCompare(b.letter, 'tr'))
+        .slice(0, limit);
+}
+
+/**
+ * Harf analizi kartını doldurur
+ */
+export function renderHarfAnalizi(kayitlar) {
+    const root = document.getElementById('harf-analizi-root');
+    if (!root) return;
+
+    const items = analyzeLetterMistakesFromSessions(kayitlar, 12);
+    if (!items.length) {
+        root.innerHTML = '<p class="text-sm text-light-text-secondary dark:text-dark-text-secondary italic">Son 10 çalışmada önerilecek harf hatası bulunamadı. Daha fazla pratik yaptıkça burada görünecek.</p>';
+        return;
+    }
+
+    root.innerHTML = items.map((item, idx) => {
+        const rankClass = idx === 0 ? ' rank-1' : (idx < 3 ? ` rank-${idx + 1}` : '');
+        return `<div class="harf-chip${rankClass}" title="${escapeHtmlStat(item.letter)} harfinde ${item.count} hata">
+            <span class="harf-chip-letter">${escapeHtmlStat(item.letter)}</span>
+            <span class="harf-chip-count">${item.count} hata</span>
+        </div>`;
+    }).join('');
+}
+
+/**
  * Son çalışmalar tablosunu doldurur
  */
 export function renderSonKlavyeCalismalari(kayitlar) {

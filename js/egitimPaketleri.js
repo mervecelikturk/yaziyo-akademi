@@ -14,6 +14,69 @@ let selectedPackage = null;
 
 const els = {};
 
+/** Neden YAZİYO Paketleri? — kart detayları (metinler buradan düzenlenebilir) */
+const VALUE_DETAILS = {
+    hizli: {
+        title: 'Daha hızlı öğren',
+        icon: 'fa-bolt',
+        tone: 'tone-gold',
+        lead: 'Adaptif modüllerle kendi hızında ilerle, gereksiz tekrarı azalt.',
+        paragraphs: [
+            'YAZİYO paketlerinde içerikler seviyenize ve çalışma temposunuza göre yapılandırılır. Böylece hem zaman kazanır hem de odaklanmanız gereken konulara daha hızlı ulaşırsınız.',
+        ],
+        bullets: [
+            'Kısa, odaklı ders ve pratik blokları',
+            'Zayıf alanlara öncelik veren ilerleme mantığı',
+            'Klavye ve sınav hazırlığını bir arada sürdürme',
+            'İlerleme durumunu net görme imkânı',
+        ],
+    },
+    plan: {
+        title: 'Günlük plan oluştur',
+        icon: 'fa-calendar-check',
+        tone: 'tone-green',
+        lead: 'Dağınık çalışmayı bırakın; her güne net bir plan çıkarın.',
+        paragraphs: [
+            'Kişisel çalışma takvimi ile günlük görevlerinizi, etütleri ve hedeflerinizi tek yerden takip edersiniz. Planlı ilerlemek motivasyonu korur ve sınav temposunu düzenler.',
+        ],
+        bullets: [
+            'Günlük / haftalık çalışma takvimi',
+            'Görev ve hatırlatmalarla düzenli ritim',
+            'Kaçırılan günleri telafi etme kolaylığı',
+            'Hedefe göre sürdürülebilir çalışma alışkanlığı',
+        ],
+    },
+    destek: {
+        title: 'Canlı Destek',
+        icon: 'fa-headset',
+        tone: 'tone-orange',
+        lead: 'Takıldığınız noktada yalnız kalmayın; anlık destek alın.',
+        paragraphs: [
+            'Canlı destek ile sorularınızı hızlıca iletebilir, teknik veya içerik kaynaklı engelleri beklemeden çözebilirsiniz. Paket kapsamında sunulan destek kanalları üzerinden koç ekibine ulaşılır.',
+        ],
+        bullets: [
+            'Sohbet üzerinden hızlı soru-cevap',
+            'Platform kullanımı ve içerik desteği',
+            'Çalışma sırasında anlık yönlendirme',
+        ],
+    },
+    kocluk: {
+        title: 'Birebir Koçluk',
+        icon: 'fa-user-graduate',
+        tone: 'tone-teal',
+        lead: 'Kişisel mentorluk ile hedeflerinize göre takip ve yönlendirme.',
+        paragraphs: [
+            'Birebir koçluk; genel içerik tüketiminin ötesinde, size özel geri bildirim ve takip sunar. Koçunuzla ilerleme durumunuz değerlendirilir, eksikleriniz netleştirilir ve bir sonraki adımlar planlanır.',
+        ],
+        bullets: [
+            'Kişisel mentor / koç eşleşmesi',
+            'Düzenli takip ve geri bildirim',
+            'Hedefe özel çalışma önerileri',
+            'Motivasyon ve disiplin desteği',
+        ],
+    },
+};
+
 function escapeHtml(str) {
     const d = document.createElement('div');
     d.textContent = str ?? '';
@@ -145,6 +208,99 @@ function renderGrid() {
     observeReveal();
 }
 
+function hasRequiredConsents() {
+    return !!(els.consentMss?.checked && els.consentOnbilgi?.checked);
+}
+
+function updatePurchaseCta() {
+    if (!els.drawerCta || !selectedPackage) return;
+    const soldOut = isPaketSoldOut(selectedPackage);
+    if (soldOut) {
+        els.drawerCta.textContent = 'Kontenjan dolu';
+        els.drawerCta.disabled = true;
+        return;
+    }
+    els.drawerCta.textContent = 'Satın Al / Başla';
+    els.drawerCta.disabled = !hasRequiredConsents();
+}
+
+function resetConsents() {
+    if (els.consentMss) els.consentMss.checked = false;
+    if (els.consentOnbilgi) els.consentOnbilgi.checked = false;
+}
+
+function openLegalModal(docKey) {
+    const modal = els.legalModal;
+    if (!modal) return;
+    const docs = {
+        mss: els.legalDocMss,
+        onbilgi: els.legalDocOnbilgi,
+    };
+    const doc = docs[docKey];
+    if (!doc) return;
+
+    [els.legalDocMss, els.legalDocOnbilgi].forEach((el) => {
+        if (el) el.hidden = true;
+    });
+    doc.hidden = false;
+    if (els.legalTitle) {
+        els.legalTitle.textContent = doc.dataset.epLegalTitle || 'Sözleşme';
+    }
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    els.legalBody?.scrollTo?.(0, 0);
+}
+
+function closeLegalModal() {
+    if (!els.legalModal || els.legalModal.hidden) return;
+    els.legalModal.hidden = true;
+    els.legalModal.setAttribute('aria-hidden', 'true');
+    [els.legalDocMss, els.legalDocOnbilgi].forEach((el) => {
+        if (el) el.hidden = true;
+    });
+}
+
+function openValueModal(key) {
+    const detail = VALUE_DETAILS[key];
+    const modal = els.valueModal;
+    if (!detail || !modal || !els.valueBody) return;
+
+    if (els.valueTitle) els.valueTitle.textContent = detail.title;
+    if (els.valueIcon) {
+        els.valueIcon.className = `ep-value-icon ${detail.tone || 'tone-gold'}`;
+        els.valueIcon.innerHTML = `<i class="fa-solid ${detail.icon}"></i>`;
+    }
+
+    const bullets = (detail.bullets || [])
+        .map((b) => `<li>${escapeHtml(b)}</li>`)
+        .join('');
+    const paragraphs = (detail.paragraphs || [])
+        .map((p) => `<p>${escapeHtml(p)}</p>`)
+        .join('');
+
+    els.valueBody.innerHTML = `
+        <p class="ep-value-lead">${escapeHtml(detail.lead || '')}</p>
+        ${paragraphs}
+        ${bullets ? `<ul>${bullets}</ul>` : ''}
+    `;
+    els.valueBody.scrollTop = 0;
+
+    modal.hidden = false;
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeValueModal() {
+    if (!els.valueModal || els.valueModal.hidden) return;
+    els.valueModal.hidden = true;
+    els.valueModal.setAttribute('aria-hidden', 'true');
+    // Paket drawer açıksa body scroll kilitli kalsın
+    if (!els.drawer?.classList.contains('ep-drawer-open')
+        && (!els.legalModal || els.legalModal.hidden)) {
+        document.body.style.overflow = '';
+    }
+}
+
 function openDrawer(pkg) {
     selectedPackage = pkg;
     const drawer = els.drawer;
@@ -184,15 +340,10 @@ function openDrawer(pkg) {
             </li>`).join('')
         : '<li class="text-sm text-light-text-secondary dark:text-dark-text-secondary">Henüz öğrenme hedefi eklenmemiş.</li>';
 
-    if (soldOut) {
-        els.drawerCta.textContent = 'Kontenjan dolu';
-        els.drawerCta.disabled = true;
-        els.drawerCta.classList.add('opacity-50', 'cursor-not-allowed');
-    } else {
-        els.drawerCta.textContent = 'Satın Al / Başla';
-        els.drawerCta.disabled = false;
-        els.drawerCta.classList.remove('opacity-50', 'cursor-not-allowed');
-    }
+    resetConsents();
+    if (els.consentBox) els.consentBox.hidden = soldOut;
+    updatePurchaseCta();
+
     delete els.drawerCta.dataset.href;
     if (pkg.contentUrl) {
         els.drawerCta.dataset.contentUrl = pkg.contentUrl;
@@ -206,13 +357,24 @@ function openDrawer(pkg) {
 
 function handlePurchaseClick() {
     if (!selectedPackage) return;
+    if (isPaketSoldOut(selectedPackage)) {
+        showToast('Bu paket için kontenjan dolmuştur.', 'error');
+        return;
+    }
+    if (!hasRequiredConsents()) {
+        showToast('Satın almadan önce sözleşmeleri onaylamalısınız.', 'error');
+        updatePurchaseCta();
+        return;
+    }
     showToast('Henüz aktif değil.', 'error');
 }
 
 function closeDrawer() {
+    closeLegalModal();
     els.drawer?.classList.remove('ep-drawer-open');
     document.body.style.overflow = '';
     selectedPackage = null;
+    resetConsents();
 }
 
 function observeReveal() {
@@ -240,6 +402,13 @@ function bindEvents() {
     els.btnExplore?.addEventListener('click', () => scrollToSection('ep-packages'));
 
     document.addEventListener('click', (e) => {
+        const valueCard = e.target.closest('[data-ep-value]');
+        if (valueCard) {
+            e.preventDefault();
+            openValueModal(valueCard.dataset.epValue);
+            return;
+        }
+
         const actionBtn = e.target.closest('[data-package-open], [data-package-start]');
         if (actionBtn) {
             e.preventDefault();
@@ -262,8 +431,37 @@ function bindEvents() {
         handlePurchaseClick();
     });
 
+    els.consentMss?.addEventListener('change', updatePurchaseCta);
+    els.consentOnbilgi?.addEventListener('change', updatePurchaseCta);
+
+    // Sözleşme linkleri — yalnızca tıklanınca açılır; checkbox'ı tetiklemez
+    els.consentBox?.addEventListener('click', (e) => {
+        const link = e.target.closest('[data-ep-legal]');
+        if (!link) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openLegalModal(link.dataset.epLegal);
+    });
+
+    els.legalClose?.addEventListener('click', closeLegalModal);
+    els.legalOk?.addEventListener('click', closeLegalModal);
+    els.legalBackdrop?.addEventListener('click', closeLegalModal);
+
+    els.valueClose?.addEventListener('click', closeValueModal);
+    els.valueOk?.addEventListener('click', closeValueModal);
+    els.valueBackdrop?.addEventListener('click', closeValueModal);
+
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeDrawer();
+        if (e.key !== 'Escape') return;
+        if (els.valueModal && !els.valueModal.hidden) {
+            closeValueModal();
+            return;
+        }
+        if (els.legalModal && !els.legalModal.hidden) {
+            closeLegalModal();
+            return;
+        }
+        closeDrawer();
     });
 }
 
@@ -312,6 +510,24 @@ function cacheElements() {
     els.drawerModules = document.getElementById('ep-drawer-modules');
     els.drawerLearn = document.getElementById('ep-drawer-learn');
     els.drawerCta = document.getElementById('ep-drawer-cta');
+    els.consentBox = document.getElementById('ep-consent-box');
+    els.consentMss = document.getElementById('ep-consent-mss');
+    els.consentOnbilgi = document.getElementById('ep-consent-onbilgi');
+    els.legalModal = document.getElementById('ep-legal-modal');
+    els.legalBackdrop = document.getElementById('ep-legal-backdrop');
+    els.legalClose = document.getElementById('ep-legal-close');
+    els.legalOk = document.getElementById('ep-legal-ok');
+    els.legalTitle = document.getElementById('ep-legal-title');
+    els.legalBody = document.getElementById('ep-legal-body');
+    els.legalDocMss = document.getElementById('ep-legal-doc-mss');
+    els.legalDocOnbilgi = document.getElementById('ep-legal-doc-onbilgi');
+    els.valueModal = document.getElementById('ep-value-modal');
+    els.valueBackdrop = document.getElementById('ep-value-backdrop');
+    els.valueClose = document.getElementById('ep-value-close');
+    els.valueOk = document.getElementById('ep-value-ok');
+    els.valueTitle = document.getElementById('ep-value-title');
+    els.valueIcon = document.getElementById('ep-value-icon');
+    els.valueBody = document.getElementById('ep-value-body');
     els.toast = document.getElementById('ep-toast');
 }
 

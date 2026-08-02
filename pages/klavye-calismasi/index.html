@@ -186,13 +186,16 @@
         #workspace-screen.exam-mode #workspace-panels,
         #workspace-screen.exam-mode #workspace-content > .w-full.max-w-5xl {
             max-width: none !important;
-            width: 96% !important;
+            width: 84% !important;
         }
 
         #workspace-screen.exam-mode #text-display-card {
             width: 100% !important;
             border: 1px solid #D1D5DB !important;
             box-shadow: none !important;
+            height: min(380px, calc(var(--yaziyo-vvh, 1vh) * 44)) !important;
+            min-height: 220px !important;
+            max-height: min(420px, calc(var(--yaziyo-vvh, 1vh) * 48)) !important;
         }
 
         #workspace-screen.exam-mode #text-content {
@@ -227,17 +230,24 @@
             box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.18) !important;
         }
 
-        /* Süre Kutusu */
+        /* Süre Kutusu — sayaç tüm ekranlarda küçük */
         .timer-box {
             background-color: #D97706 !important; /* Koyu turuncu */
             color: #FFFFFF !important;
-            padding: 0.6rem 1.2rem !important;
+            padding: 0.45rem 0.9rem !important;
             border-radius: 10px !important;
             font-weight: 800 !important;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .timer-box #timer-display,
+        .exam2-timer-box #exam2-timer-display,
+        .exam3-timer-box #exam3-timer-display {
+            font-size: 1.15rem !important;
+            line-height: 1 !important;
         }
 
         /* Çıkış Butonu */
@@ -302,11 +312,13 @@
             }
 
             .timer-box {
-                padding: 0.45rem 0.85rem !important;
+                padding: 0.35rem 0.7rem !important;
             }
 
-            .timer-box #timer-display {
-                font-size: 1.25rem !important;
+            .timer-box #timer-display,
+            .exam2-timer-box #exam2-timer-display,
+            .exam3-timer-box #exam3-timer-display {
+                font-size: 1.05rem !important;
             }
 
             .exit-btn {
@@ -346,7 +358,13 @@
             #workspace-screen.exam-mode #workspace-panels,
             #workspace-screen.exam-mode #workspace-content > .w-full.max-w-5xl {
                 max-width: none !important;
-                width: 98% !important;
+                width: 90% !important;
+            }
+
+            #workspace-screen.exam-mode #text-display-card {
+                height: min(280px, calc(var(--yaziyo-vvh, 1vh) * 38)) !important;
+                min-height: 180px !important;
+                max-height: min(320px, calc(var(--yaziyo-vvh, 1vh) * 42)) !important;
             }
 
             #workspace-screen.exam-mode #text-content,
@@ -565,36 +583,36 @@
         #workspace-screen.exam2-mode .exam2-timer-box {
             background-color: #E5E7EB !important;
             color: #374151 !important;
-            padding: 0.5rem 1rem !important;
+            padding: 0.4rem 0.85rem !important;
             border-radius: 8px !important;
             font-weight: 800 !important;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             box-shadow: none !important;
         }
 
         #workspace-screen.exam2-mode .exam2-finish-btn {
-            width: auto !important;
-            height: auto !important;
+            width: 40px !important;
+            height: 40px !important;
             min-height: 40px;
-            padding: 0.55rem 1.25rem !important;
-            background-color: #E5E7EB !important;
-            color: #374151 !important;
+            padding: 0 !important;
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            color: #EF4444 !important;
             border: none;
-            border-radius: 8px !important;
-            font-family: Poppins, sans-serif;
-            font-weight: 700;
-            font-size: 0.875rem;
-            letter-spacing: 0.02em;
+            border-radius: 10px !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
             cursor: pointer;
-            transition: background-color 0.2s ease;
+            transition: background-color 0.2s ease, transform 0.15s ease;
             box-shadow: none !important;
         }
 
         #workspace-screen.exam2-mode .exam2-finish-btn:hover {
-            background-color: #D1D5DB !important;
-            transform: none;
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            transform: scale(1.05);
         }
 
         /* Sınav Ekranı 3 — iki sütun, tam ekran */
@@ -671,7 +689,7 @@
 
         .exam3-timer-box #exam3-timer-display {
             font-family: Poppins, sans-serif;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             font-weight: 800;
             line-height: 1;
         }
@@ -755,28 +773,30 @@
         }
 
         #exam3-finish-btn {
-            min-width: 140px;
-            min-height: 44px;
-            padding: 0.65rem 1.75rem;
-            background-color: #DC2626;
-            color: #FFFFFF;
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
+            padding: 0;
+            background-color: rgba(239, 68, 68, 0.12);
+            color: #EF4444;
             border: none;
-            border-radius: 8px;
-            font-family: Poppins, sans-serif;
-            font-weight: 700;
-            font-size: 0.95rem;
-            letter-spacing: 0.02em;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
             cursor: pointer;
             transition: background-color 0.2s ease, transform 0.15s ease;
-            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+            box-shadow: none;
         }
 
         #exam3-finish-btn:hover {
-            background-color: #B91C1C;
+            background-color: rgba(239, 68, 68, 0.22);
         }
 
         #exam3-finish-btn:active {
-            transform: scale(0.98);
+            transform: scale(0.96);
         }
 
         /* Tablet: iki sütun kalır, boşluklar sıkı */
@@ -821,8 +841,11 @@
             }
 
             #exam3-finish-btn {
-                width: min(100%, 280px);
-                min-height: 48px;
+                width: 44px;
+                height: 44px;
+                min-width: 44px;
+                min-height: 44px;
+                font-size: 1.35rem;
             }
 
             .exam3-aday-no {
@@ -830,7 +853,7 @@
             }
 
             .exam3-timer-box #exam3-timer-display {
-                font-size: 1.1rem;
+                font-size: 1.05rem;
             }
         }
 
@@ -845,9 +868,11 @@
             }
 
             #exam3-finish-btn {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
                 min-height: 40px;
-                padding: 0.5rem 1.25rem;
-                font-size: 0.875rem;
+                font-size: 1.25rem;
             }
         }
     </style>
@@ -1237,10 +1262,10 @@
                 <div class="exam2-header-actions">
                     <div class="exam2-timer-box">
                         <span class="font-inter font-black text-xs uppercase tracking-wider opacity-90">Süre :</span>
-                        <span id="exam2-timer-display" class="font-poppins font-black text-2xl">00:00</span>
+                        <span id="exam2-timer-display" class="font-poppins font-black">00:00</span>
                     </div>
-                    <button id="exam2-finish-btn" type="button" class="exam2-finish-btn" title="Bitir (ESC)">
-                        Bitir
+                    <button id="exam2-finish-btn" type="button" class="exam2-finish-btn" title="Çıkış (ESC)" aria-label="Çıkış">
+                        <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
             </div>
@@ -1261,7 +1286,7 @@
         <div id="workspace-top-left" class="absolute top-8 left-8 z-[250] flex items-center gap-2">
             <div id="timer-container" class="timer-box">
                 <span class="font-inter font-black text-xs uppercase tracking-wider opacity-90">Süre :</span>
-                <span id="timer-display" class="font-poppins font-black text-2xl">00:00</span>
+                <span id="timer-display" class="font-poppins font-black">00:00</span>
             </div>
             <button id="toggle-timer-btn" class="hidden timer-toggle-btn" type="button" title="Süreyi gizle/göster" aria-label="Süreyi gizle/göster">
                 <i id="timer-toggle-icon" class="fa-solid fa-eye"></i>
@@ -1269,10 +1294,7 @@
         </div>
 
         <div id="workspace-top-right" class="absolute top-8 right-8 z-[250] flex items-center gap-2">
-            <button id="finish-workspace-btn" type="button" class="exit-btn hidden" title="Bitir (ESC)">
-                Bitir
-            </button>
-            <button id="close-workspace-btn" type="button" class="exit-btn group" title="Çıkış (ESC)">
+            <button id="close-workspace-btn" type="button" class="exit-btn group" title="Çıkış (ESC)" aria-label="Çıkış">
                 <i class="fa-solid fa-xmark text-3xl"></i>
             </button>
         </div>
@@ -1322,9 +1344,11 @@
             </div>
         </div>
 
-        <!-- Sınav Ekranı 3 Alt Bitir -->
+        <!-- Sınav Ekranı 3 Alt Çıkış -->
         <footer id="exam3-footer">
-            <button id="exam3-finish-btn" type="button" title="Bitir (ESC)">Bitir</button>
+            <button id="exam3-finish-btn" type="button" title="Çıkış (ESC)" aria-label="Çıkış">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </footer>
     </div>
     <!-- /WORKSPACE -->

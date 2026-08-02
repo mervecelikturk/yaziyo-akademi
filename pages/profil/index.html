@@ -221,6 +221,58 @@
             gap: 2rem;
         }
 
+        /* Harf analizi kartı */
+        .harf-analizi-root {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+        }
+
+        .harf-chip {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 3.25rem;
+            padding: 0.65rem 0.75rem;
+            border-radius: 0.9rem;
+            border: 1px solid rgb(var(--yaziyo-border-rgb));
+            background: rgb(var(--yaziyo-bg-rgb) / 0.55);
+            transition: border-color 0.2s ease, transform 0.15s ease;
+        }
+
+        .harf-chip:hover {
+            border-color: rgb(var(--yaziyo-gold-rgb) / 0.55);
+            transform: translateY(-1px);
+        }
+
+        .harf-chip-letter {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 1.25rem;
+            line-height: 1;
+            color: rgb(var(--yaziyo-text-rgb));
+        }
+
+        .harf-chip-count {
+            margin-top: 0.3rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: rgb(239 68 68);
+        }
+
+        .harf-chip.rank-1 {
+            border-color: rgb(239 68 68 / 0.45);
+            background: rgb(239 68 68 / 0.08);
+        }
+
+        .harf-chip.rank-2,
+        .harf-chip.rank-3 {
+            border-color: rgb(249 115 22 / 0.4);
+            background: rgb(249 115 22 / 0.08);
+        }
+
         /* MOBİL MENÜ TOGGLE */
         @media (max-width: 1023px) {
             .profile-menu-mobile-toggle {
@@ -616,23 +668,6 @@
 
                         <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
 
-                        <!-- KLAVYE ISI HARİTASI -->
-                        <button class="profile-menu-item" id="menu-isi-haritasi" onclick="switchPanel('isi-haritasi')">
-                            <span class="profile-menu-icon"><i class="fa-solid fa-fire-flame-curved"></i></span>
-                            Klavye Isı Haritası
-                        </button>
-
-                        <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
-
-                        <!-- SON ÇALIŞMALARIM -->
-                        <button class="profile-menu-item" id="menu-son-calismalar"
-                            onclick="switchPanel('son-calismalar')">
-                            <span class="profile-menu-icon"><i class="fa-solid fa-history"></i></span>
-                            Son Çalışmalarım
-                        </button>
-
-                        <div class="w-full h-px bg-light-border dark:bg-dark-border my-1"></div>
-
                         <!-- KELİME EVİM -->
                         <button class="profile-menu-item" id="menu-kelime-evim" onclick="switchPanel('kelime-evim')">
                             <span class="profile-menu-icon"><i class="fa-solid fa-house-chimney"></i></span>
@@ -814,6 +849,77 @@
                                 kelime</span>
                         </div>
                     </div>
+
+                    <!-- HARF ANALİZİ -->
+                    <div
+                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 sm:p-8 shadow-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-5">
+                            <div>
+                                <h3 class="font-poppins font-extrabold text-lg text-light-text dark:text-dark-text flex items-center gap-2">
+                                    <i class="fa-solid fa-font text-yaziyo-gold"></i>
+                                    Harf Analizi
+                                </h3>
+                                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
+                                    Son 10 çalışmadaki yanlışlara göre öncelikli çalışmanız gereken harfler.
+                                </p>
+                            </div>
+                        </div>
+                        <div id="harf-analizi-root" class="harf-analizi-root">
+                            <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary italic">Henüz yeterli hata verisi yok.</p>
+                        </div>
+                    </div>
+
+                    <!-- KLAVYE ISI HARİTASI -->
+                    <div
+                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 sm:p-8 shadow-xl kh-panel">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                            <div>
+                                <h3 class="font-poppins font-extrabold text-lg text-light-text dark:text-dark-text flex items-center gap-2">
+                                    <i class="fa-solid fa-fire-flame-curved text-orange-500"></i>
+                                    Klavye Isı Haritası
+                                </h3>
+                                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
+                                    Kaydettiğiniz son 10 çalışmanın tuş kullanım analizi. Hangi tuşlarda güçlü veya zayıf olduğunuzu görün.
+                                </p>
+                            </div>
+                        </div>
+                        <div id="keyboard-heatmap-root">
+                            <div class="kh-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Yükleniyor…</div>
+                        </div>
+                    </div>
+
+                    <!-- SON ÇALIŞMALARIM -->
+                    <div
+                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl overflow-hidden shadow-xl">
+                        <div
+                            class="p-6 border-b border-light-border dark:border-dark-border flex justify-between items-center bg-light-bg/30 dark:bg-dark-bg/30">
+                            <h3
+                                class="font-poppins font-extrabold text-lg text-light-text dark:text-dark-text flex items-center gap-2">
+                                <i class="fa-solid fa-history text-yaziyo-gold text-sm"></i>
+                                Son Çalışmalarım (Klavye)
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead
+                                    class="bg-light-bg dark:bg-dark-bg/50 text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-widest border-b border-light-border dark:border-dark-border text-nowrap">
+                                    <tr>
+                                        <th class="px-6 py-4">Çalışma Saati</th>
+                                        <th class="px-6 py-4">Metin</th>
+                                        <th class="px-6 py-4">Doğru</th>
+                                        <th class="px-6 py-4 text-red-500">Yanlış</th>
+                                        <th class="px-6 py-4" title="Yanlış yazılan kelimelerin metindeki doğru hali">Doğru Kelimeler</th>
+                                        <th class="px-6 py-4">Süre</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="son-calismalar-tbody" class="divide-y divide-light-border dark:divide-dark-border">
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-8 text-center text-light-text-secondary italic">Henüz çalışma yok.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- PANEL: HEDEFLERİM -->
@@ -933,28 +1039,7 @@
                     </div>
                 </div>
 
-                <!-- PANEL: KLAVYE ISI HARİTASI -->
-                <div class="content-panel" id="panel-isi-haritasi">
-                    <div
-                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 sm:p-8 shadow-xl kh-panel">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
-                            <div>
-                                <h3 class="font-poppins font-extrabold text-lg text-light-text dark:text-dark-text flex items-center gap-2">
-                                    <i class="fa-solid fa-fire-flame-curved text-orange-500"></i>
-                                    Klavye Isı Haritası
-                                </h3>
-                                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1">
-                                    Kaydettiğiniz son 10 çalışmanın tuş kullanım analizi. Hangi tuşlarda güçlü veya zayıf olduğunuzu görün.
-                                </p>
-                            </div>
-                        </div>
-                        <div id="keyboard-heatmap-root">
-                            <div class="kh-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Yükleniyor…</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tuş detay modalı -->
+                <!-- Tuş detay modalı (ısı haritası) -->
                 <div id="kh-key-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4" role="dialog" aria-modal="true">
                     <div id="kh-key-modal-backdrop" class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
                     <div class="kh-key-modal-panel relative w-full max-w-sm bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl shadow-2xl p-8 text-center">
@@ -975,42 +1060,6 @@
                             </div>
                         </div>
                         <button type="button" id="kh-key-modal-ok" class="w-full py-2.5 rounded-xl bg-yaziyo-gold text-slate-900 font-poppins font-bold text-sm hover:scale-[1.02] active:scale-95 transition-all">Tamam</button>
-                    </div>
-                </div>
-
-                <!-- PANEL: SON ÇALIŞMALARIM -->
-                <div class="content-panel" id="panel-son-calismalar">
-                    <div
-                        class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl overflow-hidden shadow-xl">
-                        <div
-                            class="p-6 border-b border-light-border dark:border-dark-border flex justify-between items-center bg-light-bg/30 dark:bg-dark-bg/30">
-                            <h3
-                                class="font-poppins font-extrabold text-lg text-light-text dark:text-dark-text flex items-center gap-2">
-                                <i class="fa-solid fa-history text-yaziyo-gold text-sm"></i>
-                                Son Çalışmalarım (Klavye)
-                            </h3>
-                            <button class="text-xs font-bold text-yaziyo-gold hover:underline">Tümünü Gör</button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead
-                                    class="bg-light-bg dark:bg-dark-bg/50 text-xs font-bold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-widest border-b border-light-border dark:border-dark-border text-nowrap">
-                                    <tr>
-                                        <th class="px-6 py-4">Çalışma Saati</th>
-                                        <th class="px-6 py-4">Metin</th>
-                                        <th class="px-6 py-4">Doğru</th>
-                                        <th class="px-6 py-4 text-red-500">Yanlış</th>
-                                        <th class="px-6 py-4" title="Yanlış yazılan kelimelerin metindeki doğru hali">Doğru Kelimeler</th>
-                                        <th class="px-6 py-4">Süre</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="son-calismalar-tbody" class="divide-y divide-light-border dark:divide-dark-border">
-                                    <tr>
-                                        <td colspan="6" class="px-6 py-8 text-center text-light-text-secondary italic">Henüz çalışma yok.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
                     </div>
                 </div>
 
@@ -1629,7 +1678,7 @@
             const targetMenuItem = document.getElementById('menu-' + panelId);
             if (targetMenuItem) targetMenuItem.classList.add('active');
 
-            if (panelId === 'isi-haritasi' && window.yaziyoSupabase && window.YaziyoKeyboardHeatmap) {
+            if (panelId === 'analiz' && window.yaziyoSupabase && window.YaziyoKeyboardHeatmap) {
                 if (!window._yaziyoHeatmapLoaded) {
                     window._yaziyoHeatmapLoaded = true;
                     window.YaziyoKeyboardHeatmap.initKeyboardHeatmapPanel(window.yaziyoSupabase);
@@ -2454,6 +2503,7 @@
                         loadGenelSiralama,
                         loadSonKlavyeCalismalari,
                         renderSonKlavyeCalismalari,
+                        renderHarfAnalizi,
                         loadKelimeEvleri,
                         renderKelimeEvleri,
                         openStudyTimeModal,
@@ -2498,9 +2548,17 @@
                     try {
                         const kayitlar = await loadSonKlavyeCalismalari(window.yaziyoSupabase, user.id, 10);
                         renderSonKlavyeCalismalari(kayitlar || []);
+                        renderHarfAnalizi(kayitlar || []);
                     } catch (sonErr) {
                         console.warn('Son çalışmalar yüklenemedi:', sonErr);
                         renderSonKlavyeCalismalari([]);
+                        renderHarfAnalizi([]);
+                    }
+
+                    // Analiz paneli varsayılan açık — ısı haritasını yükle
+                    if (window.YaziyoKeyboardHeatmap && !window._yaziyoHeatmapLoaded) {
+                        window._yaziyoHeatmapLoaded = true;
+                        window.YaziyoKeyboardHeatmap.initKeyboardHeatmapPanel(window.yaziyoSupabase);
                     }
 
                     try {

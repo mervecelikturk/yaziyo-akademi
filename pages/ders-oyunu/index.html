@@ -36,15 +36,400 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="../../css/style.css">
     <style id="dlo-critical">
-        #dlo-main[data-dlo-mode="picker"] .dlo-workspace,
-        #dlo-main[data-dlo-mode="picker"] .dlo-timer,
-        #dlo-main[data-dlo-mode="picker"] .dlo-finish-btn { display: none !important; }
-        #dlo-main[data-dlo-mode="picker"] .dlo-empty { display: flex !important; }
-        #dlo-main[data-dlo-mode="lesson"] .dlo-empty { display: none !important; }
-        #dlo-main[data-dlo-mode="lesson"] .dlo-workspace { display: flex !important; }
-        #dlo-main[data-dlo-mode="lesson"] .dlo-finish-btn { display: inline-flex !important; }
-        #dlo-main[data-dlo-mode="lesson"] .dlo-timer:not(.is-visible) { display: none !important; }
-        #dlo-main[data-dlo-mode="lesson"] .dlo-timer.is-visible { display: inline-flex !important; }
+        .dlo-setup {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem 1rem 2.5rem;
+            min-height: calc(100vh - 7rem);
+            background: rgb(var(--yaziyo-bg-rgb));
+        }
+        .dlo-setup.is-hidden { display: none !important; }
+
+        .dlo-settings-card {
+            width: 100%;
+            max-width: 26rem;
+            border-radius: 22px;
+            border: 1px solid rgb(var(--yaziyo-gold-rgb) / 0.28);
+            background: linear-gradient(165deg, rgb(255 255 255 / 0.94), rgb(255 255 255 / 0.78));
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 22px 50px rgb(15 23 42 / 0.12);
+            padding: 1.6rem 1.45rem 1.4rem;
+        }
+        .dark .dlo-settings-card {
+            background: linear-gradient(165deg, rgb(30 41 59 / 0.95), rgb(15 23 42 / 0.9));
+            border-color: rgb(var(--yaziyo-gold-rgb) / 0.35);
+        }
+        .dlo-settings-kicker {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgb(var(--yaziyo-gold-rgb));
+            font-family: 'Poppins', sans-serif;
+            margin: 0 0 0.35rem;
+        }
+        .dlo-settings-title {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 1.35rem;
+            color: rgb(var(--yaziyo-text-rgb));
+            margin: 0 0 0.35rem;
+        }
+        .dlo-settings-sub {
+            font-size: 0.875rem;
+            color: rgb(var(--yaziyo-text-rgb) / 0.62);
+            margin: 0 0 1.2rem;
+            line-height: 1.45;
+        }
+        .dlo-settings-field {
+            margin-bottom: 1rem;
+        }
+        .dlo-settings-field label {
+            display: block;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: rgb(var(--yaziyo-text-rgb) / 0.75);
+            margin-bottom: 0.4rem;
+        }
+        .dlo-lesson-dd {
+            position: relative;
+            width: 100%;
+        }
+        .dlo-lesson-dd-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.75rem 0.9rem;
+            border-radius: 12px;
+            border: 1px solid rgb(var(--yaziyo-border-rgb) / 0.9);
+            background: rgb(var(--yaziyo-card-rgb));
+            color: rgb(var(--yaziyo-text-rgb));
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            outline: none;
+            transition: border-color .15s, box-shadow .15s;
+        }
+        .dlo-lesson-dd-btn:focus,
+        .dlo-lesson-dd.is-open .dlo-lesson-dd-btn {
+            border-color: rgb(var(--yaziyo-gold-rgb) / 0.7);
+            box-shadow: 0 0 0 3px rgb(var(--yaziyo-gold-rgb) / 0.18);
+        }
+        .dlo-lesson-dd-btn i {
+            color: #D97706;
+            font-size: 0.75rem;
+            transition: transform .15s ease;
+        }
+        .dlo-lesson-dd.is-open .dlo-lesson-dd-btn i {
+            transform: rotate(180deg);
+        }
+        .dlo-lesson-dd-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 0.35rem);
+            left: 0;
+            right: 0;
+            z-index: 20;
+            max-height: 11.5rem;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            border-radius: 12px;
+            border: 1px solid rgb(var(--yaziyo-border-rgb) / 0.9);
+            background: rgb(var(--yaziyo-card-rgb));
+            box-shadow: 0 10px 28px rgb(15 23 42 / 0.12);
+            padding: 0.3rem;
+        }
+        .dlo-lesson-dd.is-open .dlo-lesson-dd-menu {
+            display: block;
+        }
+        .dlo-lesson-dd-item {
+            width: 100%;
+            display: block;
+            padding: 0.55rem 0.75rem;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: rgb(var(--yaziyo-text-rgb));
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            text-align: left;
+            cursor: pointer;
+        }
+        .dlo-lesson-dd-item:hover:not(:disabled) {
+            background: rgb(var(--yaziyo-gold-rgb) / 0.1);
+        }
+        .dlo-lesson-dd-item.is-selected {
+            background: rgb(var(--yaziyo-gold-rgb) / 0.16);
+            font-weight: 600;
+        }
+        .dlo-lesson-dd-item:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+        .dlo-settings-progress {
+            font-size: 0.78rem;
+            color: rgb(var(--yaziyo-text-rgb) / 0.55);
+            margin: -0.35rem 0 1rem;
+        }
+        .dlo-settings-opts {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-bottom: 1.25rem;
+        }
+        .dlo-settings-opt {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.7rem;
+            padding: 0.75rem 0.85rem;
+            border-radius: 12px;
+            border: 1px solid rgb(var(--yaziyo-border-rgb) / 0.85);
+            background: rgb(var(--yaziyo-card-rgb) / 0.65);
+            cursor: pointer;
+            transition: border-color .15s, background .15s;
+        }
+        .dlo-settings-opt:hover { border-color: rgb(var(--yaziyo-gold-rgb) / 0.45); }
+        .dlo-settings-opt input {
+            margin-top: 0.2rem;
+            width: 1.05rem;
+            height: 1.05rem;
+            accent-color: #D97706;
+            flex-shrink: 0;
+        }
+        .dlo-settings-opt strong {
+            display: block;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            color: rgb(var(--yaziyo-text-rgb));
+        }
+        .dlo-settings-opt span {
+            display: block;
+            font-size: 0.78rem;
+            color: rgb(var(--yaziyo-text-rgb) / 0.55);
+            margin-top: 0.15rem;
+            line-height: 1.4;
+        }
+        .dlo-settings-actions {
+            display: flex;
+            gap: 0.6rem;
+            justify-content: stretch;
+        }
+        .dlo-settings-btn {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 12px;
+            padding: 0.8rem 1.15rem;
+            border: none;
+            cursor: pointer;
+            transition: transform .12s, box-shadow .12s;
+            flex: 1;
+        }
+        .dlo-settings-btn:active { transform: scale(0.97); }
+        .dlo-settings-btn--ghost {
+            flex: 0 0 auto;
+            background: transparent;
+            color: rgb(var(--yaziyo-text-rgb) / 0.65);
+            border: 1px solid rgb(var(--yaziyo-border-rgb));
+        }
+        .dlo-settings-btn--primary {
+            background: linear-gradient(135deg, #f59e0b, #D97706);
+            color: #1e293b;
+            box-shadow: 0 4px 14px rgb(var(--yaziyo-gold-rgb) / 0.35);
+        }
+        .dlo-settings-btn--primary:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .dlo-exam {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            display: none;
+            flex-direction: column;
+            background: #ffffff;
+            color: #0f172a;
+        }
+        .dlo-exam.is-open { display: flex; }
+        .dlo-exam-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+            flex-shrink: 0;
+        }
+        .dlo-exam-exit {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 999px;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            background: #fff;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: color .15s, border-color .15s, background .15s;
+        }
+        .dlo-exam-exit:hover { color: #dc2626; border-color: rgba(220,38,38,.35); background: #fef2f2; }
+        .dlo-exam-timer {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.04em;
+            color: #334155;
+            min-width: 4.5rem;
+            text-align: right;
+        }
+        .dlo-exam-timer:not(.is-visible) { opacity: 0.35; }
+        .dlo-exam-body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 1rem 1rem 0.35rem;
+            gap: 0.75rem;
+            overflow: hidden;
+        }
+        .dlo-exam-panels {
+            width: 100%;
+            max-width: 56rem;
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+        .dlo-exam .dlo-text-card {
+            position: relative;
+            overflow: hidden;
+            flex: 1 1 0;
+            min-height: 12rem;
+            max-height: none;
+            border-radius: 14px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: #fafafa;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+        }
+        .dlo-exam .dlo-text-content {
+            position: absolute;
+            left: 0; right: 0; top: 0;
+            color: #64748b;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            padding: 1.25rem 1.5rem;
+            transform-origin: top;
+            will-change: transform;
+        }
+        .dlo-exam .dlo-input {
+            width: 100%;
+            flex: 1 1 0;
+            min-height: 11rem;
+            border-radius: 14px;
+            border: 1.5px solid rgb(var(--yaziyo-gold-rgb) / 0.4);
+            background: #fff;
+            color: #0f172a;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            padding: 1.25rem 1.5rem;
+            resize: none;
+            outline: none;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+            font-family: 'Inter', sans-serif;
+        }
+        .dlo-exam .dlo-input:focus {
+            border-color: rgb(var(--yaziyo-gold-rgb) / 0.75);
+            box-shadow: 0 0 0 3px rgb(var(--yaziyo-gold-rgb) / 0.18);
+        }
+        .dlo-next-key {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.75rem 1rem 1rem;
+            flex-shrink: 0;
+        }
+        .dlo-next-key-label {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+        .dlo-next-key-value {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 3rem;
+            min-height: 3rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: #1e293b;
+            background: linear-gradient(180deg, #ffedd5, #fb923c);
+            border: 1.5px solid rgb(var(--yaziyo-gold-rgb) / 0.55);
+            box-shadow: 0 4px 14px rgb(var(--yaziyo-gold-rgb) / 0.25);
+        }
+        .dlo-next-key-finger {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+        .dlo-exam[data-highlight="off"] .dlo-char-correct,
+        .dlo-exam[data-highlight="off"] .dlo-char-wrong,
+        .dlo-exam[data-highlight="off"] .dlo-char-current {
+            color: inherit;
+            background: transparent;
+            text-decoration: none;
+            box-shadow: none;
+        }
+        .dlo-exam[data-highlight="on"] .dlo-char-correct {
+            color: #16a34a;
+            text-decoration: underline;
+            text-decoration-color: #16a34a;
+            text-underline-offset: 3px;
+        }
+        .dlo-exam[data-highlight="on"] .dlo-char-wrong {
+            color: #dc2626;
+            text-decoration: underline;
+            text-decoration-color: #dc2626;
+            text-underline-offset: 3px;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        .dlo-exam[data-highlight="on"] .dlo-char-current {
+            color: #ea580c;
+            background: transparent;
+            box-shadow: none;
+            text-decoration: underline;
+            text-decoration-color: #ea580c;
+            text-underline-offset: 3px;
+            text-decoration-thickness: 2px;
+        }
+
+        @media (max-width: 640px) {
+            .dlo-exam-panels { max-width: 100%; }
+            .dlo-exam .dlo-text-card { min-height: 9rem; }
+            .dlo-exam .dlo-input { min-height: 8rem; font-size: 1rem; }
+            .dlo-exam .dlo-text-content { padding: 1rem 1.1rem; font-size: 1.02rem; }
+        }
     </style>
 </head>
 
@@ -55,69 +440,70 @@
         class="w-full bg-light-bg/95 dark:bg-dark-bg/95 backdrop-blur-md sticky top-0 z-50 transition-colors duration-300">
     </header>
 
-    <div class="dlo-shell flex-grow" id="dlo-shell">
-        <div class="dlo-layout">
-            <!-- Orta: Ders alanı -->
-            <div class="dlo-main" id="dlo-main" data-dlo-mode="picker">
-                <div class="dlo-topbar">
-                    <a href="../dersler/" class="dlo-back" id="dlo-back-link">
-                        <i class="fa-solid fa-arrow-left"></i> Derslere Dön
-                    </a>
-                    <div class="dlo-topbar-actions">
-                        <div class="dlo-timer" id="dlo-timer-wrap" hidden aria-live="polite">
-                            <span class="dlo-timer-label">Süre</span>
-                            <span id="dlo-timer">00:00</span>
-                        </div>
-                        <button type="button" class="dlo-finish-btn" id="dlo-finish-btn" hidden>
-                            Dersi Bitir <span class="dlo-kbd-hint">Esc</span>
-                        </button>
-                    </div>
-                </div>
+    <!-- Ayarlar kartı (ders listesi sağda değil — burada) -->
+    <div class="dlo-setup" id="dlo-setup">
+        <div class="dlo-settings-card" role="dialog" aria-labelledby="dlo-settings-title">
+            <p class="dlo-settings-kicker" id="dlo-track-title">Dersler</p>
+            <h1 class="dlo-settings-title" id="dlo-settings-title">Çalışma Ayarları</h1>
+            <p class="dlo-settings-sub">Dersi seçin, isteğe bağlı harf takibini ayarlayın, ardından başlayın.</p>
 
-                <div class="dlo-stage" id="dlo-stage">
-                    <div class="dlo-empty" id="dlo-empty">
-                        <article class="dlo-intro-card">
-                            <h2 class="dlo-intro-card-title">Yaziyo Akademi F klavye öneriyor. Çünkü:</h2>
-                            <div class="dlo-intro-card-body">
-                                <p>F klavye, Türkçe dilinin harf kullanım sıklığı dikkate alınarak geliştirilmiş, Türkçeye özel bir klavye düzenidir. En sık kullanılan harfler, parmakların en rahat ulaşabileceği bölgelere yerleştirilerek daha hızlı ve daha az yorucu yazı yazılması amaçlanmıştır.</p>
-                                <p>F klavye, 1955 yılında Türkiye'de İhsan Sıtkı Yener'in öncülüğünde dil bilimciler, eğitimciler ve uzmanlardan oluşan bir komisyon tarafından geliştirilmiştir. Yapılan bilimsel çalışmalar sonucunda Türkçenin yapısına en uygun klavye düzeni olarak kabul edilmiştir.</p>
-                                <p>Doğru teknikle öğrenildiğinde F klavye; yazma hızını artırır, yazım hatalarını azaltır, parmakların daha dengeli çalışmasını sağlar ve uzun süreli kullanımlarda yorgunluğu azaltır. Bu nedenle özellikle zabıt kâtipliği, veri hazırlama, sekreterlik ve yoğun yazı yazmayı gerektiren mesleklerde tercih edilmekte, on parmak klavye eğitimlerinde önerilmektedir.</p>
-                            </div>
-                        </article>
-                    </div>
-
-                    <div class="dlo-workspace" id="dlo-workspace" hidden>
-                    <div class="dlo-finger-hint" id="dlo-finger-hint" aria-live="polite" aria-atomic="true">
-                        <div class="dlo-finger-hint-key-wrap">
-                            <span class="dlo-finger-hint-label">Sıradaki tuş</span>
-                            <span class="dlo-finger-hint-key" id="dlo-finger-hint-key">—</span>
-                        </div>
-                        <div class="dlo-finger-hint-finger">
-                            <span class="dlo-finger-hint-finger-label">Parmak</span>
-                            <span class="dlo-finger-hint-finger-name" id="dlo-finger-hint-finger">—</span>
-                        </div>
-                    </div>
-                    <div class="dlo-text-card" id="dlo-text-card">
-                        <div class="dlo-text-content" id="dlo-text-content"></div>
-                    </div>
-                    <textarea id="dlo-input" class="dlo-input" lang="tr" spellcheck="false" autocomplete="off"
-                        autocorrect="off" autocapitalize="off" placeholder="Yazmaya başlayın..." readonly></textarea>
-                    </div>
+            <div class="dlo-settings-field">
+                <label id="dlo-lesson-label">Ders seçin</label>
+                <div class="dlo-lesson-dd" id="dlo-lesson-dd">
+                    <button type="button" class="dlo-lesson-dd-btn" id="dlo-lesson-dd-btn" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="dlo-lesson-label">
+                        <span id="dlo-lesson-dd-label">Ders seçin</span>
+                        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                    </button>
+                    <div class="dlo-lesson-dd-menu" id="dlo-lesson-dd-menu" role="listbox" hidden></div>
+                    <input type="hidden" id="dlo-lesson-select" value="">
                 </div>
             </div>
+            <p class="dlo-settings-progress" id="dlo-progress-label">0 / 30 tamamlandı</p>
 
-            <!-- Sağ: Ders listesi -->
-            <aside class="dlo-sidebar">
-                <div class="dlo-sidebar-head">
-                    <div class="dlo-sidebar-title" id="dlo-track-title">Dersler</div>
-                    <div class="dlo-sidebar-sub" id="dlo-progress-label">0 / 30 tamamlandı</div>
-                </div>
-                <div class="dlo-lesson-list" id="dlo-lesson-list" role="list"></div>
-            </aside>
+            <div class="dlo-settings-opts">
+                <label class="dlo-settings-opt">
+                    <input type="checkbox" id="dlo-opt-keys" checked>
+                    <div>
+                        <strong>Harf takibi</strong>
+                        <span>Yazılan harfler altı çizili; doğru yeşil, yanlış kırmızı görünür.</span>
+                    </div>
+                </label>
+            </div>
+
+            <div class="dlo-settings-actions">
+                <a href="../dersler/" class="dlo-settings-btn dlo-settings-btn--ghost" id="dlo-back-link">Geri</a>
+                <button type="button" class="dlo-settings-btn dlo-settings-btn--primary" id="dlo-settings-start">Başla</button>
+            </div>
         </div>
     </div>
 
-    <!-- Sonuç ekranı -->
+    <!-- Çalışma ekranı -->
+    <div class="dlo-exam" id="dlo-exam" data-highlight="on" hidden>
+        <div class="dlo-exam-top">
+            <button type="button" class="dlo-exam-exit" id="dlo-exam-exit" aria-label="Dersi bitir (Esc)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="dlo-exam-timer" id="dlo-timer-wrap" aria-live="polite">
+                <span id="dlo-timer">00:00</span>
+            </div>
+        </div>
+        <div class="dlo-exam-body">
+            <div class="dlo-exam-panels">
+                <div class="dlo-text-card" id="dlo-text-card">
+                    <div class="dlo-text-content" id="dlo-text-content"></div>
+                </div>
+                <textarea id="dlo-input" class="dlo-input" lang="tr" spellcheck="false" autocomplete="off"
+                    autocorrect="off" autocapitalize="off" placeholder="Yazmaya başlayın..." readonly></textarea>
+            </div>
+            <div class="dlo-next-key" id="dlo-next-key" aria-live="polite">
+                <span class="dlo-next-key-label">Basılacak tuş</span>
+                <span class="dlo-next-key-value" id="dlo-next-key-value">—</span>
+                <span class="dlo-next-key-finger" id="dlo-next-key-finger">—</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sonuç -->
     <div class="dlo-result-overlay hidden" id="dlo-result" role="dialog" aria-modal="true" aria-labelledby="dlo-result-title">
         <div class="dlo-result-panel">
             <div class="dlo-result-head">

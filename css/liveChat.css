@@ -97,6 +97,12 @@
     animation: lc-pulse 1.6s ease-in-out infinite;
 }
 
+.lc-fab-badge:empty,
+.lc-fab-badge[hidden] {
+    display: none !important;
+    animation: none;
+}
+
 /* ---- Panel ---- */
 .lc-panel {
     position: absolute;

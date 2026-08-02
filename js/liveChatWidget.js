@@ -9,7 +9,6 @@ import {
     fetchMessages,
     sendTextMessage,
     markMessagesSeen,
-    fetchUnreadCountForUser,
     upsertPresence,
     clearTyping,
     fetchAdminPresence,
@@ -90,6 +89,9 @@ export async function mountLiveChatWidget(user) {
     let open = false;
     let ready = false;
     let renderToken = 0;
+    let markSeenPromise = null;
+    /** Bu oturumda kullanıcı tarafından görülen admin mesajları (rozet geri gelmesin) */
+    const seenAdminIds = new Set();
     let unsubMsg = () => {};
     let unsubPresence = () => {};
     let typingTimer = null;
@@ -160,10 +162,69 @@ export async function mountLiveChatWidget(user) {
         els.fab.classList.toggle('has-unread', has);
         const label = has ? String(unread > 99 ? '99+' : unread) : '';
         els.fabBadge.textContent = label;
+        els.fabBadge.hidden = !has;
         els.fabCount.textContent = has ? `(${label})` : '';
         els.fab.setAttribute('aria-label', has
             ? `Koçuma yaz, ${unread} okunmamış mesaj`
             : 'Koçuma yaz');
+    }
+
+    function isAdminUnread(msg) {
+        if (!msg || msg.gonderen_rol !== 'admin') return false;
+        if (msg.goruldu === true) return false;
+        if (msg.id && seenAdminIds.has(msg.id)) return false;
+        return true;
+    }
+
+    /** Yalnızca admin'den gelen ve henüz görülmemiş mesajlar */
+    function countLocalUnread() {
+        return messages.reduce((n, m) => (isAdminUnread(m) ? n + 1 : n), 0);
+    }
+
+    function syncUnreadBadge() {
+        if (open) {
+            setUnread(0);
+            return;
+        }
+        setUnread(countLocalUnread());
+    }
+
+    function rememberSeenAdmin(msgOrId) {
+        const id = typeof msgOrId === 'string' ? msgOrId : msgOrId?.id;
+        if (id) seenAdminIds.add(id);
+    }
+
+    function markAdminMessagesSeenLocal() {
+        messages = messages.map((m) => {
+            if (m.gonderen_rol !== 'admin') return m;
+            rememberSeenAdmin(m);
+            return { ...m, goruldu: true };
+        });
+    }
+
+    /** Sunucudan gelen listeyi oturumda görülenlerle birleştir */
+    function mergeMessagesFromServer(list) {
+        return (list || []).map((m) => {
+            if (m.gonderen_rol === 'admin' && m.goruldu === true) {
+                rememberSeenAdmin(m);
+                return m;
+            }
+            if (m.gonderen_rol === 'admin' && (open || seenAdminIds.has(m.id))) {
+                rememberSeenAdmin(m);
+                return { ...m, goruldu: true };
+            }
+            return m;
+        });
+    }
+
+    function markSeenOnServer() {
+        if (!convo) return Promise.resolve();
+        const run = markMessagesSeen(convo.id, 'kullanici')
+            .finally(() => {
+                if (markSeenPromise === run) markSeenPromise = null;
+            });
+        markSeenPromise = run;
+        return run;
     }
 
     function updatePresenceUI() {
@@ -267,9 +328,17 @@ export async function mountLiveChatWidget(user) {
 
     function upsertLocalMessage(msg) {
         if (!msg?.id) return;
-        const idx = messages.findIndex((m) => m.id === msg.id);
-        if (idx >= 0) messages[idx] = { ...messages[idx], ...msg };
-        else messages.push(msg);
+        let next = { ...msg };
+        // Oturumda görülen / panel açıkken gelen admin mesajı okunmamış sayılmasın
+        if (next.gonderen_rol === 'admin') {
+            if (next.goruldu === true || open || seenAdminIds.has(next.id)) {
+                next.goruldu = true;
+                rememberSeenAdmin(next);
+            }
+        }
+        const idx = messages.findIndex((m) => m.id === next.id);
+        if (idx >= 0) messages[idx] = { ...messages[idx], ...next };
+        else messages.push(next);
         messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     }
 
@@ -278,20 +347,13 @@ export async function mountLiveChatWidget(user) {
         messages = messages.filter((m) => m.id !== id);
     }
 
-    async function refreshUnread() {
-        if (!convo || open) {
-            setUnread(0);
-            return;
-        }
-        const n = await fetchUnreadCountForUser(convo.id);
-        setUnread(n);
-    }
-
     async function openPanel() {
         open = true;
         els.panel.classList.add('open');
         els.panel.setAttribute('aria-hidden', 'false');
         els.fab.setAttribute('aria-expanded', 'true');
+        // Panel açılınca okunmamışlar hemen temizlenir ve oturumda hatırlanır
+        markAdminMessagesSeenLocal();
         setUnread(0);
 
         if (!ready) {
@@ -301,14 +363,9 @@ export async function mountLiveChatWidget(user) {
                     Sohbet yükleniyor...
                 </div>`;
         } else {
-            messages = messages.map((m) => (
-                m.gonderen_rol === 'admin' ? { ...m, goruldu: true } : m
-            ));
             paintMessages();
             hydrateMedia();
-            if (convo) {
-                markMessagesSeen(convo.id, 'kullanici').catch(() => {});
-            }
+            markSeenOnServer().catch(() => {});
             els.input.focus();
         }
 
@@ -323,7 +380,10 @@ export async function mountLiveChatWidget(user) {
         els.panel.setAttribute('aria-hidden', 'true');
         els.fab.setAttribute('aria-expanded', 'false');
         clearTyping();
-        refreshUnread();
+        // Görülen mesajlar için rozet geri gelmesin; yalnızca kapalıyken YENİ admin mesajı gelirse çıkar
+        markAdminMessagesSeenLocal();
+        setUnread(0);
+        markSeenOnServer().catch(() => {});
     }
 
     function togglePanel() {
@@ -332,25 +392,24 @@ export async function mountLiveChatWidget(user) {
     }
 
     async function loadConversationData() {
-        const [{ data }, { data: presence }, unreadCount] = await Promise.all([
+        const [{ data }, { data: presence }] = await Promise.all([
             fetchMessages(convo.id),
             fetchAdminPresence(),
-            fetchUnreadCountForUser(convo.id),
         ]);
-        messages = data || [];
+        // Geç gelen yükleme, oturumda görülenleri tekrar "okunmamış" yapmasın
+        messages = mergeMessagesFromServer(data || []);
         adminPresence = presence;
         updatePresenceUI();
-        if (!open) setUnread(unreadCount);
+
         if (open) {
-            messages = messages.map((m) => (
-                m.gonderen_rol === 'admin' ? { ...m, goruldu: true } : m
-            ));
+            markAdminMessagesSeenLocal();
+            setUnread(0);
             paintMessages();
             hydrateMedia();
-            markMessagesSeen(convo.id, 'kullanici').catch(() => {});
+            markSeenOnServer().catch(() => {});
             els.input.focus();
         } else {
-            // Medya URL'lerini arka planda ısıt
+            syncUnreadBadge();
             hydrateMedia();
         }
     }
@@ -466,27 +525,43 @@ export async function mountLiveChatWidget(user) {
     els.input.disabled = false;
 
     unsubMsg = subscribeConversation(convo.id, {
-        onInsert: async (msg) => {
+        onInsert: (msg) => {
+            if (open && msg.gonderen_rol === 'admin') {
+                msg = { ...msg, goruldu: true };
+                rememberSeenAdmin(msg);
+            }
             upsertLocalMessage(msg);
             if (open) {
                 if (msg.gonderen_rol === 'admin') {
-                    msg.goruldu = true;
-                    markMessagesSeen(convo.id, 'kullanici').catch(() => {});
+                    markSeenOnServer().catch(() => {});
                 }
                 paintMessages();
                 hydrateMedia();
+                setUnread(0);
             } else if (msg.gonderen_rol === 'admin') {
-                refreshUnread();
+                // Kapalıyken gelen YENİ admin mesajı → rozet
+                syncUnreadBadge();
             }
         },
         onUpdate: (msg) => {
             upsertLocalMessage(msg);
-            if (open) paintMessages({ scroll: false });
+            if (open) {
+                paintMessages({ scroll: false });
+                setUnread(0);
+            } else {
+                // Görüldü güncellemesi rozeti düşürür; eski okunmamışı geri getirmez
+                syncUnreadBadge();
+            }
         },
         onDelete: (old) => {
+            if (old?.id) seenAdminIds.delete(old.id);
             removeLocalMessage(old?.id);
-            if (open) paintMessages({ scroll: false });
-            refreshUnread();
+            if (open) {
+                paintMessages({ scroll: false });
+                setUnread(0);
+            } else {
+                syncUnreadBadge();
+            }
         },
     }, supabase);
 

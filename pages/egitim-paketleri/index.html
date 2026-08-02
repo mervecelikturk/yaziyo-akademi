@@ -179,31 +179,55 @@
             <!-- DEĞER ÖNERİLERİ -->
             <section class="ep-reveal-static">
                 <h2 class="font-poppins font-bold text-2xl mb-6 text-center">Neden YAZİYO Paketleri?</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    <div class="ep-value-card text-center">
-                        <div class="w-12 h-12 rounded-xl bg-yaziyo-gold/15 text-yaziyo-gold flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-bolt"></i></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="ep-value-grid">
+                    <button type="button" class="ep-value-card text-center" data-ep-value="hizli" aria-haspopup="dialog">
+                        <div class="w-12 h-12 rounded-xl bg-yaziyo-gold/15 text-yaziyo-gold flex items-center justify-center text-xl mx-auto mb-4" aria-hidden="true"><i class="fa-solid fa-bolt"></i></div>
                         <h3 class="font-poppins font-bold mb-2">Daha hızlı öğren</h3>
                         <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary">Adaptif modüllerle tempoya uygun ilerleme</p>
-                    </div>
-                    <div class="ep-value-card text-center">
-                        <div class="w-12 h-12 rounded-xl bg-green-500/15 text-green-400 flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-calendar-check"></i></div>
+                        <span class="ep-value-card-hint">Detayı gör <i class="fa-solid fa-arrow-right"></i></span>
+                    </button>
+                    <button type="button" class="ep-value-card text-center" data-ep-value="plan" aria-haspopup="dialog">
+                        <div class="w-12 h-12 rounded-xl bg-green-500/15 text-green-400 flex items-center justify-center text-xl mx-auto mb-4" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div>
                         <h3 class="font-poppins font-bold mb-2">Günlük plan oluştur</h3>
                         <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary">Kişisel çalışma takvimi</p>
-                    </div>
-                    <div class="ep-value-card text-center">
-                        <div class="w-12 h-12 rounded-xl bg-orange-500/15 text-orange-400 flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-headset"></i></div>
+                        <span class="ep-value-card-hint">Detayı gör <i class="fa-solid fa-arrow-right"></i></span>
+                    </button>
+                    <button type="button" class="ep-value-card text-center" data-ep-value="destek" aria-haspopup="dialog">
+                        <div class="w-12 h-12 rounded-xl bg-orange-500/15 text-orange-400 flex items-center justify-center text-xl mx-auto mb-4" aria-hidden="true"><i class="fa-solid fa-headset"></i></div>
                         <h3 class="font-poppins font-bold mb-2">Canlı Destek</h3>
                         <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary">Anlık yardım ve soru çözüm desteği</p>
-                    </div>
-                    <div class="ep-value-card text-center">
-                        <div class="w-12 h-12 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center text-xl mx-auto mb-4"><i class="fa-solid fa-user-graduate"></i></div>
+                        <span class="ep-value-card-hint">Detayı gör <i class="fa-solid fa-arrow-right"></i></span>
+                    </button>
+                    <button type="button" class="ep-value-card text-center" data-ep-value="kocluk" aria-haspopup="dialog">
+                        <div class="w-12 h-12 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center text-xl mx-auto mb-4" aria-hidden="true"><i class="fa-solid fa-user-graduate"></i></div>
                         <h3 class="font-poppins font-bold mb-2">Birebir Koçluk</h3>
                         <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary">Kişisel mentorluk ve takip</p>
-                    </div>
+                        <span class="ep-value-card-hint">Detayı gör <i class="fa-solid fa-arrow-right"></i></span>
+                    </button>
                 </div>
             </section>
         </div>
     </main>
+
+    <!-- Neden YAZİYO — detay popup -->
+    <div id="ep-value-modal" class="ep-value-modal" hidden aria-hidden="true">
+        <div class="ep-value-backdrop" id="ep-value-backdrop"></div>
+        <div class="ep-value-panel" role="dialog" aria-modal="true" aria-labelledby="ep-value-title">
+            <div class="ep-value-header">
+                <div class="ep-value-header-main">
+                    <span class="ep-value-icon" id="ep-value-icon" aria-hidden="true"></span>
+                    <h3 id="ep-value-title" class="font-poppins font-bold text-base sm:text-lg pr-2">Detay</h3>
+                </div>
+                <button type="button" id="ep-value-close" class="w-10 h-10 shrink-0 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="ep-value-body custom-scrollbar" id="ep-value-body"></div>
+            <div class="ep-value-footer">
+                <button type="button" id="ep-value-ok" class="ep-value-ok-btn">Tamam</button>
+            </div>
+        </div>
+    </div>
 
     <!-- DRAWER -->
     <div id="ep-drawer" class="ep-drawer" role="dialog" aria-modal="true" aria-labelledby="ep-drawer-title">
@@ -227,13 +251,87 @@
             </div>
             <div class="ep-drawer-footer ep-glass">
                 <p id="ep-drawer-validity" class="text-xs text-light-text-secondary dark:text-dark-text-secondary mb-3 break-words"></p>
+
+                <div class="ep-consent-box mb-3" id="ep-consent-box">
+                    <label class="ep-consent-item">
+                        <input type="checkbox" id="ep-consent-mss" class="ep-consent-check">
+                        <span class="ep-consent-text">
+                            <button type="button" class="ep-legal-link" data-ep-legal="mss">Mesafeli satış sözleşmesini</button> okudum ve kabul ediyorum.
+                        </span>
+                    </label>
+                    <label class="ep-consent-item">
+                        <input type="checkbox" id="ep-consent-onbilgi" class="ep-consent-check">
+                        <span class="ep-consent-text">
+                            <button type="button" class="ep-legal-link" data-ep-legal="onbilgi">Ön bilgilendirme ve kullanım koşullarını</button> okudum ve kabul ediyorum.
+                        </span>
+                    </label>
+                </div>
+
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <span class="text-sm text-light-text-secondary dark:text-dark-text-secondary">Fiyat</span>
                     <span id="ep-drawer-price" class="text-xl sm:text-2xl font-poppins font-bold text-yaziyo-gold break-all"></span>
                 </div>
-                <button type="button" id="ep-drawer-cta" class="w-full min-h-11 py-3.5 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl hover:shadow-glow-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none">
+                <button type="button" id="ep-drawer-cta" class="w-full min-h-11 py-3.5 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-xl hover:shadow-glow-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none" disabled>
                     Satın Al / Başla
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sözleşme / ön bilgilendirme modalı (yalnızca linke tıklanınca açılır) -->
+    <div id="ep-legal-modal" class="ep-legal-modal" hidden aria-hidden="true">
+        <div class="ep-legal-backdrop" id="ep-legal-backdrop"></div>
+        <div class="ep-legal-panel" role="dialog" aria-modal="true" aria-labelledby="ep-legal-title">
+            <div class="ep-legal-header">
+                <h3 id="ep-legal-title" class="font-poppins font-bold text-base sm:text-lg pr-2">Sözleşme</h3>
+                <button type="button" id="ep-legal-close" class="w-10 h-10 shrink-0 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="ep-legal-body custom-scrollbar" id="ep-legal-body">
+                <!-- İçerikler aşağıda; JS yalnızca görünür olanı seçer -->
+                <article id="ep-legal-doc-mss" class="ep-legal-doc" hidden data-ep-legal-title="Mesafeli Satış Sözleşmesi">
+                    <p class="ep-legal-note">Bu metin taslaktır; daha sonra güncellenebilir.</p>
+                    <h4>1. Taraflar</h4>
+                    <p>İşbu Mesafeli Satış Sözleşmesi (“Sözleşme”), YAZİYO AKADEMİ (“Satıcı”) ile platform üzerinden eğitim paketi satın alan kullanıcı (“Alıcı”) arasında, elektronik ortamda kurulmuştur.</p>
+                    <h4>2. Konu</h4>
+                    <p>Sözleşme’nin konusu; Alıcı’nın Satıcı’ya ait dijital eğitim paketini, sipariş sırasında belirtilen bedel ve koşullarla satın almasına ilişkin hak ve yükümlülüklerin belirlenmesidir.</p>
+                    <h4>3. Ürün / Hizmet Bilgileri</h4>
+                    <p>Satın alınan ürün dijital içerik / online eğitim hizmetidir. Paketin kapsamı, süresi, fiyatı ve erişim koşulları sipariş ekranında ve paket detayında gösterildiği gibidir. Dijital içeriğin niteliği gereği, erişim sağlandıktan sonra cayma hakkı istisnaları uygulanabilir.</p>
+                    <h4>4. Ödeme ve Teslimat</h4>
+                    <p>Ödeme, platformda sunulan ödeme yöntemleriyle tahsil edilir. Dijital hizmet, ödeme onayını takiben Alıcı hesabına tanımlanır ve belirlenen geçerlilik süresi boyunca erişilebilir hale gelir.</p>
+                    <h4>5. Cayma Hakkı</h4>
+                    <p>6502 sayılı Kanun ve Mesafeli Sözleşmeler Yönetmeliği kapsamında; anında ifa edilen veya tüketiciye anında teslim edilen dijital içeriklerde cayma hakkı, ilgili mevzuatta öngörülen istisnalar çerçevesinde sınırlı olabilir. Alıcı, satın alma öncesinde bu hususu kabul ettiğini beyan eder.</p>
+                    <h4>6. Yükümlülükler</h4>
+                    <p>Alıcı, hesap bilgilerini doğru bildirir; içeriği üçüncü kişilerle paylaşmaz, kopyalamaz veya ticari amaçla çoğaltmaz. Satıcı, hizmetin kesintisiz sunulması için makul özeni gösterir; mücbir sebep hallerinden sorumlu tutulamaz.</p>
+                    <h4>7. Uyuşmazlık</h4>
+                    <p>Uyuşmazlıklarda Tüketici Hakem Heyetleri ve Tüketici Mahkemeleri yetkilidir. Ayrıca Satıcı’nın kayıtlı iletişim adresine yazılı başvuru yapılabilir.</p>
+                    <h4>8. Yürürlük</h4>
+                    <p>Alıcı’nın elektronik ortamda onay vermesiyle Sözleşme yürürlüğe girer ve tarafları bağlar.</p>
+                </article>
+                <article id="ep-legal-doc-onbilgi" class="ep-legal-doc" hidden data-ep-legal-title="Ön Bilgilendirme ve Kullanım Koşulları">
+                    <p class="ep-legal-note">Bu metin taslaktır; daha sonra güncellenebilir.</p>
+                    <h4>1. Ön Bilgilendirme</h4>
+                    <p>YAZİYO AKADEMİ tarafından sunulan eğitim paketleri; içerik kapsamı, geçerlilik süresi, fiyat, satış kontenjanı ve erişim koşulları paket detay sayfasında açıkça belirtilir. Satın alma işlemi öncesinde bu bilgileri incelemeniz gerekmektedir.</p>
+                    <h4>2. Hizmetin Niteliği</h4>
+                    <p>Eğitim paketleri dijital hizmettir. Paket içeriği video, metin, canlı destek, görev paneli veya platform içi yetkiler gibi unsurlardan oluşabilir. Sunulan özellikler ilgili paketin tanımına göre değişiklik gösterebilir.</p>
+                    <h4>3. Kullanım Koşulları</h4>
+                    <ul>
+                        <li>Hesap kişiseldir; paylaşım ve ortak kullanım yasaktır.</li>
+                        <li>İçeriklerin izinsiz kopyalanması, dağıtılması veya ticari kullanımı yasaktır.</li>
+                        <li>Platform kurallarına aykırı kullanımda erişim askıya alınabilir veya sonlandırılabilir.</li>
+                        <li>Teknik bakım, güncelleme veya mücbir sebepler nedeniyle geçici kesintiler yaşanabilir.</li>
+                    </ul>
+                    <h4>4. Ödeme ve Faturalandırma</h4>
+                    <p>Belirtilen fiyatlar satın alma anındaki güncel fiyatlardır. Ödeme işlemi tamamlanmadan erişim tanımlanmaz. İade / iptal talepleri, yürürlükteki mevzuat ve Satıcı politikası çerçevesinde değerlendirilir.</p>
+                    <h4>5. Kişisel Veriler</h4>
+                    <p>Satın alma ve hizmet sunumu kapsamında gerekli kişisel veriler, ilgili mevzuata uygun şekilde işlenir. Ayrıntılar için platformdaki aydınlatma metni geçerlidir.</p>
+                    <h4>6. Kabul</h4>
+                    <p>Ön bilgilendirme formunu ve kullanım koşullarını okuduğunuzu, anladığınızı ve elektronik ortamda kabul ettiğinizi beyan edersiniz. Bu onay olmadan satın alma işlemi tamamlanamaz.</p>
+                </article>
+            </div>
+            <div class="ep-legal-footer">
+                <button type="button" id="ep-legal-ok" class="ep-legal-ok-btn">Anladım</button>
             </div>
         </div>
     </div>
