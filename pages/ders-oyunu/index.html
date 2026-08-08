@@ -532,6 +532,37 @@
                         <div class="dlo-result-stat-value" id="dlo-stat-most">—</div>
                     </div>
                 </div>
+                <!-- Sınav İstatistiği -->
+                <div class="dlo-exam-stats">
+                    <h3 class="dlo-exam-stats-title">
+                        <i class="fa-solid fa-clipboard-list text-yaziyo-gold"></i> Sınav İstatistiği
+                    </h3>
+                    <div class="dlo-result-grid dlo-exam-stats-grid">
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Yanlış Kelime Yüzdesi</div>
+                            <div class="dlo-result-stat-value text-red-500" id="dlo-result-exam-wrong-pct">0%</div>
+                        </div>
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Silme Tuşu Kullanımı</div>
+                            <div class="dlo-result-stat-value" id="dlo-result-exam-backspace">0</div>
+                        </div>
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Atlanan Kelime</div>
+                            <div class="dlo-result-stat-value dlo-exam-skipped-value">
+                                <span id="dlo-result-exam-skipped">0</span>
+                                <span id="dlo-result-exam-skipped-bang" class="hidden text-red-500 font-black" aria-label="Uyarı">!</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="dlo-result-exam-alerts" class="dlo-exam-alerts hidden">
+                        <div id="dlo-result-exam-alert-skip" class="dlo-exam-alert hidden">
+                            Dikkat! 22 veya üstü atlamalar sınavı geçersiz kılar.
+                        </div>
+                        <div id="dlo-result-exam-alert-error" class="dlo-exam-alert hidden">
+                            Dikkat! %25 veya üstü hata oranı sınavı geçersiz kılar.
+                        </div>
+                    </div>
+                </div>
                 <div class="dlo-result-kazanim hidden" id="dlo-result-kazanim">
                     <i class="fa-solid fa-lightbulb text-yaziyo-gold"></i>
                     <p id="dlo-result-kazanim-text"></p>
@@ -553,6 +584,7 @@
     <script src="../../js/derslerMetinleri.js"></script>
     <script src="../../js/lib/typingTextScroll.js"></script>
     <script src="../../js/lib/klavyeTypingCore.js"></script>
+    <script src="../../js/lib/sinavIstatistikleri.js"></script>
     <script src="../../js/pageStatus.js"></script>
     <script src="../../js/siteNavbar.js"></script>
     <script src="../../js/main.js"></script>

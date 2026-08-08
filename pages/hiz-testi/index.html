@@ -1631,6 +1631,76 @@
 
 
 
+                    <!-- Sınav İstatistiği -->
+
+                    <div class="bg-yaziyo-bg/50 border border-yaziyo-border rounded-xl p-4">
+
+                        <h3
+
+                            class="text-sm font-inter font-semibold text-yaziyo-text-secondary uppercase tracking-wider mb-3">
+
+                            <i class="fa-solid fa-clipboard-list text-yaziyo-gold mr-1"></i> Sınav İstatistiği
+
+                        </h3>
+
+                        <div class="grid grid-cols-3 gap-3 text-center">
+
+                            <div>
+
+                                <div class="font-poppins font-bold text-xl text-red-400" id="result-exam-wrong-pct">0%</div>
+
+                                <div class="text-xs text-yaziyo-text-secondary">Yanlış Kelime Yüzdesi</div>
+
+                            </div>
+
+                            <div>
+
+                                <div class="font-poppins font-bold text-xl text-yaziyo-text" id="result-exam-backspace">0</div>
+
+                                <div class="text-xs text-yaziyo-text-secondary">Silme Tuşu Kullanımı</div>
+
+                            </div>
+
+                            <div>
+
+                                <div class="font-poppins font-bold text-xl text-yaziyo-text inline-flex items-center justify-center gap-1">
+
+                                    <span id="result-exam-skipped">0</span>
+
+                                    <span id="result-exam-skipped-bang" class="hidden text-red-400 font-black" aria-label="Uyarı">!</span>
+
+                                </div>
+
+                                <div class="text-xs text-yaziyo-text-secondary">Atlanan Kelime</div>
+
+                            </div>
+
+                        </div>
+
+                        <div id="result-exam-alerts" class="mt-3 space-y-2 hidden">
+
+                            <div id="result-exam-alert-skip"
+
+                                class="hidden text-xs sm:text-sm text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200/60 dark:border-red-800/40 rounded-lg px-3 py-2">
+
+                                Dikkat! 22 veya üstü atlamalar sınavı geçersiz kılar.
+
+                            </div>
+
+                            <div id="result-exam-alert-error"
+
+                                class="hidden text-xs sm:text-sm text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200/60 dark:border-red-800/40 rounded-lg px-3 py-2">
+
+                                Dikkat! %25 veya üstü hata oranı sınavı geçersiz kılar.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
                     <!-- Yanlış Yazılan Kelimeler Listesi -->
 
                     <div id="mistakes-section" class="hidden">
@@ -1841,6 +1911,7 @@
 
     </div>
     <script src="../../js/lib/typingTextScroll.js"></script>
+    <script src="../../js/lib/sinavIstatistikleri.js"></script>
     <script src="../../js/hizTesti.js"></script>
     <script type="module" src="../../js/hizSiralama.js"></script>
 

@@ -29,6 +29,10 @@ function escapeHtml(text) {
     return d.innerHTML;
 }
 
+function normalizeLayout(layout) {
+    return layout === 'f' ? 'f' : 'q';
+}
+
 function formatSessionLabel(session, index) {
     const date = session.created_at
         ? new Date(session.created_at).toLocaleString('tr-TR', {
@@ -40,20 +44,36 @@ function formatSessionLabel(session, index) {
     return `${date} · ${short}`;
 }
 
+/** Yalnızca seçili klavye türüne ait oturumlar */
+function getSessionsForLayout() {
+    const layout = normalizeLayout(state.layout);
+    return state.sessions.filter((s) => normalizeLayout(s.keyboard_layout) === layout);
+}
+
+function getSelectedSession() {
+    if (!state.sessionId) return null;
+    const session = state.sessions.find((s) => s.session_id === state.sessionId);
+    if (!session) return null;
+    if (normalizeLayout(session.keyboard_layout) !== normalizeLayout(state.layout)) return null;
+    return session;
+}
+
 function getActiveKeyStats() {
-    if (state.sessionId) {
-        const session = state.sessions.find((s) => s.session_id === state.sessionId);
-        return session?.key_stats || {};
-    }
+    const session = getSelectedSession();
+    if (session) return session.key_stats || {};
     return state.aggregate?.key_stats || {};
 }
 
 function getActiveAnalytics() {
-    if (state.sessionId) {
-        const session = state.sessions.find((s) => s.session_id === state.sessionId);
-        return session?.analytics || {};
-    }
+    const session = getSelectedSession();
+    if (session) return session.analytics || {};
     return state.aggregate?.analytics || {};
+}
+
+/** Klavye değişince seçili oturum o düzene ait değilse temizle */
+function syncSessionToLayout() {
+    if (!state.sessionId) return;
+    if (!getSelectedSession()) state.sessionId = null;
 }
 
 function renderKeyboardGrid(keyStats) {
@@ -141,9 +161,10 @@ function renderToolbar() {
         `<button type="button" class="kh-layout-btn${state.layout === id ? ' active' : ''}" data-kh-layout="${id}">${id.toUpperCase()} Klavye</button>`
     ).join('');
 
+    const layoutSessions = getSessionsForLayout();
     const sessionBtns = [
         `<button type="button" class="kh-session-btn${!state.sessionId ? ' active' : ''}" data-kh-session="">Tümü</button>`,
-        ...state.sessions.map((s, i) =>
+        ...layoutSessions.map((s, i) =>
             `<button type="button" class="kh-session-btn${state.sessionId === s.session_id ? ' active' : ''}" data-kh-session="${s.session_id}" title="${escapeHtml(s.metin_adi || '')}">${escapeHtml(formatSessionLabel(s, i))}</button>`
         ),
     ].join('');
@@ -155,7 +176,16 @@ function renderToolbar() {
         </div>`;
 }
 
-function renderEmpty() {
+function renderEmpty(forLayout = false) {
+    const layoutLabel = normalizeLayout(state.layout).toUpperCase();
+    if (forLayout) {
+        return `
+        <div class="kh-empty">
+            <div><i class="fa-solid fa-keyboard"></i></div>
+            <p class="font-poppins font-bold text-base mb-1">${layoutLabel} klavyede henüz çalışma yok</p>
+            <p class="text-sm max-w-md mx-auto">Bu klavye türüyle yaptığınız çalışmalar yalnızca burada görünür. Çalışma sırasında <strong>${layoutLabel}</strong> seçip sonucu kaydedin.</p>
+        </div>`;
+    }
     return `
         <div class="kh-empty">
             <div><i class="fa-solid fa-keyboard"></i></div>
@@ -172,20 +202,38 @@ function renderContent() {
         return;
     }
 
-    const hasData = state.sessions.length > 0 || (state.aggregate?.total_presses > 0);
-    if (!hasData) {
-        rootEl.innerHTML = renderEmpty();
+    syncSessionToLayout();
+
+    const layoutSessions = getSessionsForLayout();
+    const hasAnyData = state.sessions.length > 0;
+    const hasLayoutData = layoutSessions.length > 0 || (state.aggregate?.total_presses > 0);
+
+    // Hiç veri yoksa klavye seçicisi gerekmez
+    if (!hasAnyData) {
+        rootEl.innerHTML = renderEmpty(false);
+        return;
+    }
+
+    // Veri var ama seçili klavyede yok — yine de layout toggle göster
+    if (!hasLayoutData) {
+        rootEl.innerHTML = `
+            ${renderToolbar()}
+            ${renderEmpty(true)}
+        `;
+        bindInteractions();
         return;
     }
 
     const keyStats = getActiveKeyStats();
     const analytics = getActiveAnalytics();
     const total = analytics?.total_presses || state.aggregate?.total_presses || 0;
+    const layoutLabel = normalizeLayout(state.layout).toUpperCase();
 
     rootEl.innerHTML = `
         ${renderToolbar()}
         <p class="text-xs text-light-text-secondary dark:text-dark-text-secondary mb-3 text-center">
             Toplam <strong class="text-yaziyo-gold">${total.toLocaleString('tr-TR')}</strong> tuş basımı
+            · ${layoutLabel} Klavye
             · ${state.sessionId ? 'Seçili oturum' : 'Tüm oturumlar (son 30 gün dahil)'}
         </p>
         ${renderLegend()}
@@ -229,7 +277,8 @@ function bindInteractions() {
         btn.addEventListener('click', () => {
             const layout = btn.getAttribute('data-kh-layout');
             if (layout && layout !== state.layout) {
-                state.layout = layout;
+                state.layout = normalizeLayout(layout);
+                syncSessionToLayout();
                 refreshAggregate().then(() => renderContent());
             }
         });
@@ -238,13 +287,17 @@ function bindInteractions() {
     rootEl.querySelectorAll('[data-kh-session]').forEach((btn) => {
         btn.addEventListener('click', () => {
             const sid = btn.getAttribute('data-kh-session') || null;
-            state.sessionId = sid || null;
-            if (sid) {
-                const session = state.sessions.find((s) => s.session_id === sid);
-                if (session?.keyboard_layout === 'f' || session?.keyboard_layout === 'q') {
-                    state.layout = session.keyboard_layout;
-                }
+            if (!sid) {
+                state.sessionId = null;
+                renderContent();
+                return;
             }
+            // Yalnızca seçili klavyeye ait oturum seçilebilir
+            const session = state.sessions.find((s) => s.session_id === sid);
+            if (!session || normalizeLayout(session.keyboard_layout) !== normalizeLayout(state.layout)) {
+                return;
+            }
+            state.sessionId = sid;
             renderContent();
         });
     });
@@ -273,9 +326,12 @@ async function loadHeatmapData() {
 
     try {
         state.sessions = await loadHeatmapSessions(supabaseClient, 10);
-        if (state.sessions.length > 0 && !state.sessionId) {
-            const firstLayout = state.sessions[0].keyboard_layout;
-            if (firstLayout === 'f' || firstLayout === 'q') state.layout = firstLayout;
+        // Varsayılan klavye: seçili oturumun düzeni, yoksa ilk oturumun düzeni
+        if (state.sessionId) {
+            syncSessionToLayout();
+        }
+        if (!state.sessionId && state.sessions.length > 0) {
+            state.layout = normalizeLayout(state.sessions[0].keyboard_layout);
         }
         await refreshAggregate();
     } catch (err) {

@@ -599,6 +599,39 @@
                     <div class="yr-result-stat"><div class="yr-result-stat-label">Hata Sayısı</div><div id="kd-stat-errors" class="yr-result-stat-value yr-result-stat-value--red">0</div></div>
                     <div class="yr-result-stat"><div class="yr-result-stat-label">Rakip Farkı</div><div id="kd-stat-diff" class="yr-result-stat-value">0</div></div>
                 </div>
+                <!-- Sınav İstatistiği -->
+                <div class="mb-5">
+                    <h3 class="text-sm font-inter font-semibold text-yaziyo-text-secondary uppercase tracking-wider mb-3 text-center">
+                        <i class="fa-solid fa-clipboard-list text-yaziyo-gold mr-1"></i> Sınav İstatistiği
+                    </h3>
+                    <div class="grid grid-cols-3 gap-2.5 sm:gap-3">
+                        <div class="yr-result-stat">
+                            <div class="yr-result-stat-label">Yanlış Kelime Yüzdesi</div>
+                            <div id="kd-result-exam-wrong-pct" class="yr-result-stat-value yr-result-stat-value--red">0%</div>
+                        </div>
+                        <div class="yr-result-stat">
+                            <div class="yr-result-stat-label">Silme Tuşu Kullanımı</div>
+                            <div id="kd-result-exam-backspace" class="yr-result-stat-value">0</div>
+                        </div>
+                        <div class="yr-result-stat">
+                            <div class="yr-result-stat-label">Atlanan Kelime</div>
+                            <div class="yr-result-stat-value inline-flex items-center justify-center gap-1">
+                                <span id="kd-result-exam-skipped">0</span>
+                                <span id="kd-result-exam-skipped-bang" class="hidden text-red-400 font-black" aria-label="Uyarı">!</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="kd-result-exam-alerts" class="mt-3 space-y-2 hidden">
+                        <div id="kd-result-exam-alert-skip"
+                            class="hidden text-xs sm:text-sm text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200/60 dark:border-red-800/40 rounded-lg px-3 py-2">
+                            Dikkat! 22 veya üstü atlamalar sınavı geçersiz kılar.
+                        </div>
+                        <div id="kd-result-exam-alert-error"
+                            class="hidden text-xs sm:text-sm text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200/60 dark:border-red-800/40 rounded-lg px-3 py-2">
+                            Dikkat! %25 veya üstü hata oranı sınavı geçersiz kılar.
+                        </div>
+                    </div>
+                </div>
                 <div id="kd-save-toast" class="yr-result-toast hidden"></div>
                 <div class="yr-result-actions">
                     <button id="kd-btn-save" type="button" class="yr-result-btn-primary"><i class="fa-solid fa-floppy-disk"></i> Sonucu Kaydet</button>
@@ -695,6 +728,8 @@
     <script type="module" src="../../js/lib/yaziyoAlertModal.js"></script>
     <script type="module" src="../../js/lib/profanityFilter.js"></script>
     <script src="../../js/lib/typingTextScroll.js"></script>
+    <script src="../../js/lib/klavyeTypingCore.js"></script>
+    <script src="../../js/lib/sinavIstatistikleri.js"></script>
     <script src="../../js/klavyeDuellosu.js"></script>
 </body>
 

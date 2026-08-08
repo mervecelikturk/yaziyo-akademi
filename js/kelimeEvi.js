@@ -45,6 +45,7 @@
         timerId: null,
         correctWords: 0,
         wrongWords: 0,
+        backspaceCount: 0,
         prevCorrect: 0,
         prevWrong: 0,
         committedCount: 0,
@@ -868,6 +869,7 @@
 
         state.correctWords = 0;
         state.wrongWords = 0;
+        state.backspaceCount = 0;
         state.prevCorrect = 0;
         state.prevWrong = 0;
         state.committedCount = 0;
@@ -976,6 +978,16 @@
         $('ke-result-total').textContent = typedWords.length;
         $('ke-result-wrong').textContent = wordResult.wrong;
         $('ke-result-floors').textContent = state.floorCount;
+
+        if (window.YaziyoSinavIstatistikleri) {
+            window.YaziyoSinavIstatistikleri.fillExamStats({
+                wrongWords: wordResult.wrong,
+                totalWords: typedWords.length,
+                backspaceCount: state.backspaceCount,
+                skippedWords: window.YaziyoSinavIstatistikleri.countSkippedFromMistakes(wordResult.mistakes),
+                idPrefix: 'ke-',
+            });
+        }
 
         els.workspace.classList.add('hidden');
         document.body.style.overflow = 'auto';
@@ -1128,6 +1140,9 @@
         els.userInput = $('ke-user-input');
         els.userInput?.addEventListener('input', handleInput);
         els.userInput?.addEventListener('keydown', (e) => {
+            if (state.running && e.key === 'Backspace') {
+                state.backspaceCount++;
+            }
             if (e.key === 'Escape' && state.running) {
                 e.preventDefault();
                 endSession();

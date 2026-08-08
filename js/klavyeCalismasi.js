@@ -900,6 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let wrongWords = 0;
     let skippedWords = 0;
     let mistakes = [];
+    let backspaceCount = 0; // Sınav İstatistiği — hata sayılmaz
 
     // Tuş istatistikleri (Kelime sisteminden bağımsız)
     let totalKeys = 0;
@@ -1237,6 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         wrongWords = 0;
         skippedWords = 0;
         mistakes = [];
+        backspaceCount = 0;
         totalKeys = 0;
         correctKeys = 0;
         wrongKeys = 0;
@@ -1532,6 +1534,19 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('result-correct-words').textContent = correct;
         document.getElementById('result-wrong-words').textContent = wrong;
 
+        // Sınav İstatistiği (mevcut sonuçlara ek; hesaplamaları değiştirmez)
+        skippedWords = window.YaziyoSinavIstatistikleri
+            ? window.YaziyoSinavIstatistikleri.countSkippedFromMistakes(mistakes)
+            : 0;
+        if (window.YaziyoSinavIstatistikleri) {
+            window.YaziyoSinavIstatistikleri.fillExamStats({
+                wrongWords: wrong,
+                totalWords: userTotalWords,
+                backspaceCount,
+                skippedWords
+            });
+        }
+
         const mistakesSection = document.getElementById('mistakes-section');
         const mistakesList = document.getElementById('mistakes-list');
         mistakesList.innerHTML = "";
@@ -1763,6 +1778,9 @@ document.addEventListener('DOMContentLoaded', () => {
     userInput.addEventListener('keydown', (e) => {
         if (isTestRunning && e.key) {
             import('./lib/keyPressTracker.js').then((m) => m.recordKeyPress(e.key));
+        }
+        if (isTestRunning && e.key === 'Backspace') {
+            backspaceCount++;
         }
         // Kopyala / yapıştır / kes engeli
         if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x'].includes(e.key.toLowerCase())) {

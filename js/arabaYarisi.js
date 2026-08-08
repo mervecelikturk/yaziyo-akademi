@@ -86,6 +86,7 @@
         targetWords: 0,
         correctWords: 0,
         wrongWords: 0,
+        backspaceCount: 0,
         combo: 0,
         maxCombo: 0,
         committedCount: 0,
@@ -997,6 +998,7 @@
         state.targetWords = Math.max(10, Math.min(state.words.length, cap));
         state.correctWords = 0;
         state.wrongWords = 0;
+        state.backspaceCount = 0;
         state.combo = 0;
         state.maxCombo = 0;
         state.committedCount = 0;
@@ -1421,6 +1423,23 @@
         $('yr-stat-wrong').textContent = stats.wrong || 0;
         $('yr-stat-dist').textContent = stats.correct || 0;
 
+        if (window.YaziyoSinavIstatistikleri) {
+            let skippedWords = 0;
+            const Core = window.YaziyoKlavyeCore;
+            if (Core && state.words?.length) {
+                const align = Core.evaluateExamText(state.words, $('yr-input')?.value || '', true, {});
+                skippedWords = window.YaziyoSinavIstatistikleri.countSkippedFromMistakes(align.mistakes);
+            }
+            const totalWords = (stats.correct || 0) + (stats.wrong || 0);
+            window.YaziyoSinavIstatistikleri.fillExamStats({
+                wrongWords: stats.wrong || 0,
+                totalWords,
+                backspaceCount: state.backspaceCount,
+                skippedWords,
+                idPrefix: 'yr-',
+            });
+        }
+
         stage.innerHTML = resultStageHtml(outcome);
 
         title.classList.remove('yr-result-outcome--win', 'yr-result-outcome--loss', 'yr-result-outcome--draw');
@@ -1690,6 +1709,11 @@
 
         // Yarış input
         $('yr-input').addEventListener('input', onInput);
+        $('yr-input').addEventListener('keydown', (e) => {
+            if (state.running && e.key === 'Backspace') {
+                state.backspaceCount++;
+            }
+        });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !$('yr-workspace').classList.contains('hidden')) {
                 if (state.running) finishRace(false);

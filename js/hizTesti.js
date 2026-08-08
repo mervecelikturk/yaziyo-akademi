@@ -164,6 +164,8 @@
             let correctKeys = 0;            // Doğru basılan tuş sayısı
             let wrongKeys = 0;             // Yanlış basılan tuş sayısı
             let totalKeysPressed = 0;      // Toplam basılan tuş sayısı
+            let backspaceCount = 0;        // Sınav İstatistiği — silme tuşu (hata sayılmaz)
+            let skippedWordsCount = 0;     // Sınav İstatistiği — atlanan kelime
 
             let words = [];                 // Metin kelimeleri dizisi
             let currentWordIndex = 0;       // Şu anda yazılan kelimenin indeksi
@@ -516,6 +518,8 @@
                 correctKeys = 0;
                 wrongKeys = 0;
                 totalKeysPressed = 0;
+                backspaceCount = 0;
+                skippedWordsCount = 0;
                 currentWordIndex = 0;
                 wordStartIndex = 0;
                 completedWords = [];
@@ -651,6 +655,10 @@
             userInput.addEventListener('keydown', (e) => {
                 if (!testActive) return;
 
+                if (e.key === 'Backspace') {
+                    backspaceCount++;
+                }
+
                 if (e.code === 'Space' || e.code === 'Enter') {
                     e.preventDefault(); 
                     
@@ -785,6 +793,7 @@
                 let isSkipped = false;
                 if (typedWord === "") {
                     isSkipped = true;
+                    skippedWordsCount++;
                 }
 
                 if (!isSkipped) {
@@ -980,6 +989,16 @@
                 document.getElementById('result-correct-words').textContent = correctWordsCount;
                 document.getElementById('result-wrong-words').textContent = wrongWordsCount;
                 document.getElementById('result-total-words').textContent = totalWords;
+
+                // Sınav İstatistiği (mevcut sonuçlara ek)
+                if (window.YaziyoSinavIstatistikleri) {
+                    window.YaziyoSinavIstatistikleri.fillExamStats({
+                        wrongWords: wrongWordsCount,
+                        totalWords: totalWords,
+                        backspaceCount,
+                        skippedWords: skippedWordsCount
+                    });
+                }
 
                 // Yanlış kelimeler listesi
                 const mistakesSection = document.getElementById('mistakes-section');

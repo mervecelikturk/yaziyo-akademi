@@ -78,6 +78,7 @@
         totalWords: 0,
         correctWords: 0,
         wrongWords: 0,
+        backspaceCount: 0,
         errorCount: 0,
         combo: 0,
         maxCombo: 0,
@@ -966,6 +967,7 @@
         state.totalWords = state.words.length;
         state.correctWords = 0;
         state.wrongWords = 0;
+        state.backspaceCount = 0;
         state.errorCount = 0;
         state.combo = 0;
         state.maxCombo = 0;
@@ -1443,6 +1445,23 @@
         $('kd-stat-diff').classList.toggle('yr-result-stat-value--green', diff > 0);
         $('kd-stat-diff').classList.toggle('yr-result-stat-value--red', diff < 0);
 
+        if (window.YaziyoSinavIstatistikleri) {
+            let skippedWords = 0;
+            const Core = window.YaziyoKlavyeCore;
+            if (Core && state.words?.length) {
+                const align = Core.evaluateExamText(state.words, $('kd-input')?.value || '', true, {});
+                skippedWords = window.YaziyoSinavIstatistikleri.countSkippedFromMistakes(align.mistakes);
+            }
+            const totalWords = stats.total || ((stats.correct || 0) + (stats.wrong || 0));
+            window.YaziyoSinavIstatistikleri.fillExamStats({
+                wrongWords: stats.wrong || 0,
+                totalWords,
+                backspaceCount: state.backspaceCount,
+                skippedWords,
+                idPrefix: 'kd-',
+            });
+        }
+
         const title = $('kd-result-title');
         const sub = $('kd-result-sub');
         $('kd-result-stage').innerHTML = resultStageHtml(outcome);
@@ -1673,6 +1692,11 @@
         $('kd-room-leave').addEventListener('click', () => leaveRoom('lobby'));
 
         $('kd-input').addEventListener('input', onInput);
+        $('kd-input').addEventListener('keydown', (e) => {
+            if (state.running && e.key === 'Backspace') {
+                state.backspaceCount++;
+            }
+        });
         preventTextCopy($('kd-text-card'));
         preventTextCopy($('kd-text-content'));
 

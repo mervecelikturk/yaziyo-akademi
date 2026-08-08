@@ -23,6 +23,7 @@ let wordsArray = [];
 let resultSaved = false;
 let lastResult = null;
 let lessonSettings = loadSettings();
+let backspaceCount = 0; // Sınav İstatistiği — hata sayılmaz
 
 function loadSettings() {
     try {
@@ -410,6 +411,7 @@ function startLesson(no) {
     currentText = lesson.content;
     resultSaved = false;
     lastResult = null;
+    backspaceCount = 0;
     prepareWordsDOM(currentText);
 
     openExamScreen();
@@ -437,6 +439,9 @@ function computeResult() {
     const freq = letterFrequencyStats(wordsArray);
     const completedFully = isTextComplete(els.input.value);
     const passed = rate >= PASS_RATE && completedFully;
+    const skippedWords = window.YaziyoSinavIstatistikleri
+        ? window.YaziyoSinavIstatistikleri.countSkippedFromMistakes(alignment.mistakes)
+        : 0;
 
     return {
         correct,
@@ -450,6 +455,8 @@ function computeResult() {
         ders_no: activeLessonNo,
         sure_saniye: elapsedSec,
         kazanim: getLesson(activeLessonNo)?.kazanim || '',
+        skippedWords,
+        backspaceCount,
     };
 }
 
@@ -459,6 +466,16 @@ function showResult(result) {
     els.statCorrect.textContent = String(result.correct);
     els.statWrong.textContent = String(result.wrong);
     els.statMost.textContent = result.freq.most;
+
+    if (window.YaziyoSinavIstatistikleri) {
+        window.YaziyoSinavIstatistikleri.fillExamStats({
+            wrongWords: result.wrong,
+            totalWords: result.total,
+            backspaceCount: result.backspaceCount || 0,
+            skippedWords: result.skippedWords || 0,
+            idPrefix: 'dlo-',
+        });
+    }
 
     els.resultHero.classList.remove('is-pass', 'is-fail');
     els.btnContinue.classList.add('hidden');
@@ -549,6 +566,12 @@ function readSettingsFromForm() {
 }
 
 els.input?.addEventListener('input', onTypingInput);
+
+els.input?.addEventListener('keydown', (e) => {
+    if (isRunning && e.key === 'Backspace') {
+        backspaceCount++;
+    }
+});
 
 els.examExit?.addEventListener('click', () => {
     if (isRunning) finishLesson();
