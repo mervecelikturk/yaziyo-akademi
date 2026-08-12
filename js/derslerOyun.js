@@ -1,5 +1,5 @@
 import { loadDersProgress, saveDersProgress, isDersUserLoggedIn } from './lib/derslerApi.js';
-import { FINGER_LABELS, getFingerMap, normalizePressedKey } from './lib/keyboardLayouts.js';
+import { getFingerMap, getHandForFinger, normalizePressedKey } from './lib/keyboardLayouts.js';
 
 const PASS_RATE = 50;
 const SETTINGS_KEY = 'dlo-lesson-settings';
@@ -54,8 +54,6 @@ const els = {
     timer: document.getElementById('dlo-timer'),
     exam: document.getElementById('dlo-exam'),
     examExit: document.getElementById('dlo-exam-exit'),
-    nextKeyValue: document.getElementById('dlo-next-key-value'),
-    nextKeyFinger: document.getElementById('dlo-next-key-finger'),
     lessonDd: document.getElementById('dlo-lesson-dd'),
     lessonDdBtn: document.getElementById('dlo-lesson-dd-btn'),
     lessonDdLabel: document.getElementById('dlo-lesson-dd-label'),
@@ -92,16 +90,50 @@ function formatTime(sec) {
     return `${m}:${s}`;
 }
 
-function formatKeyLabel(ch) {
-    if (ch === ' ') return 'Boşluk';
-    if (ch === '\n') return 'Enter';
-    return String(ch).toLocaleUpperCase('tr-TR');
+function fingerIdsForChar(ch) {
+    if (!ch) return [];
+    if (ch === ' ' || ch === '\u00a0') return ['thumb'];
+    const key = normalizePressedKey(ch) ?? String(ch).toLocaleLowerCase('tr-TR');
+    const fingerId = fingerMap[key] || fingerMap[ch] || fingerMap[String(ch).toLocaleLowerCase('tr-TR')];
+    const ids = [];
+    if (fingerId) ids.push(fingerId);
+    const lower = String(ch).toLocaleLowerCase('tr-TR');
+    const isLetter = /\p{L}/u.test(ch);
+    if (isLetter && ch !== lower && fingerId) {
+        const hand = getHandForFinger(fingerId);
+        if (hand === 'left') ids.push('right_pinky');
+        else if (hand === 'right') ids.push('left_pinky');
+    }
+    return ids;
 }
 
-function fingerLabelForChar(ch) {
-    const key = normalizePressedKey(ch) ?? String(ch).toLocaleLowerCase('tr-TR');
-    const fingerId = fingerMap[key];
-    return fingerId ? (FINGER_LABELS[fingerId] || '—') : '—';
+function currentLessonChar(typed, ref) {
+    const refChars = [...ref];
+    const typedChars = [...typed];
+    if (!refChars.length) return null;
+    const idx = Math.min(typedChars.length, refChars.length);
+    if (idx >= refChars.length) return null;
+    return refChars[idx];
+}
+
+function updateHandHighlight() {
+    const tips = document.querySelectorAll('.dlo-tip');
+    tips.forEach((el) => {
+        el.classList.remove('is-active');
+        el.setAttribute('fill', 'none');
+    });
+    if (!isRunning) return;
+    const ref = currentText.trim().replace(/\s+/g, ' ');
+    const typed = els.input?.value || '';
+    const ch = currentLessonChar(typed, ref);
+    if (!ch) return;
+    const ids = new Set(fingerIdsForChar(ch));
+    tips.forEach((el) => {
+        if (ids.has(el.getAttribute('data-finger'))) {
+            el.classList.add('is-active');
+            el.setAttribute('fill', '#f97316');
+        }
+    });
 }
 
 function setLessonDropdownOpen(open) {
@@ -192,6 +224,7 @@ function updateCharHighlight(typed) {
             el.classList.add('dlo-char-pending');
         }
     });
+    updateHandHighlight();
 }
 
 function syncScroll() {
@@ -225,25 +258,6 @@ function guideIndex(typed, ref) {
     return typed.length;
 }
 
-function updateNextKeyHint() {
-    if (!isRunning) {
-        if (els.nextKeyValue) els.nextKeyValue.textContent = '—';
-        if (els.nextKeyFinger) els.nextKeyFinger.textContent = '—';
-        return;
-    }
-    const ref = currentText.trim().replace(/\s+/g, ' ');
-    const typed = els.input.value;
-    const idx = guideIndex(typed, ref);
-    if (idx >= ref.length) {
-        if (els.nextKeyValue) els.nextKeyValue.textContent = '—';
-        if (els.nextKeyFinger) els.nextKeyFinger.textContent = '—';
-        return;
-    }
-    const ch = ref[idx];
-    if (els.nextKeyValue) els.nextKeyValue.textContent = formatKeyLabel(ch);
-    if (els.nextKeyFinger) els.nextKeyFinger.textContent = fingerLabelForChar(ch);
-}
-
 function startTimer() {
     if (timerStarted) return;
     timerStarted = true;
@@ -263,7 +277,7 @@ function onTypingInput() {
     const C = core();
 
     updateCharHighlight(inputVal);
-    updateNextKeyHint();
+    updateHandHighlight();
 
     const activeIdx = C.getActiveWordIndexFromInput(inputVal, wordsArray.length);
     highlightActiveWord(activeIdx);
@@ -294,8 +308,7 @@ function showSetup() {
         els.input.value = '';
         els.input.readOnly = true;
     }
-    if (els.nextKeyValue) els.nextKeyValue.textContent = '—';
-    if (els.nextKeyFinger) els.nextKeyFinger.textContent = '—';
+    updateHandHighlight();
     activeLessonNo = null;
     if (els.result?.classList.contains('hidden')) {
         document.body.style.overflow = '';
@@ -423,7 +436,7 @@ function startLesson(no) {
     elapsedSec = 0;
     els.timerWrap?.classList.remove('is-visible');
     if (els.timer) els.timer.textContent = '00:00';
-    updateNextKeyHint();
+    updateHandHighlight();
     els.input.focus();
 }
 
@@ -466,16 +479,6 @@ function showResult(result) {
     els.statCorrect.textContent = String(result.correct);
     els.statWrong.textContent = String(result.wrong);
     els.statMost.textContent = result.freq.most;
-
-    if (window.YaziyoSinavIstatistikleri) {
-        window.YaziyoSinavIstatistikleri.fillExamStats({
-            wrongWords: result.wrong,
-            totalWords: result.total,
-            backspaceCount: result.backspaceCount || 0,
-            skippedWords: result.skippedWords || 0,
-            idPrefix: 'dlo-',
-        });
-    }
 
     els.resultHero.classList.remove('is-pass', 'is-fail');
     els.btnContinue.classList.add('hidden');
@@ -525,8 +528,7 @@ async function finishLesson() {
     stopTimer();
     els.timerWrap?.classList.remove('is-visible');
     els.input.readOnly = true;
-    if (els.nextKeyValue) els.nextKeyValue.textContent = '—';
-    if (els.nextKeyFinger) els.nextKeyFinger.textContent = '—';
+    updateHandHighlight();
 
     const result = computeResult();
     showSetup();
@@ -566,6 +568,7 @@ function readSettingsFromForm() {
 }
 
 els.input?.addEventListener('input', onTypingInput);
+els.input?.addEventListener('keyup', onTypingInput);
 
 els.input?.addEventListener('keydown', (e) => {
     if (isRunning && e.key === 'Backspace') {

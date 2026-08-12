@@ -77,6 +77,46 @@ function buildMediaBody(msg, url) {
     return linkify(msg.icerik || '');
 }
 
+const SEEN_STORE_PREFIX = 'yaziyo-lc-seen:';
+const SEEN_IDS_MAX = 300;
+
+function seenStoreKey(userId) {
+    return `${SEEN_STORE_PREFIX}${userId}`;
+}
+
+function loadSeenState(userId) {
+    try {
+        const raw = localStorage.getItem(seenStoreKey(userId));
+        if (!raw) return { ids: [], lastSeenAt: null };
+        const parsed = JSON.parse(raw);
+        return {
+            ids: Array.isArray(parsed?.ids) ? parsed.ids.filter(Boolean) : [],
+            lastSeenAt: parsed?.lastSeenAt || null,
+        };
+    } catch {
+        return { ids: [], lastSeenAt: null };
+    }
+}
+
+function saveSeenState(userId, ids, lastSeenAt) {
+    try {
+        const list = [...ids].slice(-SEEN_IDS_MAX);
+        localStorage.setItem(seenStoreKey(userId), JSON.stringify({
+            ids: list,
+            lastSeenAt: lastSeenAt || null,
+        }));
+    } catch {
+        /* kota / gizli mod */
+    }
+}
+
+function isAtOrBefore(iso, cutoffIso) {
+    if (!iso || !cutoffIso) return false;
+    const a = new Date(iso).getTime();
+    const b = new Date(cutoffIso).getTime();
+    return Number.isFinite(a) && Number.isFinite(b) && a <= b;
+}
+
 export async function mountLiveChatWidget(user) {
     if (!user?.id) return null;
     if (document.getElementById('lc-root')) return null;
@@ -90,8 +130,10 @@ export async function mountLiveChatWidget(user) {
     let ready = false;
     let renderToken = 0;
     let markSeenPromise = null;
-    /** Bu oturumda kullanıcı tarafından görülen admin mesajları (rozet geri gelmesin) */
-    const seenAdminIds = new Set();
+    const storedSeen = loadSeenState(user.id);
+    /** Görülen admin mesajları — sayfa değişince de hatırlanır */
+    const seenAdminIds = new Set(storedSeen.ids);
+    let lastSeenAt = storedSeen.lastSeenAt;
     let unsubMsg = () => {};
     let unsubPresence = () => {};
     let typingTimer = null;
@@ -169,10 +211,27 @@ export async function mountLiveChatWidget(user) {
             : 'Koçuma yaz');
     }
 
+    function persistSeen() {
+        saveSeenState(user.id, seenAdminIds, lastSeenAt);
+    }
+
+    function bumpLastSeenAt(iso) {
+        if (!iso) return;
+        if (!lastSeenAt || new Date(iso).getTime() > new Date(lastSeenAt).getTime()) {
+            lastSeenAt = iso;
+        }
+    }
+
+    function wasAlreadySeen(msg) {
+        if (!msg) return false;
+        if (msg.id && seenAdminIds.has(msg.id)) return true;
+        return isAtOrBefore(msg.created_at, lastSeenAt);
+    }
+
     function isAdminUnread(msg) {
         if (!msg || msg.gonderen_rol !== 'admin') return false;
         if (msg.goruldu === true) return false;
-        if (msg.id && seenAdminIds.has(msg.id)) return false;
+        if (wasAlreadySeen(msg)) return false;
         return true;
     }
 
@@ -189,32 +248,34 @@ export async function mountLiveChatWidget(user) {
         setUnread(countLocalUnread());
     }
 
-    function rememberSeenAdmin(msgOrId) {
-        const id = typeof msgOrId === 'string' ? msgOrId : msgOrId?.id;
-        if (id) seenAdminIds.add(id);
+    function rememberSeenAdmin(msgOrId, { persist = true } = {}) {
+        const msg = typeof msgOrId === 'string' ? { id: msgOrId } : (msgOrId || {});
+        if (msg.id) seenAdminIds.add(msg.id);
+        if (persist) persistSeen();
     }
 
     function markAdminMessagesSeenLocal() {
+        bumpLastSeenAt(new Date().toISOString());
         messages = messages.map((m) => {
             if (m.gonderen_rol !== 'admin') return m;
-            rememberSeenAdmin(m);
+            rememberSeenAdmin(m, { persist: false });
             return { ...m, goruldu: true };
         });
+        persistSeen();
     }
 
-    /** Sunucudan gelen listeyi oturumda görülenlerle birleştir */
+    /** Sunucudan gelen listeyi daha önce görülenlerle birleştir */
     function mergeMessagesFromServer(list) {
-        return (list || []).map((m) => {
-            if (m.gonderen_rol === 'admin' && m.goruldu === true) {
-                rememberSeenAdmin(m);
-                return m;
-            }
-            if (m.gonderen_rol === 'admin' && (open || seenAdminIds.has(m.id))) {
-                rememberSeenAdmin(m);
-                return { ...m, goruldu: true };
+        const merged = (list || []).map((m) => {
+            if (m.gonderen_rol !== 'admin') return m;
+            if (m.goruldu === true || open || wasAlreadySeen(m)) {
+                rememberSeenAdmin(m, { persist: false });
+                return m.goruldu === true ? m : { ...m, goruldu: true };
             }
             return m;
         });
+        persistSeen();
+        return merged;
     }
 
     function markSeenOnServer() {
@@ -329,9 +390,9 @@ export async function mountLiveChatWidget(user) {
     function upsertLocalMessage(msg) {
         if (!msg?.id) return;
         let next = { ...msg };
-        // Oturumda görülen / panel açıkken gelen admin mesajı okunmamış sayılmasın
+        // Daha önce görülen / panel açıkken gelen admin mesajı okunmamış sayılmasın
         if (next.gonderen_rol === 'admin') {
-            if (next.goruldu === true || open || seenAdminIds.has(next.id)) {
+            if (next.goruldu === true || open || wasAlreadySeen(next)) {
                 next.goruldu = true;
                 rememberSeenAdmin(next);
             }
@@ -597,6 +658,7 @@ export async function mountLiveChatWidget(user) {
     presenceUiTimer = setInterval(updatePresenceUI, 10_000);
 
     const goOffline = () => {
+        persistSeen();
         upsertPresence({ cevrimici: false, yaziyor_konusma_id: null }, supabase, user.id);
     };
     window.addEventListener('pagehide', goOffline);

@@ -12,18 +12,21 @@
     }
 
     const EGITIM_PAGES = ['egitim-paketleri', 'egitimlerim', 'egitimler'];
+    const CALISMALAR_KEY = 'calismalar';
+    /** Eski anahtarlar → Çalışmalar (geriye uyumluluk) */
+    const CALISMALAR_ALIASES = ['klavye-calismalari', 'oyunlar', 'calismalar'];
 
     const SLUG_TO_ACTIVE = {
         profil: 'profil',
-        'hiz-testi': 'klavye-calismalari',
-        'dersler': 'klavye-calismalari',
-        'ders-oyunu': 'klavye-calismalari',
-        'klavye-calismasi': 'klavye-calismalari',
-        'ozel-metin-calismasi': 'klavye-calismalari',
-        'klavye-sinavi': 'klavye-calismalari',
-        'kelime-evi': 'oyunlar',
-        'araba-yarisi': 'oyunlar',
-        'klavye-duellosu': 'oyunlar',
+        'hiz-testi': CALISMALAR_KEY,
+        'dersler': CALISMALAR_KEY,
+        'ders-oyunu': CALISMALAR_KEY,
+        'klavye-calismasi': CALISMALAR_KEY,
+        'ozel-metin-calismasi': CALISMALAR_KEY,
+        'klavye-sinavi': CALISMALAR_KEY,
+        'kelime-evi': CALISMALAR_KEY,
+        'araba-yarisi': CALISMALAR_KEY,
+        'klavye-duellosu': CALISMALAR_KEY,
         'sozlu-mulakat': 'mulakatlar',
         'mulakat-simulasyonu': 'mulakatlar',
         becayis: 'becayis',
@@ -51,9 +54,15 @@
 
     function resolveActiveNav() {
         const fromBody = document.body?.dataset?.yaziyoNavActive;
-        if (fromBody) return fromBody;
+        if (fromBody) {
+            if (CALISMALAR_ALIASES.includes(fromBody)) return CALISMALAR_KEY;
+            return fromBody;
+        }
         const fromHeader = document.getElementById('main-header')?.dataset?.yaziyoNavActive;
-        if (fromHeader) return fromHeader;
+        if (fromHeader) {
+            if (CALISMALAR_ALIASES.includes(fromHeader)) return CALISMALAR_KEY;
+            return fromHeader;
+        }
         const slug = global.YaziyoPaths?.currentPageSlug?.() || '';
         if (slug && SLUG_TO_ACTIVE[slug] !== undefined) return SLUG_TO_ACTIVE[slug];
         const file = (global.location.pathname.split('/').pop() || 'index.html').toLowerCase();
@@ -88,7 +97,12 @@
 
     function resolveActiveFromLink(link) {
         if (!link) return '';
-        if (link.dataset.page) return link.dataset.page;
+        if (link.dataset.page) {
+            const page = link.dataset.page;
+            if (CALISMALAR_ALIASES.includes(page)) return CALISMALAR_KEY;
+            if (SLUG_TO_ACTIVE[page] !== undefined) return SLUG_TO_ACTIVE[page];
+            return page;
+        }
         return resolveActiveFromHref(link.dataset.originalHref || link.getAttribute('href') || '');
     }
 
@@ -184,11 +198,30 @@
         document.addEventListener('click', handleNavClick, true);
     }
 
+    function calismalarItems(paths, mobile) {
+        const cls = mobile ? 'mobile-nav-link text-[0.8em]' : 'nav-dropdown-item';
+        const items = [
+            { href: paths.pageHref('arabaYarisi.html'), label: 'Araba Yarışı', page: 'araba-yarisi' },
+            { href: paths.pageHref('dersler.html'), label: 'Dersler', page: 'dersler' },
+            { href: paths.pageHref('kelimeEvi.html'), label: 'Kelime Evi', page: 'kelime-evi' },
+            { href: paths.pageHref('klavyeCalismasi.html'), label: 'Klavye Çalışması', page: 'klavye-calismasi' },
+            { href: paths.pageHref('klavyeDuellosu.html'), label: 'Klavye Düellosu', page: 'klavye-duellosu' },
+            { href: paths.pageHref('klavyeSinavi.html'), label: 'Klavye Sınavı', page: 'klavye-sinavi' },
+            { href: paths.pageHref('ozelMetinCalismasi.html'), label: 'Metin Ekle', page: 'ozel-metin-calismasi' },
+        ];
+        return items
+            .map((item) => `<li><a href="${item.href}" class="${cls}" data-page="${item.page}">${item.label}</a></li>`)
+            .join('');
+    }
+
     function buildHeaderInner(active) {
         const paths = getPaths();
         const home = paths.homeHref();
         const logoSrc = paths.assetHref('images/logo.png');
         const girisKayit = paths.pageHref('girisKayit.html');
+        const calismalarOpen = CALISMALAR_ALIASES.includes(active) || active === CALISMALAR_KEY;
+        const calismalarActive = calismalarOpen ? ' active' : '';
+        const calismalarMobOpen = calismalarOpen ? ' open' : '';
         return `
         <div class="yaziyo-header-bar max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between gap-2">
             <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 sm:max-w-none" id="logo-link">
@@ -239,21 +272,9 @@
                     <li><a href="${home}" class="nav-link${ac(active, 'anasayfa')}" data-page="anasayfa">Ana Sayfa</a></li>
                     <li><a href="${paths.pageHref('profil.html')}" class="nav-link${ac(active, 'profil')}" data-page="profil">Profil</a></li>
                     <li class="nav-dropdown">
-                        <button type="button" class="nav-link nav-dropdown-trigger${ac(active, 'klavye-calismalari')}" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
-                        <ul class="nav-dropdown-menu">
-                            <li><a href="${paths.pageHref('dersler.html')}" class="nav-dropdown-item">Dersler</a></li>
-                            <li><a href="${paths.pageHref('hizTesti.html')}" class="nav-dropdown-item">Hız Testi</a></li>
-                            <li><a href="${paths.pageHref('klavyeCalismasi.html')}" class="nav-dropdown-item">Klavye Çalışması</a></li>
-                            <li><a href="${paths.pageHref('ozelMetinCalismasi.html')}" class="nav-dropdown-item">Özel Metin Çalışması</a></li>
-                            <li><a href="javascript:void(0)" class="nav-dropdown-item disabled">Klavye Sınavı</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-dropdown">
-                        <button type="button" class="nav-link nav-dropdown-trigger${ac(active, 'oyunlar')}" data-page="oyunlar">Oyunlar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
-                        <ul class="nav-dropdown-menu">
-                            <li><a href="${paths.pageHref('klavyeDuellosu.html')}" class="nav-dropdown-item" data-page="klavye-duellosu">Klavye Düellosu</a></li>
-                            <li><a href="${paths.pageHref('kelimeEvi.html')}" class="nav-dropdown-item" data-page="kelime-evi">Kelime Evi</a></li>
-                            <li><a href="${paths.pageHref('arabaYarisi.html')}" class="nav-dropdown-item" data-page="araba-yarisi">Araba Yarışı</a></li>
+                        <button type="button" class="nav-link nav-dropdown-trigger${calismalarActive}" data-page="${CALISMALAR_KEY}">Çalışmalar <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
+                        <ul class="nav-dropdown-menu nav-dropdown-menu--calismalar">
+                            ${calismalarItems(paths, false)}
                         </ul>
                     </li>
                     <li class="nav-dropdown">
@@ -285,22 +306,10 @@
                     <ul class="flex flex-col gap-1 pb-4 text-sm">
                         <li><a href="${home}" class="mobile-nav-link${ac(active, 'anasayfa')}" data-page="anasayfa">Ana Sayfa</a></li>
                         <li><a href="${paths.pageHref('profil.html')}" class="mobile-nav-link${ac(active, 'profil')}" data-page="profil">Profil</a></li>
-                        <li class="mobile-dropdown${mobOpen(active, 'klavye-calismalari')}">
-                            <button type="button" class="mobile-nav-link mobile-dropdown-trigger${ac(active, 'klavye-calismalari')} w-full text-left flex items-center justify-between" data-page="klavye-calismalari">Klavye Çalışmaları <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
-                            <ul class="mobile-dropdown-menu${mobOpen(active, 'klavye-calismalari')} flex flex-col gap-1 pl-3 pt-1">
-                                <li><a href="${paths.pageHref('dersler.html')}" class="mobile-nav-link text-[0.8em]">Dersler</a></li>
-                                <li><a href="${paths.pageHref('hizTesti.html')}" class="mobile-nav-link text-[0.8em]">Hız Testi</a></li>
-                                <li><a href="${paths.pageHref('klavyeCalismasi.html')}" class="mobile-nav-link text-[0.8em]">Klavye Çalışması</a></li>
-                                <li><a href="${paths.pageHref('ozelMetinCalismasi.html')}" class="mobile-nav-link text-[0.8em]">Özel Metin Çalışması</a></li>
-                                <li><a href="javascript:void(0)" class="mobile-nav-link disabled text-[0.8em]">Klavye Sınavı</a></li>
-                            </ul>
-                        </li>
-                        <li class="mobile-dropdown${mobOpen(active, 'oyunlar')}">
-                            <button type="button" class="mobile-nav-link mobile-dropdown-trigger${ac(active, 'oyunlar')} w-full text-left flex items-center justify-between" data-page="oyunlar">Oyunlar <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
-                            <ul class="mobile-dropdown-menu${mobOpen(active, 'oyunlar')} flex flex-col gap-1 pl-3 pt-1">
-                                <li><a href="${paths.pageHref('klavyeDuellosu.html')}" class="mobile-nav-link text-[0.8em]" data-page="klavye-duellosu">Klavye Düellosu</a></li>
-                                <li><a href="${paths.pageHref('kelimeEvi.html')}" class="mobile-nav-link text-[0.8em]" data-page="kelime-evi">Kelime Evi</a></li>
-                                <li><a href="${paths.pageHref('arabaYarisi.html')}" class="mobile-nav-link text-[0.8em]" data-page="araba-yarisi">Araba Yarışı</a></li>
+                        <li class="mobile-dropdown${calismalarMobOpen}">
+                            <button type="button" class="mobile-nav-link mobile-dropdown-trigger${calismalarActive}${calismalarMobOpen} w-full text-left flex items-center justify-between" data-page="${CALISMALAR_KEY}">Çalışmalar <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
+                            <ul class="mobile-dropdown-menu${calismalarMobOpen} flex flex-col gap-1 pl-3 pt-1">
+                                ${calismalarItems(paths, true)}
                             </ul>
                         </li>
                         <li class="mobile-dropdown${mobOpen(active, 'mulakatlar')}">

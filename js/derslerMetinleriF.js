@@ -1,23 +1,19 @@
 /**
  * F Klavye — 30 derslik on parmak eğitim metinleri
  *
- * Harf öğretim sırası:
- *   L1: A, E     | L2: K, L     | L3: İ, T     | L4: N, R     | L5: M, U
- *   L6: Y, S     | L7: D, O     | L8: B, Ç     | L9: G, I(ı)  | L10: Ş, C
- *   L11: Ü, P    | L12: Z, H    | L13: V, F    | L14: Ö, Ğ    | L15: J + Tekrar
- *   L16–20: Büyük harf + noktalama
- *   L21–24: Sayılar
- *   L25–29: Metin yazımı
- *   L30: Final sınavı
- *
- * Kelime sayısı hedefleri:
- *   L1–15 → 50   L16–25 → 60   L26–29 → 70   L30 → 90
+ *  1–5   Orta sıra tuşları
+ *  6–10  Üst sıra tuşları
+ * 11–15  Alt sıra tuşları
+ * 16–20  İmlasız kısa metin
+ * 21–25  Noktalama, sayı ve büyük harf
+ * 26–30  İmlalı metin
  */
 (function (global) {
-    function drill50(words) {
+    function drill(words, n) {
         const out = [];
         let i = 0;
-        while (out.length < 50) {
+        const target = n || 50;
+        while (out.length < target) {
             out.push(words[i % words.length]);
             i += 1;
         }
@@ -43,309 +39,263 @@
     global.YaziyoDerslerF = [
 
         // =========================================================
-        // BÖLÜM 1 — Harf Öğretimi (L1–L15)
+        // 1–5  Orta sıra: u ı a e t k m l y ü z s
         // =========================================================
 
-        // L1: sadece A ve E
-        lesson(1, 'A ve E — İlk Sesli Harfler',
-            drill50(['ae', 'ea', 'aa', 'ee', 'aea', 'eae', 'aae', 'eaa']),
-            'A ve E sesli harfleri ve temel tuş hissi öğrenildi.', ASAMA.temel),
+        lesson(1, 'Orta Sıra — A ve E',
+            drill(['ae', 'ea', 'aa', 'ee', 'aea', 'eae', 'aae', 'eaa', 'aee', 'eae']),
+            'Orta sıradaki A ve E tuşlarıyla temel parmak hissi öğrenildi.', ASAMA.temel),
 
-        // L2: A E K L → 3 harfli kelimeler
-        lesson(2, 'K ve L — İlk Sessiz Harfler',
-            drill50(['kel', 'kal', 'lak', 'kek', 'lek', 'kale', 'leke', 'el', 'al', 'kal']),
-            'K ve L harfleriyle ilk anlamlı üç harfli kelimeler yazıldı.', ASAMA.temel),
+        lesson(2, 'Orta Sıra — K ve M',
+            drill(['kek', 'kam', 'ame', 'emek', 'ekmek', 'kama', 'mek', 'mak', 'eke', 'aka', 'keme', 'akma']),
+            'Sağ el K ve M tuşları A ve E ile birlikte pekiştirildi.', ASAMA.temel),
 
-        // L3: A E K L İ T → 3-4 harfli kelimeler
-        lesson(3, 'İ ve T — Orta Sıra',
-            drill50(['tel', 'kil', 'til', 'eti', 'tik', 'kit', 'etki', 'kilit', 'ilik', 'tali']),
-            'İ ve T harfleriyle üç-dört harfli kelimeler pekiştirildi.', ASAMA.temel),
+        lesson(3, 'Orta Sıra — U I T L Y',
+            drill(['kal', 'kel', 'mal', 'yel', 'tam', 'kum', 'mut', 'yum', 'el', 'al', 'at', 'et', 'kule', 'yele', 'yaka', 'kalem', 'yemek', 'melek', 'yelek', 'mutlu', 'ılık', 'akıl', 'takı', 'kuma', 'yumak', 'amele', 'elma']),
+            'Orta sıranın U, I, T, L ve Y tuşlarıyla kelime yazımı öğrenildi.', ASAMA.temel),
 
-        // L4: + N R → 4 harfli kelimeler
-        lesson(4, 'N ve R — Sık Kullanılan Sessizler',
-            drill50(['nar', 'kar', 'kare', 'kart', 'tane', 'ekin', 'renk', 'narin', 'erken', 'tren']),
-            'N ve R harfleriyle dört harfli anlamlı kelimeler üretildi.', ASAMA.temel),
+        lesson(4, 'Orta Sıra — Ü Z S',
+            drill(['sus', 'ses', 'saz', 'tuz', 'süt', 'süs', 'üzüm', 'yüz', 'asla', 'salam', 'susam', 'tuzlu', 'masa', 'kasa', 'yasa', 'usta', 'elma', 'kalem', 'yemek', 'melek']),
+            'Ü, Z ve S tuşlarıyla orta sıra harf seti tamamlandı.', ASAMA.kelime),
 
-        // L5: + M U → anlamlı kelimeler
-        lesson(5, 'M ve U — Yeni Çift',
-            drill50(['kule', 'kulak', 'kural', 'marul', 'numara', 'mum', 'kum', 'tulum', 'umar', 'kumar']),
-            'M ve U harfleriyle anlamlı kelimeler üretildi.', ASAMA.kelime),
-
-        // L6: + Y S
-        lesson(6, 'Y ve S — Akıcı Sessizler',
-            drill50(['yem', 'yel', 'ses', 'sel', 'yas', 'yurt', 'serin', 'serum', 'seyir', 'saray', 'yumruk']),
-            'Y ve S harfleriyle çeşitli anlamlı kelimeler yazıldı.', ASAMA.kelime),
-
-        // L7: + D O
-        lesson(7, 'D ve O — Yeni Çift',
-            drill50(['oda', 'dil', 'dal', 'son', 'sol', 'yol', 'dolu', 'okul', 'durum', 'salon', 'doktor', 'neden', 'yorum', 'model']),
-            'D ve O harfleriyle günlük Türkçe kelimeler öğrenildi.', ASAMA.kelime),
-
-        // L8: + B Ç
-        lesson(8, 'B ve Ç — Yeni Sessizler',
-            drill50(['çay', 'çam', 'ben', 'bol', 'boy', 'bel', 'bilet', 'çelik', 'çoban', 'çatal', 'bulduk']),
-            'B ve Ç harfleriyle kelime çeşitliliği artırıldı.', ASAMA.kelime),
-
-        // L9: + G I(ı)
-        lesson(9, 'G ve I — Orta Sıra Tamamlanıyor',
-            drill50(['gıda', 'kısa', 'sıra', 'yakın', 'takım', 'kıyı', 'ılık', 'gelin', 'bakımlı', 'kırgın', 'ikram']),
-            'G ve I harfleriyle kısa ve anlamlı kelimeler öğrenildi.', ASAMA.kelime),
-
-        // L10: + Ş C → basit cümleler (50 kelime)
-        // Yasak: h ü p z v f ö ğ j
-        lesson(10, 'Ş ve C — Tamamlayıcı Sessizler', [
-            'ırmak taşların arasından sakin akar',
-            'kuşlar dala konar tarla kışın boş kalır',
-            'sis ormanı sarar bitkiler ırmaktan su içer',
-            'okul erken kalabalık olur sokak gece karanlık kalır',
-            'çalışmak sabır ister kış gelince tarla bekler',
-            'akşam bastırır orman serindir',
-            'bilgi artar sabırla çalışırsın',
-            'bu yol seni ileri taşır adım adım ilerle',
-        ].join(' '), 'Ş ve C harfleriyle kısa cümle yapıları kuruldu.', ASAMA.kelime),
-
-        // L11: + Ü P → basit cümleler (50 kelime)
-        // Yasak: h z v f ö ğ j
-        lesson(11, 'Ü ve P — Üst Satıra Geçiş', [
-            'güneş büyük bulutların üstünde parlar',
-            'tüm orman ısınır küçük bitkiler serpilir',
-            'park neşeli oluyor toplantı erken başlıyor',
-            'pek çok kişi katılıyor güçlü çalışmak ilerletir',
-            'bitkiler büyür kuşlar dala konarken güneş batıyor',
-            'gece serindir tüm çalışmalar tamamlanıyor',
-            'birlikte güçlüdür sepetler ürünlerle doluyor',
-            'emekler karşılık buluyor işte gerçek başarı budur',
-        ].join(' '), 'Ü ve P harfleriyle anlamlı cümleler kuruldu.', ASAMA.cumle),
-
-        // L12: + Z H → basit cümleler (50 kelime)
-        // Yasak: v f ö ğ j
-        lesson(12, 'Z ve H — Harf Seti Genişliyor', [
-            'sabah güneş yükseliyor güzel iklim herkesi canlandırıyor',
-            'pazar kalabalık deniz berrak parlıyor buz gibi serin durur',
-            'satıcılar hızlı çalışıyor taze sebzeler sunuluyor',
-            'haber hızla yayılıyor hasta ziyaret edilir',
-            'bu güzel şehirde yaşamak gerçekten iyidir tüm insanlar',
-            'birbirine yakın hep yardımlaşıyor mutlu oluyoruz',
-            'günler mola ile geçiyor çalışma ilerliyor',
-        ].join(' '), 'Z ve H harfleriyle anlamlı cümleler kuruldu; kelime çeşitliliği arttı.', ASAMA.cumle),
-
-        // L13: + V F → basit cümleler (50 kelime)
-        // Yasak: ö ğ j
-        lesson(13, 'V ve F — Son Sessizler', [
-            'fabrika işçileri gün boyu çalışıyor verimli üretim yapılıyor',
-            'veri kayıtları güncel tutuluyor faydalı bilgi paylaşılıyor',
-            'festival hazırlıkları başladı vatan sevgisi canlı tutuluyor',
-            'favori spor aktivitedir kısa mola vermek faydalıdır',
-            'verimlilik artar çalışanlar mutlu olur',
-            'birlikte çalışmak güçlendirir takım ruhu çok kıymetlidir',
-            'başarıya birlikte ulaşılır sabır insana güç verir',
-        ].join(' '), 'V ve F harfleriyle cümleler kuruldu; tüm Türkçe sessizler tamamlandı.', ASAMA.cumle),
-
-        // L14: + Ö Ğ → basit cümleler (50 kelime)
-        // Yasak: j
-        lesson(14, 'Ö ve Ğ — Türkçeye Özel Harfler', [
-            'öğrenciler sabah erkenden derse gelir ödevlerini sürekli teslim eder',
-            'öğretmenin açıklamalarını dinler ağaçların altında oturup çalışır',
-            'öğle molasında kısa dinlenme yapar soğuk havada bile görevini sürdürür',
-            'özgür düşünce güçlü toplum yaratır öğretmen öğrenciye görev verir',
-            'dağ yolu uzun görünür ağır işler sabırla kolaylaşır',
-            'her gün öğrenilen bir şey hayatı güzelleştirir',
-        ].join(' '), 'Ö ve Ğ harfleriyle Türkçeye özel kelimeler öğrenildi; harf seti tamamlandı.', ASAMA.cumle),
-
-        // L15: + J → tüm harfler, tekrar (50 kelime)
-        lesson(15, 'J ve Tüm Harflerin Tekrarı', [
-            'japon bahçesinde jale çiçekleri açmış judo sporcusu her gün antrenmana gidiyor',
-            'öğrenciler sabah erkenden derse gelir ödevlerini teslim eder öğretmeni dinler',
-            'deniz kıyısında serin rüzgar eser dalgalar sahile vurur güneş parlar',
-            'fabrika işçileri gün boyu çalışır veri kayıtlarını düzenler',
-            'ağaçlar sonbaharda sararır yapraklar dökülür kışın soğuk dağlar beyazlaşır',
-        ].join(' '), 'J harfi öğrenildi; tüm F klavye harfleri kapsamlı tekrarla pekiştirildi.', ASAMA.cumle),
+        lesson(5, 'Orta Sıra — Tüm Tuşlar',
+            drill(['elma', 'masa', 'kasa', 'kalem', 'yemek', 'melek', 'yelek', 'asla', 'salam', 'susam', 'tuzlu', 'süt', 'üzüm', 'yüz', 'ılık', 'akıl', 'mutlu', 'kule', 'yaka', 'kuma', 'usta', 'yasa', 'saz', 'ses', 'sus', 'tuz', 'süs', 'takı', 'yumak', 'amele']),
+            'Orta sıradaki tüm tuşlar karışık kelimelerle pekiştirildi.', ASAMA.kelime),
 
         // =========================================================
-        // BÖLÜM 2 — Büyük Harf + Noktalama (L16–L20) → 60 kelime
+        // 6–10  Üst sıra: f g ğ i o d n h p q w
         // =========================================================
 
-        lesson(16, 'Büyük Harf — Shift Tuşu', [
-            'Zeynep sabah erkenden kalktı ve kahvaltısını hazırladı.',
-            'Annesi Fatma mutfakta çay demliyordu.',
-            'Ankara\'da yaşayan bu aile her sabah birlikte kahvaltı ederdi.',
-            'Küçük kardeş Mert masaya geldi.',
-            'Türkiye\'nin pek çok şehrinde böyle güzel aile sofraları kurulur.',
-            'Zeynep çantasını alıp çıktı.',
-            'İstanbul\'dan amcası Kadir gelecekti; Zeynep onu çok özlemişti.',
-            'Dışarıda güneş parlıyordu hava güzeldi.',
-            'Bugün güzel bir gün olacaktı.',
-            'Beraber Atatürk Parkı\'nda yürüyüş yapacaklardı.',
-        ].join(' '), 'Shift tuşu ile büyük harf kullanımı öğrenildi; özel isimler ve cümle başları pekiştirildi.', ASAMA.cumle),
+        lesson(6, 'Üst Sıra — F ve G',
+            drill(['kafa', 'gül', 'gel', 'ege', 'gaga', 'gaf', 'gülme', 'gelme', 'gülüm', 'fakat', 'gül', 'kafa', 'gel', 'ege']),
+            'Üst sıradaki F ve G tuşları orta sıra ile birlikte öğrenildi.', ASAMA.kelime),
 
-        lesson(17, 'Nokta ve Virgül', [
-            'Aylin sabah erkenden kalktı, yüzünü yıkadı ve kahvaltıya oturdu.',
-            'Masada peynir, zeytin, domates ve ekmek vardı.',
-            'Çay demlenirken kitabını açtı, birkaç sayfa okudu.',
-            'Annesinin sesi geldi.',
-            'Aylin hızla çantasını kapıp dışarı fırladı.',
-            'Sokakta hava serinleşmişti, hafif bir esinti vardı.',
-            'Okula varınca sınıfa koştu, sırasına oturdu.',
-            'Gününün güzel başladığını fark etti.',
-            'Dersi dinlemek için hazırdı.',
-            'Gülümseyerek defterini açtı.',
-            'Her şey güzeldi.',
-        ].join(' '), 'Nokta ve virgül kullanımı anlamlı cümleler içinde pekiştirildi.', ASAMA.cumle),
+        lesson(7, 'Üst Sıra — Ğ İ O',
+            drill(['iki', 'ile', 'il', 'iğ', 'ağı', 'oğul', 'oya', 'of', 'sil', 'site', 'eğitim', 'iğe', 'oğul', 'iki', 'ile', 'eğitim', 'sil', 'oya', 'ağı']),
+            'Üst sıradaki Ğ, İ ve O tuşlarıyla kelime yazımı genişletildi.', ASAMA.kelime),
 
-        lesson(18, 'Soru İşareti ve Ünlem', [
-            'Bugün hava nasıl? Dışarısı serin mi?',
-            'Evet, çok güzel bir gün!',
-            'Nereye gidiyorsun? Okula mı, parka mı?',
-            'Harika! Bu kadar güzel bir yer görmedim.',
-            'Saat kaçta buluşalım? Öğleden sonra uygun mu?',
-            'Tabii ki! Sizi bekliyorum.',
-            'Bu kitabı okudun mu? Gerçekten çok iyi.',
-            'Hayır, henüz okumadım ama almayı düşünüyorum.',
-            'Hemen al! Pişman olmazsın, söz veriyorum.',
-            'Tamam, bugün alacağım.',
-            'Bu iyi bir seçim!',
-        ].join(' '), 'Soru işareti ve ünlem işareti kullanımı doğal diyalog cümleleriyle öğrenildi.', ASAMA.cumle),
+        lesson(8, 'Üst Sıra — D N H',
+            drill(['daha', 'neden', 'hane', 'hendek', 'deneme', 'dahil', 'hande', 'dana', 'gün', 'din', 'daha', 'neden', 'hane', 'deneme', 'dahil']),
+            'Üst sıradaki D, N ve H tuşlarıyla günlük kelimeler yazıldı.', ASAMA.kelime),
 
-        lesson(19, 'İki Nokta ve Noktalı Virgül', [
-            'Çantama şunları koydum: kitap, kalem, silgi ve cetvel.',
-            'Hava soğuktu; yine de yürüyüşe çıktım.',
-            'Üç önemli kural var: doğruluk, sabır ve çalışkanlık.',
-            'Yorgunum; ama görevimi tamamlamam gerekiyor.',
-            'Toplantıda konuşulanlar şöyle özetlenebilir: verim arttı, maliyetler düştü.',
-            'Uzun bir yol kat ettik; hedefe az kaldı.',
-            'Alışveriş listesi hazır: ekmek, süt, yoğurt ve peynir.',
-            'Ders bitmeden önce şunu hatırla: tekrar başarı getirir.',
-        ].join(' '), 'İki nokta ve noktalı virgül kullanımı pratik örneklerle öğrenildi.', ASAMA.cumle),
+        lesson(9, 'Üst Sıra — P Q W',
+            drill(['peki', 'yap', 'kap', 'puma', 'hep', 'hap', 'qw', 'wq', 'qa', 'wa', 'peki', 'yap', 'kap', 'hep', 'puma', 'qwe', 'wap']),
+            'Üst sıradaki P, Q ve W tuşları alıştırma ve kelimelerle öğrenildi.', ASAMA.kelime),
 
-        lesson(20, 'Tırnak ve Parantez', [
-            'Öğretmen "Başarı sabırla gelir" dedi.',
-            'Atatürk (1881-1938) Türkiye Cumhuriyeti\'nin kurucusudur.',
-            '"Kitap insanın en iyi dostudur" sözü hâlâ geçerlidir.',
-            'Bu çalışma (yaklaşık iki saat sürdü) çok verimli oldu.',
-            'Annem "Erken yat, erken kalk" derdi hep.',
-            'Türkiye\'nin nüfusu (2024 verilerine göre) seksen beş milyonu aştı.',
-            '"Çalışmadan başarı olmaz" ilkesi her zaman doğrudur.',
-            'Proje tamamlandı (bütçe dahilinde) ve zamanında teslim edildi.',
-        ].join(' '), 'Tırnak işaretleri ve parantez kullanımı gerçek cümle örnekleriyle pekiştirildi.', ASAMA.cumle),
+        lesson(10, 'Üst Sıra — Tüm Tuşlar',
+            drill(['iki', 'oğul', 'daha', 'neden', 'eğitim', 'fakat', 'peki', 'yap', 'kap', 'gün', 'din', 'hane', 'hendek', 'kafa', 'gül', 'gel', 'ege', 'ağı', 'oya', 'sil', 'site', 'dahil', 'deneme', 'hep', 'puma']),
+            'Üst ve orta sıra tuşları karışık kelimelerle pekiştirildi.', ASAMA.kelime),
 
         // =========================================================
-        // BÖLÜM 3 — Sayılar (L21–L24) → 60 kelime
+        // 11–15  Alt sıra: j ö v c ç b .
         // =========================================================
 
-        lesson(21, 'Sayılar 0–9', [
-            'Sınıfta 32 öğrenci var, 8 sıraya 4\'er kişi oturmuş.',
-            'Bugün 3 saat çalıştım ve 15 sayfa okudum.',
-            'Marketten 2 ekmek, 1 litre süt ve 500 gram yoğurt aldım.',
-            'Sınav sonuçları açıklandı: Ali 87, Merve 94, Kerem 76 aldı.',
-            'Sabah 7\'de kalktım, 8\'de evden çıktım.',
-            'Bu yıl 365 gün her gün bir şey öğrenmeyi hedefliyorum.',
-            'Kitapta 240 sayfa var; bugün 30 sayfa okudum.',
-        ].join(' '), 'Sayılar ve temel rakam yazımı metin içinde öğrenildi.', ASAMA.pro),
+        lesson(11, 'Alt Sıra — J ve Ö',
+            drill(['jale', 'jöle', 'öf', 'göl', 'öğle', 'ölü', 'öyle', 'öf', 'jale', 'göl', 'öğle', 'jöle', 'öyle', 'ölü']),
+            'Alt sıradaki J ve Ö tuşlarıyla kelime yazımı öğrenildi.', ASAMA.kelime),
 
-        lesson(22, 'Tarih ve Saat', [
-            'Toplantı 15 Ocak 2025 Çarşamba günü saat 10:30\'da başlayacak.',
-            'Türkiye Cumhuriyeti 29 Ekim 1923\'te ilan edildi.',
-            'Sabah 06:45\'te uyandım, 07:15\'te evden çıktım.',
-            'Sınav 3 Mart 2025\'te saat 09:00\'da başlıyor.',
-            'Teslim tarihi 31 Aralık, son gün olduğunu unutma.',
-            'Öğle arası 12:00-13:00 arası, bir saatlik mola.',
-            'Doğum günüm 14 Şubat; tatil değil ama özel.',
-            '2023 yılında 52 hafta, 365 gün ve 8.760 saat var.',
-        ].join(' '), 'Tarih ve saat yazım kuralları gerçek örneklerle öğrenildi.', ASAMA.pro),
+        lesson(12, 'Alt Sıra — V ve C',
+            drill(['ödev', 'cevap', 've', 'ev', 'acı', 'cami', 'can', 'ceza', 'vicdan', 'ödev', 'cevap', 'cami', 'can', 'ev']),
+            'Alt sıradaki V ve C tuşlarıyla anlamlı kelimeler yazıldı.', ASAMA.kelime),
 
-        lesson(23, 'Telefon, Para ve Yüzde', [
-            'Müşteri hizmetleri numarası: 0850 123 45 67.',
-            'Ürün fiyatı 249,90 TL; indirimle 187,50 TL oldu.',
-            'Banka hesabına 1.500 TL yatırıldı.',
-            'Sınavda başarı oranı %78\'e yükseldi.',
-            'KDV oranı %20 olarak uygulandı; toplam tutar 360 TL.',
-            'Acil hatlarda 112, polis için 155, itfaiye için 110\'u arayın.',
-            'Maaş artışı %15 olarak belirlendi, yeni tutar 18.750 TL.',
-            'İndirim kuponu ile %30 daha ucuza satın alabilirsiniz.',
-        ].join(' '), 'Telefon, para birimi ve yüzde yazım kuralları öğrenildi.', ASAMA.pro),
+        lesson(13, 'Alt Sıra — Ç ve B',
+            drill(['çay', 'çam', 'ben', 'bol', 'boy', 'bel', 'bilet', 'çelik', 'çoban', 'çatal', 'bulduk', 'çiçek', 'çay', 'ben', 'çoban']),
+            'Alt sıradaki Ç ve B tuşlarıyla kelime çeşitliliği artırıldı.', ASAMA.kelime),
 
-        lesson(24, 'Ondalık Sayılar ve Ölçüler', [
-            'Su kaynaması 100°C\'de gerçekleşir; donma noktası 0°C\'dir.',
-            'Paketin ağırlığı 2,5 kg; hacmi 3,75 litredir.',
-            'Pi sayısı yaklaşık 3,14159 olarak bilinir.',
-            'Hız saatte 87,6 km olarak ölçüldü.',
-            'Döviz kuru bugün 1 dolar = 32,45 TL olarak açıklandı.',
-            'Projenin tamamlanma oranı %63,7\'ye ulaştı.',
-            'Alan 12,5 m² olan oda mobilyalar için yeterlidir.',
-            'Ortalama sıcaklık bu ay 18,3°C olarak kaydedildi.',
-            'Maliyeti 4,75 TL olarak hesaplandı.',
-        ].join(' '), 'Ondalık sayılar, ölçü birimleri ve özel semboller yazım kurallarıyla pekiştirildi.', ASAMA.pro),
+        lesson(14, 'Alt Sıra — Nokta',
+            drill(['ben.', 'gel.', 'yap.', 'kal.', 'bak.', 'çay.', 'ev.', 'göl.', 'can.', 'bol.', 'ben geldim.', 'çay içtim.', 'ödev bitti.', 'göl sakin.', 'gün bitti.']),
+            'Alt sıradaki nokta tuşu kısa ifadeler içinde öğrenildi.', ASAMA.cumle),
+
+        lesson(15, 'Alt Sıra — Tüm Tuşlar',
+            [
+                'ben çay içtim göl sakin kaldı',
+                'çoban yolda gitti jale camiye geldi',
+                'ödev bitti cevap tam çıktı',
+                'çiçek açtı çam kokusu yayıldı',
+                'öyle güzel bu öğle oldu ki',
+                'vicdan temiz can mutlu',
+                'bilet aldık belki gidelim',
+                'çelik kapı kapandı ev sessiz',
+            ].join(' '),
+            'Alt, orta ve üst sıra tuşları birlikte pekiştirildi.', ASAMA.cumle),
 
         // =========================================================
-        // BÖLÜM 4 — Metin Yazımı (L25–L29) → 60 kelime (L25), 70 (L26-29)
+        // 16–20  İmlasız kısa metin (küçük harf, noktalamasız)
         // =========================================================
 
-        lesson(25, 'Günlük Hayattan Metin', [
-            'Elif sabah erkenden kalkıp mutfağa geçti.',
-            'Kahvaltıyı hazırlarken radyodan hava durumunu dinledi; gün boyunca güneşli olacaktı.',
-            'İşe gitmeden önce çantasını kontrol etti: bilgisayar, dosyalar, kalem ve defteri.',
-            'Metrobüste sıkışık bir yolculuk geçirdi ama kitap okuyarak vakit harcadı.',
-            'Öğle arasında iş arkadaşıyla kafeteryada yemek yedi.',
-            'Mesai bitince market alışverişini yapıp eve döndü.',
-            'Akşam yemeği hazırlarken bugünü değerlendirdi: verimli bir gündü.',
-        ].join(' '), 'Günlük hayat konularında akıcı metin yazımı gerçekleştirildi.', ASAMA.pro),
+        lesson(16, 'İmlasız Metin — Kısa Anlatı',
+            [
+                'sabah erken kalktım yüzümü yıkadım ve kahvaltı yaptım',
+                'annem mutfakta çay demledi kardeşim masaya oturdu',
+                'dışarıda kuşlar ötüyordu hava sıcaktı',
+                'okula yürüyerek gittim yolda arkadaşımı gördüm',
+                'dersler akşama kadar sürdü eve dönünce dinlendim',
+            ].join(' '),
+            'Noktalamasız kısa metinle akıcı yazım alıştırması yapıldı.', ASAMA.cumle),
 
-        lesson(26, 'Mesleki Metin', [
-            'Zabıt kâtipliği sınavına hazırlanan Ahmet her sabah bir saat klavye çalışması yapıyor.',
-            'F klavye düzenini tercih etmesinin nedeni Türkçeye en uygun düzen olmasıdır.',
-            'On parmak tekniğiyle dakikada 60 kelimeye ulaşmayı hedefliyor.',
-            'Her gün kısa metinler yazarak hem hızını hem doğruluk oranını artırıyor.',
-            'Sınav günü geldiğinde metni hatasız teslim etmek için hazır olmak istiyor.',
-            'Düzenli çalışma ve sabır bu hedefe ulaşmanın en kısa yoludur.',
-            'Yaziyo Akademi platformu bu süreçte ona rehberlik ediyor.',
-        ].join(' '), 'Mesleki bağlamda anlamlı metin yazımı gerçekleştirildi.', ASAMA.pro),
+        lesson(17, 'İmlasız Metin — Günlük Yaşam',
+            [
+                'pazar günü ailece parka gittik çocuklar top oynadı',
+                'göl kenarında oturduk simit yedik çay içtik',
+                'rüzgar yaprakları savurdu güneş tepeden bakıyordu',
+                'akşam eve dönerken marketten ekmek aldık',
+                'yemekten sonra hep birlikte film izledik',
+            ].join(' '),
+            'Günlük yaşam konulu imlasız metin yazıldı.', ASAMA.cumle),
 
-        lesson(27, 'Doğa ve Çevre', [
-            'Türkiye dört mevsimi bir arada yaşayan, zengin bir doğal çeşitliliğe sahip bir ülkedir.',
-            'Karadeniz\'in yemyeşil ormanları, Ege\'nin zeytin bahçeleri ve Doğu Anadolu\'nun karlı dağları güzellikler sunar.',
-            'Her mevsim kendi rengini getirir; bahar çiçeklerle, yaz kavurucu sıcaklarla, sonbahar altın yapraklarla, kış beyaz örtüyle.',
-            'İklim değişikliği bu dengeyi tehdit etmektedir.',
-            'Doğayı korumak hem bugünkü hem de gelecek kuşakların sorumluluğudur.',
-            'Küçük adımlar bile büyük fark yaratır: israfı azalt, geri dönüşüme dikkat et.',
-        ].join(' '), 'Doğa ve çevre temalı uzun metin yazımı gerçekleştirildi.', ASAMA.pro),
+        lesson(18, 'İmlasız Metin — Okul',
+            [
+                'öğretmen tahtaya konuyu yazdı öğrenciler defterine geçirdi',
+                'soruları sırayla çözdük yanlışları birlikte düzelttik',
+                'teneffüste bahçede yürüdük sonra tekrar sınıfa girdik',
+                'kitap okuma saatinde herkes sessizce sayfa çevirdi',
+                'zil çalınca çantalarımızı toplayıp evlerimize dağıldık',
+            ].join(' '),
+            'Okul temalı imlasız kısa metinle hız ve doğruluk çalışıldı.', ASAMA.cumle),
 
-        lesson(28, 'Eğitim ve Teknoloji', [
-            'Dijital çağda eğitim büyük bir dönüşüm geçirmektedir.',
-            'Öğrenciler artık yalnızca sınıfta değil, internet üzerinden de derse katılabiliyor.',
-            'Yapay zekâ destekli uygulamalar öğrenme süreçlerini kişiselleştirirken öğretmenler bu araçları sınıfta kullanmayı öğreniyor.',
-            'Ancak teknoloji ne kadar gelişirse gelişsin, öğrenmenin özünde merak, sabır ve pratik yatmaktadır.',
-            'Klavye kullanımı da bu süreçte önemli bir beceri hâline gelmiştir.',
-            'Hızlı ve doğru yazabilen biri iş hayatında büyük avantaj elde eder.',
-            'Düzenli çalışmayla bu beceri kısa sürede edinilebilir.',
-        ].join(' '), 'Eğitim ve teknoloji temalı uzun metin yazımıyla akıcılık geliştirildi.', ASAMA.pro),
+        lesson(19, 'İmlasız Metin — Doğa',
+            [
+                'dağ yolunda yürürken serin bir esinti vardı',
+                'ağaçların gölgesinde mola verdik su içtik',
+                'uzakta bir göl parlıyordu kuşlar suya konuyordu',
+                'çiçekler açmıştı toprak yumuşacıktı',
+                'akşam olunca köye döndük ateş yaktık sohbet ettik',
+            ].join(' '),
+            'Doğa anlatımlı imlasız metinle parmak geçişleri pekiştirildi.', ASAMA.cumle),
 
-        lesson(29, 'Süreli Yazım Pratiği', [
-            'Saat tam on ikide kalem kâğıda değdi ve Selin yazmaya başladı.',
-            'Parmaklarının tuşlara alışkın olduğunu hissediyordu; artık klavyeye bakmıyordu.',
-            'Her harf doğru tuşa gidiyordu, ritim oluşmuştu.',
-            'İlk dakika yavaştı; ikinci dakikada tempo arttı, üçüncüde ise kelimeler akıp gitmeye başladı.',
-            'Sınav metnini hatasız bitirmenin verdiği özgüven muazzamdı.',
-            'Aylarca yapılan çalışmanın meyvesini şimdi topluyordu.',
-            'Elini klavyeden kaldırdığında gülümsedi: "Oldu" dedi içinden.',
-            'Bu an için çok çalışmıştı ve her saniyeye değmişti.',
-        ].join(' '), 'Süreli yazım pratiğiyle akıcılık ve özgüven doruk noktasına ulaştı.', ASAMA.pro),
+        lesson(20, 'İmlasız Metin — Çalışma',
+            [
+                'her gün düzenli çalışmak başarıyı getirir',
+                'klavye başına oturunca sırtını dik tut parmaklarını yuvaya koy',
+                'ekrana bakmadan yazmayı dene hata olursa düzeltip devam et',
+                'kısa metinler bile kas hafızasını güçlendirir',
+                'sabır ve tekrar ile hızın artar doğruluğun yükselir',
+            ].join(' '),
+            'Çalışma alışkanlığı temalı imlasız metin tamamlandı.', ASAMA.cumle),
 
         // =========================================================
-        // BÖLÜM 5 — Final Sınavı (L30) → 90 kelime
+        // 21–25  Noktalama, sayı ve büyük harf
         // =========================================================
 
-        lesson(30, 'Final Sınavı', [
-            'F klavye on parmak eğitim programının son dersine hoş geldiniz.',
-            'Bu metni hatasız ve dengeli bir hızda yazmanız beklenmektedir.',
-            'Zabıt kâtipliği ve benzer mesleklerde doğruluk kritiktir.',
-            'F klavye, 1955 yılında Türkçeye özel olarak geliştirilmiştir.',
-            'En sık kullanılan harfler parmakların rahatça ulaşabileceği orta sıraya yerleştirilmiştir.',
-            'Doğru teknikle öğrenildiğinde hız artar, hata azalır ve yorgunluk düşer.',
-            'Bugün bu programı tamamlayarak gerekli kas hafızasına ve güvene ulaştınız.',
-            'Artık klavyeye bakmadan yazabileceksiniz.',
-            'Düzenli pratikle her geçen gün daha hızlı ve daha doğru yazacaksınız.',
-            'Bu başarıyı kutluyoruz; çalışmaya devam edin.',
-            'Emeğiniz için tebrikler. Başarılar diliyoruz.',
-        ].join(' '), 'Final sınavı tamamlandı: tüm harfler, noktalama, sayılar ve uzun metin yazımı bütünleşik olarak pekiştirildi.', ASAMA.pro),
+        lesson(21, 'Büyük Harf ve Nokta',
+            [
+                'Zeynep sabah erkenden kalktı. Kahvaltısını hazırladı.',
+                'Annesi Fatma mutfakta çay demliyordu. Kardeşi Mert masaya geldi.',
+                'Ankara soğuktu. İstanbul ise daha ılımandı.',
+                'Bugün güzel bir gün olacaktı. Hep birlikte parka gideceklerdi.',
+                'Akşam olunca eve döndüler. Yemekten sonra kitap okudular.',
+            ].join(' '),
+            'Cümle başı büyük harf ve nokta kullanımı öğrenildi.', ASAMA.pro),
+
+        lesson(22, 'Virgül ve Kısa Liste',
+            [
+                'Masada peynir, zeytin, domates ve ekmek vardı.',
+                'Aylin yüzünü yıkadı, çantasını aldı ve dışarı çıktı.',
+                'Sokakta hava serindi, hafif bir esinti vardı.',
+                'Okula varınca sınıfa girdi, sırasına oturdu, defterini açtı.',
+                'Çay, süt, bal ve pekmez kahvaltının vazgeçilmezleridir.',
+            ].join(' '),
+            'Virgül ve liste yazımı anlamlı cümleler içinde pekiştirildi.', ASAMA.pro),
+
+        lesson(23, 'Sayılar ve Tarih',
+            [
+                'Sınıfta 32 öğrenci var. 8 sıraya 4 kişi oturmuş.',
+                'Bugün 3 saat çalıştım ve 15 sayfa okudum.',
+                'Marketten 2 ekmek, 1 litre süt ve 500 gram yoğurt aldım.',
+                'Toplantı 15 Ocak 2026 Perşembe günü saat 10:30 da başlayacak.',
+                'Türkiye Cumhuriyeti 29 Ekim 1923 te ilan edildi.',
+                'Sabah 07:15 te evden çıktım, 08:00 de işe vardım.',
+            ].join(' '),
+            'Rakam, tarih ve saat yazımı metin içinde öğrenildi.', ASAMA.pro),
+
+        lesson(24, 'Soru, Ünlem ve Tırnak',
+            [
+                'Bugün hava nasıl? Dışarısı serin mi?',
+                'Evet, çok güzel bir gün!',
+                'Nereye gidiyorsun? Okula mı, parka mı?',
+                'Öğretmen "Başarı sabırla gelir" dedi.',
+                'Harika! Bu kadar güzel bir yer görmedim.',
+                'Saat kaçta buluşalım? Öğleden sonra uygun mu?',
+                'Tamam, bugün hallederim. Bu iyi bir seçim!',
+            ].join(' '),
+            'Soru işareti, ünlem ve tırnak kullanımı diyalog cümleleriyle öğrenildi.', ASAMA.pro),
+
+        lesson(25, 'Karışık Noktalama ve Sayı',
+            [
+                'Müşteri hizmetleri: 0850 123 45 67.',
+                'Ürün fiyatı 249,90 TL; indirimle 187,50 TL oldu.',
+                'Sınavda başarı oranı %78 e yükseldi. KDV oranı %20 uygulandı.',
+                'Alışveriş listesi hazır: ekmek, süt, yoğurt ve peynir.',
+                'Hava soğuktu; yine de yürüyüşe çıktım.',
+                'Üç kural var: doğruluk, sabır ve çalışkanlık.',
+                'Acil durumlarda 112 yi arayın. Polis için 155, itfaiye için 110.',
+            ].join(' '),
+            'Noktalama, sayı ve büyük harf birlikte pekiştirildi.', ASAMA.pro),
+
+        // =========================================================
+        // 26–30  İmlalı metin
+        // =========================================================
+
+        lesson(26, 'İmlalı Metin — Günlük Hayat',
+            [
+                'Elif sabah erkenden kalkıp mutfağa geçti.',
+                'Kahvaltıyı hazırlarken radyodan hava durumunu dinledi; gün boyunca güneşli olacaktı.',
+                'İşe gitmeden önce çantasını kontrol etti: bilgisayar, dosyalar, kalem ve defter.',
+                'Metrobüste sıkışık bir yolculuk geçirdi ama kitap okuyarak vakit harcadı.',
+                'Öğle arasında iş arkadaşıyla kafeteryada yemek yedi.',
+                'Mesai bitince market alışverişini yapıp eve döndü.',
+                'Akşam yemeği hazırlarken bugünü değerlendirdi: verimli bir gündü.',
+            ].join(' '),
+            'Günlük hayat konulu imlalı metin yazımı gerçekleştirildi.', ASAMA.pro),
+
+        lesson(27, 'İmlalı Metin — Meslek',
+            [
+                'Zabıt kâtipliği sınavına hazırlanan Ahmet her sabah bir saat klavye çalışması yapıyor.',
+                'F klavye düzenini tercih etmesinin nedeni Türkçeye en uygun düzen olmasıdır.',
+                'On parmak tekniğiyle dakikada 60 kelimeye ulaşmayı hedefliyor.',
+                'Her gün kısa metinler yazarak hem hızını hem doğruluk oranını artırıyor.',
+                'Sınav günü geldiğinde metni hatasız teslim etmek için hazır olmak istiyor.',
+                'Düzenli çalışma ve sabır bu hedefe ulaşmanın en kısa yoludur.',
+                'Yaziyo Akademi platformu bu süreçte ona rehberlik ediyor.',
+            ].join(' '),
+            'Mesleki bağlamda imlalı metin yazımı gerçekleştirildi.', ASAMA.pro),
+
+        lesson(28, 'İmlalı Metin — Doğa ve Çevre',
+            [
+                'Türkiye dört mevsimi bir arada yaşayan, zengin bir doğal çeşitliliğe sahip bir ülkedir.',
+                'Karadeniz\'in yemyeşil ormanları, Ege\'nin zeytin bahçeleri ve Doğu Anadolu\'nun karlı dağları güzellikler sunar.',
+                'Her mevsim kendi rengini getirir; bahar çiçeklerle, yaz sıcaklarla, sonbahar yapraklarla, kış beyaz örtüyle.',
+                'İklim değişikliği bu dengeyi tehdit etmektedir.',
+                'Doğayı korumak hem bugünkü hem de gelecek kuşakların sorumluluğudur.',
+                'Küçük adımlar bile büyük fark yaratır: israfı azalt, geri dönüşüme dikkat et.',
+            ].join(' '),
+            'Doğa ve çevre temalı imlalı metin yazımı gerçekleştirildi.', ASAMA.pro),
+
+        lesson(29, 'İmlalı Metin — Eğitim',
+            [
+                'Dijital çağda eğitim büyük bir dönüşüm geçirmektedir.',
+                'Öğrenciler artık yalnızca sınıfta değil, internet üzerinden de derse katılabiliyor.',
+                'Yapay zekâ destekli uygulamalar öğrenme süreçlerini kişiselleştirirken öğretmenler bu araçları sınıfta kullanmayı öğreniyor.',
+                'Ancak teknoloji ne kadar gelişirse gelişsin, öğrenmenin özünde merak, sabır ve pratik yatmaktadır.',
+                'Klavye kullanımı da bu süreçte önemli bir beceri hâline gelmiştir.',
+                'Hızlı ve doğru yazabilen biri iş hayatında büyük avantaj elde eder.',
+                'Düzenli çalışmayla bu beceri kısa sürede edinilebilir.',
+            ].join(' '),
+            'Eğitim temalı imlalı metinle akıcılık geliştirildi.', ASAMA.pro),
+
+        lesson(30, 'İmlalı Metin — Final',
+            [
+                'F klavye on parmak eğitim programının son dersine hoş geldiniz.',
+                'Bu metni hatasız ve dengeli bir hızda yazmanız beklenmektedir.',
+                'Zabıt kâtipliği ve benzer mesleklerde doğruluk kritiktir.',
+                'F klavye, 1955 yılında Türkçeye özel olarak geliştirilmiştir.',
+                'En sık kullanılan harfler parmakların rahatça ulaşabileceği orta sıraya yerleştirilmiştir.',
+                'Doğru teknikle öğrenildiğinde hız artar, hata azalır ve yorgunluk düşer.',
+                'Bugün bu programı tamamlayarak gerekli kas hafızasına ve güvene ulaştınız.',
+                'Artık klavyeye bakmadan yazabileceksiniz.',
+                'Düzenli pratikle her geçen gün daha hızlı ve daha doğru yazacaksınız.',
+                'Emeğiniz için tebrikler. Başarılar diliyoruz.',
+            ].join(' '),
+            'Final metni tamamlandı: harfler, noktalama, sayılar ve imlalı yazım bütünleşik olarak pekiştirildi.', ASAMA.pro),
     ];
 }(typeof window !== 'undefined' ? window : globalThis));

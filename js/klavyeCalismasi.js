@@ -1458,7 +1458,7 @@ document.addEventListener('DOMContentLoaded', () => {
         syncTypingScroll();
     });
 
-    /** SÜREYİ GİZLE/GÖSTER (Çalışma / Sınav Ekranı 2) */
+    /** SÜREYİ GİZLE/GÖSTER (Çalışma / Yan Sayfa Modu) */
     toggleTimerBtn?.addEventListener('click', () => {
         if (timerContainer.classList.contains('hidden')) {
             timerContainer.classList.remove('hidden');

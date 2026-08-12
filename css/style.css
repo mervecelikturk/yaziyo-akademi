@@ -617,6 +617,9 @@ html.theme-transition textarea {
     left: 50%;
     transform: translateX(-50%) translateY(-6px);
     min-width: 185px;
+    max-height: min(70vh, 28rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
     background: rgb(var(--yaziyo-card-rgb));
     border: 1px solid rgb(var(--yaziyo-border-rgb));
     border-radius: 0.75rem;
@@ -627,6 +630,10 @@ html.theme-transition textarea {
     z-index: 200;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
     list-style: none;
+}
+
+.nav-dropdown-menu--calismalar {
+    min-width: 200px;
 }
 
 .nav-dropdown:hover .nav-dropdown-menu,
@@ -3948,10 +3955,6 @@ html.is-logged-in #auth-gate { display: none; }
 }
 
 .dlo-text-content .dlo-word.word-active {
-    text-decoration: underline;
-    text-decoration-color: var(--yaziyo-gold-hex);
-    text-underline-offset: 4px;
-    text-decoration-thickness: 2px;
     background: transparent;
 }
 

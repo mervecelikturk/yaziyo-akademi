@@ -190,7 +190,7 @@ function renderEmpty(forLayout = false) {
         <div class="kh-empty">
             <div><i class="fa-solid fa-keyboard"></i></div>
             <p class="font-poppins font-bold text-base mb-1">Henüz ısı haritası yok</p>
-            <p class="text-sm max-w-md mx-auto">Klavye Çalışması veya Özel Metin Çalışması sonrası <strong>Sonucu Kaydet</strong> dediğinizde tuş basım verileriniz burada görünür.</p>
+            <p class="text-sm max-w-md mx-auto">Klavye Çalışması veya Metin Ekle sonrası <strong>Sonucu Kaydet</strong> dediğinizde tuş basım verileriniz burada görünür.</p>
         </div>`;
 }
 

@@ -296,22 +296,74 @@
         .dlo-exam-body {
             flex: 1;
             min-height: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 1rem 1rem 0.35rem;
-            gap: 0.75rem;
+            display: grid;
+            grid-template-columns: minmax(6.25rem, 15vw) minmax(0, 1fr) minmax(6.25rem, 15vw);
+            align-items: stretch;
+            padding: 0.75rem 0.45rem 0.85rem;
+            gap: 0.35rem;
             overflow: hidden;
         }
         .dlo-exam-panels {
             width: 100%;
-            max-width: 56rem;
-            flex: 1 1 auto;
+            max-width: 52rem;
+            justify-self: center;
             min-height: 0;
+            height: 100%;
             display: flex;
             flex-direction: column;
             gap: 0.85rem;
+        }
+        .dlo-hand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            pointer-events: none;
+            user-select: none;
+        }
+        .dlo-hand-frame {
+            position: relative;
+            width: 100%;
+            max-width: 12.5rem;
+        }
+        .dlo-hand-img {
+            width: 100%;
+            height: auto;
+            max-height: min(62vh, 24rem);
+            display: block;
+            object-fit: contain;
+        }
+        .dlo-hand-paint {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            -webkit-mask-size: 100% 100%;
+            mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+        }
+        .dlo-hand-paint svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .dlo-hand--left .dlo-hand-paint {
+            -webkit-mask-image: url("../../images/ders-el-sol.png");
+            mask-image: url("../../images/ders-el-sol.png");
+        }
+        .dlo-hand--right .dlo-hand-paint {
+            -webkit-mask-image: url("../../images/ders-el-sag.png");
+            mask-image: url("../../images/ders-el-sag.png");
+        }
+        .dlo-tip {
+            fill: none;
+        }
+        .dlo-tip.is-active {
+            fill: #f97316;
         }
         .dlo-exam .dlo-text-card {
             position: relative;
@@ -354,45 +406,6 @@
             border-color: rgb(var(--yaziyo-gold-rgb) / 0.75);
             box-shadow: 0 0 0 3px rgb(var(--yaziyo-gold-rgb) / 0.18);
         }
-        .dlo-next-key {
-            margin-top: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.75rem 1rem 1rem;
-            flex-shrink: 0;
-        }
-        .dlo-next-key-label {
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #94a3b8;
-        }
-        .dlo-next-key-value {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 3rem;
-            min-height: 3rem;
-            padding: 0.35rem 0.85rem;
-            border-radius: 12px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 800;
-            font-size: 1.5rem;
-            color: #1e293b;
-            background: linear-gradient(180deg, #ffedd5, #fb923c);
-            border: 1.5px solid rgb(var(--yaziyo-gold-rgb) / 0.55);
-            box-shadow: 0 4px 14px rgb(var(--yaziyo-gold-rgb) / 0.25);
-        }
-        .dlo-next-key-finger {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: #334155;
-        }
         .dlo-exam[data-highlight="off"] .dlo-char-correct,
         .dlo-exam[data-highlight="off"] .dlo-char-wrong,
         .dlo-exam[data-highlight="off"] .dlo-char-current {
@@ -403,15 +416,11 @@
         }
         .dlo-exam[data-highlight="on"] .dlo-char-correct {
             color: #16a34a;
-            text-decoration: underline;
-            text-decoration-color: #16a34a;
-            text-underline-offset: 3px;
+            text-decoration: none;
         }
         .dlo-exam[data-highlight="on"] .dlo-char-wrong {
             color: #dc2626;
-            text-decoration: underline;
-            text-decoration-color: #dc2626;
-            text-underline-offset: 3px;
+            text-decoration: none;
             background: rgba(239, 68, 68, 0.1);
         }
         .dlo-exam[data-highlight="on"] .dlo-char-current {
@@ -423,17 +432,27 @@
             text-underline-offset: 3px;
             text-decoration-thickness: 2px;
         }
+        .dlo-exam .dlo-text-content .dlo-word.word-active {
+            text-decoration: none;
+            background: transparent;
+        }
 
         @media (max-width: 640px) {
+            .dlo-exam-body {
+                grid-template-columns: 4.1rem 1fr 4.1rem;
+                padding: 0.5rem 0.2rem 0.6rem;
+                gap: 0.15rem;
+            }
             .dlo-exam-panels { max-width: 100%; }
             .dlo-exam .dlo-text-card { min-height: 9rem; }
             .dlo-exam .dlo-input { min-height: 8rem; font-size: 1rem; }
             .dlo-exam .dlo-text-content { padding: 1rem 1.1rem; font-size: 1.02rem; }
+            .dlo-hand-img { max-height: 34vh; }
         }
     </style>
 </head>
 
-<body data-yaziyo-nav-active="klavye-calismalari"
+<body data-yaziyo-nav-active="calismalar"
     class="bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text font-inter min-h-screen flex flex-col transition-colors duration-300">
 
     <header id="main-header"
@@ -465,7 +484,7 @@
                     <input type="checkbox" id="dlo-opt-keys" checked>
                     <div>
                         <strong>Harf takibi</strong>
-                        <span>Yazılan harfler altı çizili; doğru yeşil, yanlış kırmızı görünür.</span>
+                        <span>Sıradaki harf altı çizili; doğru yeşil, yanlış kırmızı görünür.</span>
                     </div>
                 </label>
             </div>
@@ -488,6 +507,20 @@
             </div>
         </div>
         <div class="dlo-exam-body">
+            <aside class="dlo-hand dlo-hand--left" aria-hidden="true">
+                <div class="dlo-hand-frame">
+                    <img class="dlo-hand-img" src="../../images/ders-el-sol.png" alt="">
+                    <div class="dlo-hand-paint">
+                        <svg viewBox="0 0 336 419" preserveAspectRatio="xMidYMid meet">
+                            <circle class="dlo-tip" data-finger="left_pinky" cx="26" cy="149" r="13"/>
+                            <circle class="dlo-tip" data-finger="left_ring" cx="77" cy="56" r="13"/>
+                            <circle class="dlo-tip" data-finger="left_middle" cx="109" cy="22" r="13"/>
+                            <circle class="dlo-tip" data-finger="left_index" cx="189" cy="22" r="13"/>
+                            <circle class="dlo-tip" data-finger="thumb" cx="306" cy="127" r="13"/>
+                        </svg>
+                    </div>
+                </div>
+            </aside>
             <div class="dlo-exam-panels">
                 <div class="dlo-text-card" id="dlo-text-card">
                     <div class="dlo-text-content" id="dlo-text-content"></div>
@@ -495,11 +528,20 @@
                 <textarea id="dlo-input" class="dlo-input" lang="tr" spellcheck="false" autocomplete="off"
                     autocorrect="off" autocapitalize="off" placeholder="Yazmaya başlayın..." readonly></textarea>
             </div>
-            <div class="dlo-next-key" id="dlo-next-key" aria-live="polite">
-                <span class="dlo-next-key-label">Basılacak tuş</span>
-                <span class="dlo-next-key-value" id="dlo-next-key-value">—</span>
-                <span class="dlo-next-key-finger" id="dlo-next-key-finger">—</span>
-            </div>
+            <aside class="dlo-hand dlo-hand--right" aria-hidden="true">
+                <div class="dlo-hand-frame">
+                    <img class="dlo-hand-img" src="../../images/ders-el-sag.png" alt="">
+                    <div class="dlo-hand-paint">
+                        <svg viewBox="0 0 342 419" preserveAspectRatio="xMidYMid meet">
+                            <circle class="dlo-tip" data-finger="thumb" cx="24" cy="127" r="13"/>
+                            <circle class="dlo-tip" data-finger="right_index" cx="155" cy="22" r="13"/>
+                            <circle class="dlo-tip" data-finger="right_middle" cx="228" cy="22" r="13"/>
+                            <circle class="dlo-tip" data-finger="right_ring" cx="263" cy="56" r="13"/>
+                            <circle class="dlo-tip" data-finger="right_pinky" cx="312" cy="149" r="13"/>
+                        </svg>
+                    </div>
+                </div>
+            </aside>
         </div>
     </div>
 
@@ -530,37 +572,6 @@
                     <div class="dlo-result-stat">
                         <div class="dlo-result-stat-label">En Çok Kullanılan Harf</div>
                         <div class="dlo-result-stat-value" id="dlo-stat-most">—</div>
-                    </div>
-                </div>
-                <!-- Sınav İstatistiği -->
-                <div class="dlo-exam-stats">
-                    <h3 class="dlo-exam-stats-title">
-                        <i class="fa-solid fa-clipboard-list text-yaziyo-gold"></i> Sınav İstatistiği
-                    </h3>
-                    <div class="dlo-result-grid dlo-exam-stats-grid">
-                        <div class="dlo-result-stat">
-                            <div class="dlo-result-stat-label">Yanlış Kelime Yüzdesi</div>
-                            <div class="dlo-result-stat-value text-red-500" id="dlo-result-exam-wrong-pct">0%</div>
-                        </div>
-                        <div class="dlo-result-stat">
-                            <div class="dlo-result-stat-label">Silme Tuşu Kullanımı</div>
-                            <div class="dlo-result-stat-value" id="dlo-result-exam-backspace">0</div>
-                        </div>
-                        <div class="dlo-result-stat">
-                            <div class="dlo-result-stat-label">Atlanan Kelime</div>
-                            <div class="dlo-result-stat-value dlo-exam-skipped-value">
-                                <span id="dlo-result-exam-skipped">0</span>
-                                <span id="dlo-result-exam-skipped-bang" class="hidden text-red-500 font-black" aria-label="Uyarı">!</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="dlo-result-exam-alerts" class="dlo-exam-alerts hidden">
-                        <div id="dlo-result-exam-alert-skip" class="dlo-exam-alert hidden">
-                            Dikkat! 22 veya üstü atlamalar sınavı geçersiz kılar.
-                        </div>
-                        <div id="dlo-result-exam-alert-error" class="dlo-exam-alert hidden">
-                            Dikkat! %25 veya üstü hata oranı sınavı geçersiz kılar.
-                        </div>
                     </div>
                 </div>
                 <div class="dlo-result-kazanim hidden" id="dlo-result-kazanim">

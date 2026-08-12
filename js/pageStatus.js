@@ -14,7 +14,7 @@
         { id: 'dersler', label: 'Dersler', navLabel: 'Dersler', href: 'dersler.html', defaultActive: true },
         { id: 'hiz-testi', label: 'Hız Testi', href: 'hizTesti.html', defaultActive: true },
         { id: 'klavye-calismasi', label: 'Klavye Çalışması', href: 'klavyeCalismasi.html', defaultActive: true },
-        { id: 'ozel-metin-calismasi', label: 'Özel Metin Çalışması', href: 'ozelMetinCalismasi.html', defaultActive: true },
+        { id: 'ozel-metin-calismasi', label: 'Metin Ekle', navLabel: 'Metin Ekle', href: 'ozelMetinCalismasi.html', defaultActive: true },
         { id: 'klavye-sinavi', label: 'Klavye Sınavı', navLabel: 'Klavye Sınavı', href: 'klavyeSinavi.html', defaultActive: false },
         { id: 'klavye-duellosu', label: 'Klavye Düellosu', navLabel: 'Klavye Düellosu', href: 'klavyeDuellosu.html', defaultActive: true },
         { id: 'kelime-evi', label: 'Kelime Evi', navLabel: 'Kelime Evi', href: 'kelimeEvi.html', defaultActive: true },
