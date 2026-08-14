@@ -203,12 +203,14 @@
         const items = [
             { href: paths.pageHref('arabaYarisi.html'), label: 'Araba Yarışı', page: 'araba-yarisi' },
             { href: paths.pageHref('dersler.html'), label: 'Dersler', page: 'dersler' },
+            { href: paths.pageHref('hizTesti.html'), label: 'Hız Testi', page: 'hiz-testi' },
             { href: paths.pageHref('kelimeEvi.html'), label: 'Kelime Evi', page: 'kelime-evi' },
             { href: paths.pageHref('klavyeCalismasi.html'), label: 'Klavye Çalışması', page: 'klavye-calismasi' },
             { href: paths.pageHref('klavyeDuellosu.html'), label: 'Klavye Düellosu', page: 'klavye-duellosu' },
             { href: paths.pageHref('klavyeSinavi.html'), label: 'Klavye Sınavı', page: 'klavye-sinavi' },
             { href: paths.pageHref('ozelMetinCalismasi.html'), label: 'Metin Ekle', page: 'ozel-metin-calismasi' },
         ];
+        items.sort((a, b) => a.label.localeCompare(b.label, 'tr'));
         return items
             .map((item) => `<li><a href="${item.href}" class="${cls}" data-page="${item.page}">${item.label}</a></li>`)
             .join('');
