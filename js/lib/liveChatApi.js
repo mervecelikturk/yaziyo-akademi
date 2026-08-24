@@ -380,6 +380,32 @@ export async function markMessagesSeen(konusmaId, viewerRole, client = supabase)
     return { error };
 }
 
+/**
+ * Kullanıcı sohbeti açtı: sunucu saatiyle kalıcı okundu çizgisi.
+ * Sayfa yenilenince eski mesajlar tekrar "okunmamış" sayılmaz.
+ */
+export async function markUserConversationRead(konusmaId, client = supabase) {
+    if (!client || !konusmaId) return { at: null, error: null };
+
+    const { data, error } = await client.rpc('live_chat_kullanici_okundu', {
+        p_konusma_id: konusmaId,
+    });
+
+    if (!error) {
+        const at = typeof data === 'string' ? data : (data || new Date().toISOString());
+        return { at, error: null };
+    }
+
+    // 032 henüz çalıştırılmadıysa eski yol + isteğe bağlı kolon
+    const now = new Date().toISOString();
+    const fallback = await markMessagesSeen(konusmaId, 'kullanici', client);
+    await client
+        .from('live_chat_konusmalar')
+        .update({ kullanici_son_okuma_at: now })
+        .eq('id', konusmaId);
+    return { at: now, error: fallback.error || null };
+}
+
 export async function fetchUnreadCountForUser(konusmaId, client = supabase) {
     if (!client || !konusmaId) return 0;
     const { count, error } = await client

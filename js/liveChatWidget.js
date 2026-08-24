@@ -8,7 +8,7 @@ import {
     ensureUserConversation,
     fetchMessages,
     sendTextMessage,
-    markMessagesSeen,
+    markUserConversationRead,
     upsertPresence,
     clearTyping,
     fetchAdminPresence,
@@ -78,10 +78,14 @@ function buildMediaBody(msg, url) {
 }
 
 const SEEN_STORE_PREFIX = 'yaziyo-lc-seen:';
-const SEEN_IDS_MAX = 300;
+const SEEN_IDS_MAX = 400;
 
 function seenStoreKey(userId) {
     return `${SEEN_STORE_PREFIX}${userId}`;
+}
+
+function msgId(id) {
+    return id == null ? '' : String(id);
 }
 
 function loadSeenState(userId) {
@@ -90,7 +94,9 @@ function loadSeenState(userId) {
         if (!raw) return { ids: [], lastSeenAt: null };
         const parsed = JSON.parse(raw);
         return {
-            ids: Array.isArray(parsed?.ids) ? parsed.ids.filter(Boolean) : [],
+            ids: Array.isArray(parsed?.ids)
+                ? parsed.ids.map(msgId).filter(Boolean)
+                : [],
             lastSeenAt: parsed?.lastSeenAt || null,
         };
     } catch {
@@ -100,7 +106,7 @@ function loadSeenState(userId) {
 
 function saveSeenState(userId, ids, lastSeenAt) {
     try {
-        const list = [...ids].slice(-SEEN_IDS_MAX);
+        const list = [...ids].map(msgId).filter(Boolean).slice(-SEEN_IDS_MAX);
         localStorage.setItem(seenStoreKey(userId), JSON.stringify({
             ids: list,
             lastSeenAt: lastSeenAt || null,
@@ -130,9 +136,10 @@ export async function mountLiveChatWidget(user) {
     let ready = false;
     let renderToken = 0;
     let markSeenPromise = null;
+    let pendingMarkSeen = false;
     const storedSeen = loadSeenState(user.id);
     /** Görülen admin mesajları — sayfa değişince de hatırlanır */
-    const seenAdminIds = new Set(storedSeen.ids);
+    const seenAdminIds = new Set(storedSeen.ids.map(msgId).filter(Boolean));
     let lastSeenAt = storedSeen.lastSeenAt;
     let unsubMsg = () => {};
     let unsubPresence = () => {};
@@ -224,13 +231,14 @@ export async function mountLiveChatWidget(user) {
 
     function wasAlreadySeen(msg) {
         if (!msg) return false;
-        if (msg.id && seenAdminIds.has(msg.id)) return true;
+        const id = msgId(msg.id);
+        if (id && seenAdminIds.has(id)) return true;
         return isAtOrBefore(msg.created_at, lastSeenAt);
     }
 
     function isAdminUnread(msg) {
         if (!msg || msg.gonderen_rol !== 'admin') return false;
-        if (msg.goruldu === true) return false;
+        if (msg.goruldu === true || msg.goruldu === 'true') return false;
         if (wasAlreadySeen(msg)) return false;
         return true;
     }
@@ -250,11 +258,16 @@ export async function mountLiveChatWidget(user) {
 
     function rememberSeenAdmin(msgOrId, { persist = true } = {}) {
         const msg = typeof msgOrId === 'string' ? { id: msgOrId } : (msgOrId || {});
-        if (msg.id) seenAdminIds.add(msg.id);
+        const id = msgId(msg.id);
+        if (id) seenAdminIds.add(id);
+        if (msg.created_at) bumpLastSeenAt(msg.created_at);
         if (persist) persistSeen();
     }
 
     function markAdminMessagesSeenLocal() {
+        for (const m of messages) {
+            if (m?.gonderen_rol === 'admin' && m.created_at) bumpLastSeenAt(m.created_at);
+        }
         bumpLastSeenAt(new Date().toISOString());
         messages = messages.map((m) => {
             if (m.gonderen_rol !== 'admin') return m;
@@ -268,9 +281,9 @@ export async function mountLiveChatWidget(user) {
     function mergeMessagesFromServer(list) {
         const merged = (list || []).map((m) => {
             if (m.gonderen_rol !== 'admin') return m;
-            if (m.goruldu === true || open || wasAlreadySeen(m)) {
+            if (m.goruldu === true || m.goruldu === 'true' || open || wasAlreadySeen(m)) {
                 rememberSeenAdmin(m, { persist: false });
-                return m.goruldu === true ? m : { ...m, goruldu: true };
+                return { ...m, goruldu: true };
             }
             return m;
         });
@@ -279,8 +292,19 @@ export async function mountLiveChatWidget(user) {
     }
 
     function markSeenOnServer() {
-        if (!convo) return Promise.resolve();
-        const run = markMessagesSeen(convo.id, 'kullanici')
+        if (!convo) {
+            pendingMarkSeen = true;
+            return Promise.resolve();
+        }
+        pendingMarkSeen = false;
+        const run = markUserConversationRead(convo.id)
+            .then((res) => {
+                if (res?.at) {
+                    bumpLastSeenAt(res.at);
+                    persistSeen();
+                }
+                return res;
+            })
             .finally(() => {
                 if (markSeenPromise === run) markSeenPromise = null;
             });
@@ -390,22 +414,29 @@ export async function mountLiveChatWidget(user) {
     function upsertLocalMessage(msg) {
         if (!msg?.id) return;
         let next = { ...msg };
+        const prev = messages.find((m) => msgId(m.id) === msgId(next.id));
         // Daha önce görülen / panel açıkken gelen admin mesajı okunmamış sayılmasın
         if (next.gonderen_rol === 'admin') {
-            if (next.goruldu === true || open || wasAlreadySeen(next)) {
+            const alreadyLocal = prev?.goruldu === true;
+            if (alreadyLocal || next.goruldu === true || next.goruldu === 'true' || open || wasAlreadySeen(next)) {
                 next.goruldu = true;
                 rememberSeenAdmin(next);
             }
         }
-        const idx = messages.findIndex((m) => m.id === next.id);
-        if (idx >= 0) messages[idx] = { ...messages[idx], ...next };
-        else messages.push(next);
+        const idx = messages.findIndex((m) => msgId(m.id) === msgId(next.id));
+        if (idx >= 0) {
+            const mergedGoruldu = messages[idx].goruldu === true || next.goruldu === true;
+            messages[idx] = { ...messages[idx], ...next, goruldu: mergedGoruldu };
+        } else {
+            messages.push(next);
+        }
         messages.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     }
 
     function removeLocalMessage(id) {
         if (!id) return;
-        messages = messages.filter((m) => m.id !== id);
+        const key = msgId(id);
+        messages = messages.filter((m) => msgId(m.id) !== key);
     }
 
     async function openPanel() {
@@ -413,9 +444,10 @@ export async function mountLiveChatWidget(user) {
         els.panel.classList.add('open');
         els.panel.setAttribute('aria-hidden', 'false');
         els.fab.setAttribute('aria-expanded', 'true');
-        // Panel açılınca okunmamışlar hemen temizlenir ve oturumda hatırlanır
+        // Panel açılınca okunmamışlar hemen temizlenir; sunucuya da yazılır
         markAdminMessagesSeenLocal();
         setUnread(0);
+        markSeenOnServer().catch(() => {});
 
         if (!ready) {
             els.messages.innerHTML = `
@@ -426,7 +458,6 @@ export async function mountLiveChatWidget(user) {
         } else {
             paintMessages();
             hydrateMedia();
-            markSeenOnServer().catch(() => {});
             els.input.focus();
         }
 
@@ -585,6 +616,16 @@ export async function mountLiveChatWidget(user) {
     ready = true;
     els.input.disabled = false;
 
+    if (convo.kullanici_son_okuma_at) {
+        bumpLastSeenAt(convo.kullanici_son_okuma_at);
+        persistSeen();
+    }
+    if (open || pendingMarkSeen) {
+        markAdminMessagesSeenLocal();
+        setUnread(0);
+        markSeenOnServer().catch(() => {});
+    }
+
     unsubMsg = subscribeConversation(convo.id, {
         onInsert: (msg) => {
             if (open && msg.gonderen_rol === 'admin') {
@@ -615,7 +656,7 @@ export async function mountLiveChatWidget(user) {
             }
         },
         onDelete: (old) => {
-            if (old?.id) seenAdminIds.delete(old.id);
+            if (old?.id) seenAdminIds.delete(msgId(old.id));
             removeLocalMessage(old?.id);
             if (open) {
                 paintMessages({ scroll: false });

@@ -32,6 +32,7 @@ const PAGE_SLUGS = {
     'kullanicilar.html': 'kullanicilar',
     'mesajlar.html': 'mesajlar',
     'mulakatSimulasyonu.html': 'mulakat-simulasyonu',
+    'odeme.html': 'odeme',
     'ozelMetinCalismasi.html': 'ozel-metin-calismasi',
     'profil.html': 'profil',
     'sinavEkle.html': 'sinav-ekle',

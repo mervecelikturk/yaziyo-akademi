@@ -67,21 +67,81 @@
             outline: none; border-color: rgb(var(--yaziyo-gold-rgb)); box-shadow: 0 0 0 4px rgb(var(--yaziyo-gold-rgb) / 0.15);
         }
         .admin-form-textarea { min-height: 90px; resize: vertical; }
-        .admin-tabs {
+        .aeg-shell {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            align-items: start;
+        }
+        @media (min-width: 900px) {
+            .aeg-shell {
+                grid-template-columns: 17.5rem minmax(0, 1fr);
+            }
+            .aeg-sidebar {
+                position: sticky;
+                top: 4.5rem;
+            }
+        }
+        .aeg-sidebar {
+            background: rgb(var(--yaziyo-card-rgb));
+            border: 1px solid rgb(var(--yaziyo-border-rgb));
+            border-radius: 1.15rem;
+            padding: 1rem;
+        }
+        .aeg-user-box {
+            padding-bottom: 1rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
+        }
+        .aeg-nav {
             display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
+            flex-direction: column;
+            gap: 0.3rem;
         }
         .admin-tab {
-            padding: 0.65rem 1rem; border-radius: 0.75rem; font-size: 0.75rem; font-weight: 700;
-            font-family: 'Poppins', sans-serif; border: 1px solid rgb(var(--yaziyo-border-rgb));
-            white-space: nowrap; min-height: 2.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            width: 100%;
+            text-align: left;
+            padding: 0.7rem 0.85rem;
+            border-radius: 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            border: 1px solid transparent;
+            color: rgb(var(--yaziyo-text-rgb));
+            background: transparent;
+            min-height: 2.65rem;
+            transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .admin-tab i {
+            width: 1.1rem;
+            text-align: center;
+            opacity: 0.8;
+        }
+        .admin-tab:hover {
+            background: rgb(var(--yaziyo-gold-rgb) / 0.08);
         }
         .admin-tab-active {
-            background: linear-gradient(to right, #f97316, #ea580c); color: white; border-color: transparent;
+            background: linear-gradient(to right, #f97316, #ea580c);
+            color: white;
+            border-color: transparent;
         }
+        .admin-tab-active i { opacity: 1; }
+        .aeg-need-user {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 22rem;
+            text-align: center;
+            background: rgb(var(--yaziyo-card-rgb));
+            border: 1px solid rgb(var(--yaziyo-border-rgb));
+            border-radius: 1.15rem;
+            padding: 2.5rem 1.5rem;
+        }
+        .aeg-need-user.hidden { display: none; }
         .admin-panel.hidden { display: none; }
         .emoji-btn {
             width: 2.5rem; height: 2.5rem; border-radius: 0.65rem; font-size: 1.25rem;
@@ -109,39 +169,40 @@
     <main class="flex-grow">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
-                <div>
-                    <h1 class="font-poppins font-bold text-2xl sm:text-3xl">Eğitimlerim Yönetimi</h1>
-                    <p class="text-sm text-light-text-secondary mt-1">Kullanıcıya özel program, takvim, etüt ve belge yönetimi</p>
-                </div>
-                <a href="../egitimlerim/" target="_blank" rel="noopener"
-                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-light-border dark:border-dark-border text-sm font-semibold hover:border-yaziyo-gold hover:text-yaziyo-gold">
-                    <i class="fa-solid fa-external-link"></i> Öğrenci görünümü
-                </a>
+            <div class="mb-6">
+                <h1 class="font-poppins font-bold text-2xl sm:text-3xl">Eğitimlerim Yönetimi</h1>
+                <p class="text-sm text-light-text-secondary mt-1">Kullanıcıya özel program, takvim, etüt ve belge yönetimi</p>
             </div>
 
-            <!-- Kullanıcı seçici (tüm sekmeler için ortak) -->
-            <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 sm:p-5 mb-6">
-                <label for="admin-user-select" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Kullanıcı seç</label>
-                <select id="admin-user-select" class="admin-form-select">
-                    <option value="">— Kullanıcı seçin —</option>
-                </select>
-            </div>
+            <div class="aeg-shell">
+                <aside class="aeg-sidebar">
+                    <div class="aeg-user-box">
+                        <label for="admin-user-select" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Kullanıcı seç</label>
+                        <select id="admin-user-select" class="admin-form-select">
+                            <option value="">— Kullanıcı seçin —</option>
+                        </select>
+                    </div>
+                    <nav class="aeg-nav" aria-label="Eğitimlerim yönetimi">
+                        <button type="button" class="admin-tab admin-tab-active" data-admin-tab="profil"><i class="fa-solid fa-user"></i> Profil</button>
+                        <button type="button" class="admin-tab" data-admin-tab="paketler"><i class="fa-solid fa-box"></i> Paketler</button>
+                        <button type="button" class="admin-tab" data-admin-tab="notlar"><i class="fa-solid fa-note-sticky"></i> Günlük Notlar</button>
+                        <button type="button" class="admin-tab" data-admin-tab="gorevler"><i class="fa-solid fa-list-check"></i> Görevler</button>
+                        <button type="button" class="admin-tab" data-admin-tab="takvim"><i class="fa-solid fa-calendar-days"></i> Takvim</button>
+                        <button type="button" class="admin-tab" data-admin-tab="etut"><i class="fa-solid fa-chalkboard-user"></i> Etüt Odaları</button>
+                        <button type="button" class="admin-tab" data-admin-tab="belgeler"><i class="fa-solid fa-file-lines"></i> Belgeler</button>
+                        <button type="button" class="admin-tab" data-admin-tab="livechat"><i class="fa-solid fa-comments"></i> Live Chat</button>
+                    </nav>
+                </aside>
 
-            <!-- Sekmeler -->
-            <div class="admin-tabs">
-                <button type="button" class="admin-tab admin-tab-active" data-admin-tab="profil">Profil / Ana Sayfa</button>
-                <button type="button" class="admin-tab" data-admin-tab="paketler">Paketler</button>
-                <button type="button" class="admin-tab" data-admin-tab="notlar">Günlük Notlar</button>
-                <button type="button" class="admin-tab" data-admin-tab="gorevler">Görevler</button>
-                <button type="button" class="admin-tab" data-admin-tab="takvim">Takvim</button>
-                <button type="button" class="admin-tab" data-admin-tab="etut">Etüt Odaları</button>
-                <button type="button" class="admin-tab" data-admin-tab="belgeler">Belgeler</button>
-                <button type="button" class="admin-tab" data-admin-tab="livechat">Live Chat</button>
-            </div>
+                <div class="aeg-main min-w-0">
+                    <div id="aeg-need-user" class="aeg-need-user">
+                        <i class="fa-regular fa-user text-3xl text-yaziyo-gold mb-3"></i>
+                        <p class="font-poppins font-bold text-lg">Bir kullanıcı seçin</p>
+                        <p class="text-sm text-light-text-secondary mt-1 max-w-sm">Soldan bir kullanıcı seçtikten sonra bu bölümü yönetebilirsiniz.</p>
+                    </div>
 
             <!-- SEKME: Profil -->
-            <div id="tab-profil" class="admin-panel">
+            <div id="tab-profil" class="admin-panel hidden">
                 <form id="profil-form" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-5 sm:p-6 space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -375,6 +436,9 @@
                             </div>
                         </div>
                     </section>
+                </div>
+            </div>
+
                 </div>
             </div>
 

@@ -12,18 +12,8 @@ function forceProfileVisible(user) {
 
     document.documentElement.classList.add('is-logged-in', 'profile-auth-ready');
 
-    if (authGate) {
-        authGate.classList.add('hidden');
-        authGate.style.setProperty('display', 'none', 'important');
-    }
-
-    if (mainContent) {
-        mainContent.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-        mainContent.classList.add('opacity-100', 'pointer-events-auto');
-        mainContent.style.setProperty('display', 'grid', 'important');
-        mainContent.style.setProperty('opacity', '1', 'important');
-        mainContent.style.setProperty('pointer-events', 'auto', 'important');
-    }
+    if (authGate) authGate.style.removeProperty('display');
+    if (mainContent) mainContent.style.removeProperty('display');
 
     if (user) {
         const name = user.user_metadata?.site_full_name || user.user_metadata?.full_name || user.email || 'Kullanıcı';
@@ -64,16 +54,8 @@ function showProfileGate() {
 
     document.documentElement.classList.remove('is-logged-in', 'profile-auth-ready');
 
-    if (mainContent) {
-        mainContent.style.setProperty('display', 'none', 'important');
-        mainContent.classList.add('hidden', 'opacity-0', 'pointer-events-none');
-        mainContent.classList.remove('opacity-100', 'pointer-events-auto');
-    }
-
-    if (authGate) {
-        authGate.classList.remove('hidden');
-        authGate.style.setProperty('display', 'block', 'important');
-    }
+    if (mainContent) mainContent.style.removeProperty('display');
+    if (authGate) authGate.style.removeProperty('display');
 }
 
 async function resolveProfileUser() {
@@ -109,16 +91,9 @@ let _profileAuthPass = 0;
 
 function scheduleProfileAuthChecks() {
     applyProfileAuthState();
-    _profileAuthPass += 1;
-    if (_profileAuthPass < 3) {
-        window.setTimeout(applyProfileAuthState, _profileAuthPass === 1 ? 120 : 500);
-    }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    _profileAuthPass = 0;
-    scheduleProfileAuthChecks();
-});
+document.addEventListener('DOMContentLoaded', scheduleProfileAuthChecks);
 
 window.addEventListener('pageshow', (event) => {
     if (event.persisted) {

@@ -355,6 +355,11 @@ function openDrawer(pkg) {
     document.body.style.overflow = 'hidden';
 }
 
+function checkoutHref(packageId) {
+    const base = window.YaziyoPaths?.pageHref?.('odeme.html') || '../odeme/';
+    return `${base}?paket=${encodeURIComponent(packageId)}`;
+}
+
 function handlePurchaseClick() {
     if (!selectedPackage) return;
     if (isPaketSoldOut(selectedPackage)) {
@@ -366,7 +371,15 @@ function handlePurchaseClick() {
         updatePurchaseCta();
         return;
     }
-    showToast('Henüz aktif değil.', 'error');
+    try {
+        sessionStorage.setItem('yaziyo-checkout-consent', JSON.stringify({
+            paketId: selectedPackage.id,
+            at: Date.now(),
+        }));
+    } catch {
+        /* ignore */
+    }
+    window.location.href = checkoutHref(selectedPackage.id);
 }
 
 function closeDrawer() {

@@ -61,7 +61,6 @@
 
     var docEl = global.document.documentElement;
     var path = (global.location.pathname || '').replace(/\\/g, '/');
-    var isProfilePage = /\/pages\/profil\/?$/i.test(path);
     var isAdminPage = /\/pages\/admin/i.test(path);
     var cachedUser = getCachedUser();
 
@@ -70,13 +69,9 @@
     criticalStyle.textContent = [
         '.yaziyo-auth-state--member{display:none!important}',
         'html.is-logged-in .yaziyo-auth-state--guest{display:none!important}',
-        'html.is-logged-in .yaziyo-auth-state--member{display:inline-flex!important;align-items:center;gap:.3rem}',
+        'html.is-logged-in .yaziyo-auth-state--member{display:inline-flex!important;align-items:center;gap:.5rem}',
         'html.is-logged-in #auth-button:not([data-yaziyo-auth-ready="1"]),',
         'html.is-logged-in #auth-nav-btn:not([data-yaziyo-auth-ready="1"]){visibility:hidden!important;pointer-events:none!important}',
-        isProfilePage ? 'html:not(.is-logged-in) #profile-main-content{display:none!important}' : '',
-        isProfilePage ? 'html:not(.is-logged-in) #auth-gate{display:block!important}' : '',
-        isProfilePage ? 'html.is-logged-in #auth-gate{display:none!important}' : '',
-        isProfilePage ? 'html.is-logged-in #profile-main-content{display:grid!important}' : '',
     ].filter(Boolean).join('');
     global.document.head.appendChild(criticalStyle);
 

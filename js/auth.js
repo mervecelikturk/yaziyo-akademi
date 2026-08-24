@@ -29,18 +29,6 @@ const { homeHref, pageHref } = window.YaziyoPaths || {
     pageHref: (filename) => filename,
 };
 
-// Profil / KPSS panelleri için görünürlük (sayfa gizlenmez — yalnızca auth-gate)
-const style = document.createElement('style');
-style.innerHTML = `
-    html.is-logged-in #auth-gate { display: none !important; }
-    html.is-logged-in #profile-main-content,
-    html.is-logged-in #dashboard-grid { display: grid !important; }
-    html:not(.is-logged-in) #profile-main-content,
-    html:not(.is-logged-in) #dashboard-grid { display: none !important; }
-    html:not(.is-logged-in) #auth-gate { display: block !important; }
-`;
-document.head.appendChild(style);
-
 let _authInitialCheckDone = false;
 
 function markAuthReady() {

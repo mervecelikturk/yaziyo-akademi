@@ -181,6 +181,30 @@ export async function fetchPublishedPaketler(client = supabase) {
     return { data: (data || []).map(mapPaketFromDb), error: null };
 }
 
+/** Tek yayınlanmış paket — fiyat her zaman veritabanından okunur. */
+export async function fetchPublishedPaketById(paketId, client = supabase) {
+    if (!client || !paketId) return { data: null, error: new Error('Geçersiz paket') };
+
+    const { data, error } = await client
+        .from('egitim_paketleri')
+        .select('*')
+        .eq('id', paketId)
+        .eq('aktif', true)
+        .maybeSingle();
+
+    if (error) return { data: null, error };
+    return { data: mapPaketFromDb(data), error: null };
+}
+
+export function formatPriceTry(price) {
+    const n = Number(price) || 0;
+    if (n <= 0) return 'Ücretsiz';
+    return `${n.toLocaleString('tr-TR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })} TL`;
+}
+
 export async function fetchAllPaketlerAdmin(client = supabase) {
     if (!client) return { data: [], error: null };
 
@@ -408,6 +432,39 @@ export async function userHasPurchasedPaket(client = supabase) {
         return false;
     }
     return !!data;
+}
+
+/** Kullanıcının bu pakete ait aktif satın alması var mı? */
+export async function fetchAktifSatinAlma(paketId, client = supabase) {
+    if (!client || !paketId) return { data: null, error: null };
+
+    const { data: { session } } = await client.auth.getSession();
+    if (!session?.user) return { data: null, error: null };
+
+    let { data, error } = await client
+        .from('egitim_paketi_satin_almalar')
+        .select('id, durum, bitis_tarihi')
+        .eq('paket_id', paketId)
+        .eq('kullanici_id', session.user.id)
+        .eq('durum', 'aktif')
+        .maybeSingle();
+
+    if (error) {
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('durum') || error.code === '42703') {
+            const fallback = await client
+                .from('egitim_paketi_satin_almalar')
+                .select('id, bitis_tarihi')
+                .eq('paket_id', paketId)
+                .eq('kullanici_id', session.user.id)
+                .maybeSingle();
+            data = fallback.data;
+            error = fallback.error;
+        }
+    }
+
+    if (error || !data) return { data: null, error: error || null };
+    return { data, error: null };
 }
 
 /**

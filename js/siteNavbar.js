@@ -31,6 +31,7 @@
         'mulakat-simulasyonu': 'mulakatlar',
         becayis: 'becayis',
         'egitim-paketleri': 'egitim-paketleri',
+        odeme: 'egitim-paketleri',
         egitimlerim: 'egitimlerim',
         haberler: 'haberler',
         'kpss-calismasi': 'kpss-calismasi',
@@ -225,7 +226,7 @@
         const calismalarActive = calismalarOpen ? ' active' : '';
         const calismalarMobOpen = calismalarOpen ? ' open' : '';
         return `
-        <div class="yaziyo-header-bar max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between gap-2">
+        <div class="yaziyo-header-bar max-w-7xl mx-auto px-8 py-1.5 flex items-center justify-between gap-2">
             <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 sm:max-w-none" id="logo-link">
                 <img src="${logoSrc}" alt="YAZİYO AKADEMİ Logo"
                     class="yaziyo-nav-logo w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 shrink-0"
@@ -243,7 +244,7 @@
                 <div class="relative group yaziyo-header-icon-wrap">
                     <button id="notification-btn" type="button" class="yaziyo-header-icon-btn flex relative items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-secondary dark:text-dark-text-secondary" aria-label="Bildirimler">
                         <i class="fa-solid fa-bell"></i>
-                        <span class="absolute top-1.5 right-1.5 w-[7px] h-[7px] sm:top-2 sm:right-2 sm:w-[8px] sm:h-[8px] bg-red-500 rounded-full border border-light-card dark:border-dark-card shadow-[0_0_8px_rgba(239,68,68,0.6)] hidden"></span>
+                        <span class="absolute top-2 right-2 w-[8px] h-[8px] bg-red-500 rounded-full border border-light-card dark:border-dark-card shadow-[0_0_8px_rgba(239,68,68,0.6)] hidden"></span>
                     </button>
                     <span class="yaziyo-header-tooltip">Bildirimler</span>
                 </div>
@@ -254,11 +255,10 @@
                     </div>
                     <span class="yaziyo-header-tooltip">Günlük Seri</span>
                 </div>
-                <a href="${girisKayit}" id="auth-button" class="yaziyo-auth-btn inline-flex items-center justify-center bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-lg transition-all duration-300 hover:shadow-glow-gold hover:scale-105 active:scale-95 shrink-0" aria-label="Giriş yap veya kayıt ol">
-                    <span class="yaziyo-auth-state yaziyo-auth-state--guest inline-flex items-center justify-center gap-[0.3rem]">
+                <a href="${girisKayit}" id="auth-button" class="yaziyo-auth-btn inline-flex items-center justify-center bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold rounded-lg hover:shadow-glow-gold hover:scale-105 active:scale-95 shrink-0" aria-label="Giriş yap veya kayıt ol">
+                    <span class="yaziyo-auth-state yaziyo-auth-state--guest inline-flex items-center justify-center gap-[0.5rem]">
                         <i class="fa-solid fa-right-to-bracket yaziyo-auth-btn-icon" aria-hidden="true"></i>
-                        <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--full">Giriş Yap / Kayıt Ol</span>
-                        <span class="yaziyo-auth-btn-text yaziyo-auth-btn-text--short">Giriş</span>
+                        <span class="yaziyo-auth-btn-text">Giriş Yap / Kayıt Ol</span>
                     </span>
                     <span class="yaziyo-auth-state yaziyo-auth-state--member">
                         <i class="fa-solid fa-user yaziyo-auth-btn-icon" aria-hidden="true"></i>
@@ -269,8 +269,8 @@
         </div>
         <div class="w-full h-px bg-light-border dark:bg-dark-border transition-colors duration-300"></div>
         <nav id="main-navbar" class="bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-md transition-colors duration-300">
-            <div class="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-                <ul id="desktop-menu" class="hidden lg:flex items-center justify-center gap-x-0.5 xl:gap-x-1 py-2 text-[9px] xl:text-[10px] 2xl:text-[11px] font-medium flex-nowrap">
+            <div class="max-w-7xl mx-auto px-8">
+                <ul id="desktop-menu" class="hidden lg:flex items-center justify-center gap-x-1 py-2 font-medium flex-nowrap">
                     <li><a href="${home}" class="nav-link${ac(active, 'anasayfa')}" data-page="anasayfa">Ana Sayfa</a></li>
                     <li><a href="${paths.pageHref('profil.html')}" class="nav-link${ac(active, 'profil')}" data-page="profil">Profil</a></li>
                     <li class="nav-dropdown">
@@ -345,6 +345,14 @@
         if (isAdminNavbar()) return false;
 
         const active = resolveActiveNav();
+        const alreadyNew = header.querySelector('.yaziyo-header-bar');
+        if (alreadyNew) {
+            header.dataset.yaziyoSharedHeaderMounted = '1';
+            applyNavActive(active);
+            bindNavClickHandler();
+            return true;
+        }
+
         header.innerHTML = buildHeaderInner(active);
         header.dataset.yaziyoSharedHeaderMounted = '1';
         applyNavActive(active);

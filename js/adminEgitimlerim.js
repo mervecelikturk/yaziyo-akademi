@@ -34,6 +34,7 @@ import {
     cancelKullaniciPaketi
 } from './lib/egitimPaketleriApi.js';
 import { createAdminLiveChatPanel } from './lib/adminLiveChatPanel.js';
+import { createCertificatePdf } from './lib/certificatePdf.js';
 
 let users = [];
 let selectedUserId = '';
@@ -43,6 +44,8 @@ let liveChatPanel = null;
 let liveChatReady = false;
 let syncingUserFromChat = false;
 let activeTab = 'profil';
+
+const USER_REQUIRED_TABS = new Set(['profil', 'paketler', 'notlar', 'gorevler', 'takvim', 'etut', 'belgeler']);
 
 const els = {};
 
@@ -103,12 +106,24 @@ function requireUser() {
     return true;
 }
 
+function needsSelectedUser() {
+    return USER_REQUIRED_TABS.has(activeTab) && !selectedUserId;
+}
+
+function updateNeedUserState() {
+    const blocked = needsSelectedUser();
+    els.needUser?.classList.toggle('hidden', !blocked);
+    document.querySelectorAll('.admin-panel').forEach((p) => p.classList.add('hidden'));
+    if (!blocked) {
+        document.getElementById(`tab-${activeTab}`)?.classList.remove('hidden');
+    }
+}
+
 function switchTab(id) {
     activeTab = id;
-    document.querySelectorAll('.admin-panel').forEach((p) => p.classList.add('hidden'));
     document.querySelectorAll('.admin-tab').forEach((t) => t.classList.remove('admin-tab-active'));
-    document.getElementById(`tab-${id}`)?.classList.remove('hidden');
     document.querySelector(`[data-admin-tab="${id}"]`)?.classList.add('admin-tab-active');
+    updateNeedUserState();
 }
 
 async function ensureLiveChatPanel() {
@@ -417,46 +432,6 @@ function syncBelgeAlici() {
     if (els.belgePdfStatus) els.belgePdfStatus.textContent = '';
 }
 
-function createCertificatePdf(tur, aliciAdi) {
-    const { jsPDF } = window.jspdf || {};
-    if (!jsPDF) throw new Error('jsPDF yüklenemedi');
-
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-    const title = BELGE_TURLERI[tur]?.label || 'Belge';
-
-    doc.setDrawColor(234, 179, 8);
-    doc.setLineWidth(1.5);
-    doc.rect(12, 12, 273, 186);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.setTextColor(30, 41, 59);
-    doc.text('YAZIYO AKADEMI', 148.5, 40, { align: 'center' });
-
-    doc.setFontSize(16);
-    doc.setTextColor(234, 179, 8);
-    doc.text(title.toLocaleUpperCase('tr-TR'), 148.5, 58, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(12);
-    doc.setTextColor(71, 85, 105);
-    doc.text('Bu belge asagida adi yazili katilimciya verilmistir:', 148.5, 85, { align: 'center' });
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(24);
-    doc.setTextColor(15, 23, 42);
-    doc.text(aliciAdi || 'Katilimci', 148.5, 105, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.setTextColor(100, 116, 139);
-    const today = new Date().toLocaleDateString('tr-TR');
-    doc.text(`Tarih: ${today}`, 148.5, 130, { align: 'center' });
-    doc.text('YAZIYO Akademi — Zabıt Katipligi Calisma Platformu', 148.5, 160, { align: 'center' });
-
-    return doc.output('datauristring');
-}
-
 async function loadBelgeler() {
     if (!selectedUserId) {
         els.belgeList.innerHTML = '<p class="text-sm text-light-text-secondary">Kullanıcı seçin.</p>';
@@ -487,6 +462,7 @@ async function onUserChange() {
     syncBelgeAlici();
     resetGorevForm();
     resetTakvimForm();
+    updateNeedUserState();
     if (!selectedUserId) {
         if (els.paketList) {
             els.paketList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Kullanıcı seçin.</p>';
@@ -501,6 +477,7 @@ async function onUserChange() {
         loadTakvim(),
         loadBelgeler()
     ]);
+    if (activeTab === 'etut') await loadEtut();
     if (activeTab === 'livechat') {
         await openLiveChatForSelectedUser();
     }
@@ -508,6 +485,7 @@ async function onUserChange() {
 
 function cacheElements() {
     els.toast = document.getElementById('admin-toast');
+    els.needUser = document.getElementById('aeg-need-user');
     els.userSelect = document.getElementById('admin-user-select');
     els.fieldKoc = document.getElementById('field-koc');
     els.fieldRozet = document.getElementById('field-rozet');
@@ -553,13 +531,18 @@ function bindEvents() {
         btn.addEventListener('click', async () => {
             const id = btn.dataset.adminTab;
             switchTab(id);
+            if (id === 'livechat') {
+                await openLiveChatForSelectedUser();
+                return;
+            }
+            if (!selectedUserId) return;
             if (id === 'takvim') await loadTakvim();
             if (id === 'etut') await loadEtut();
             if (id === 'belgeler') await loadBelgeler();
             if (id === 'notlar') await loadNotlar();
             if (id === 'gorevler') await loadGorevler();
             if (id === 'paketler') await loadPaketler();
-            if (id === 'livechat') await openLiveChatForSelectedUser();
+            if (id === 'profil') await loadProfil();
         });
     });
 
@@ -750,7 +733,7 @@ function bindEvents() {
         }
     });
 
-    els.btnPdfOlustur?.addEventListener('click', () => {
+    els.btnPdfOlustur?.addEventListener('click', async () => {
         if (!requireUser()) return;
         const alici = (els.belgeAlici.value || '').trim();
         if (!alici) {
@@ -758,15 +741,23 @@ function bindEvents() {
             els.belgeAlici?.focus();
             return;
         }
+        const btn = els.btnPdfOlustur;
+        btn.disabled = true;
+        if (els.belgePdfStatus) els.belgePdfStatus.textContent = 'PDF hazırlanıyor...';
         try {
             const tur = els.belgeTur.value;
-            pendingPdfBase64 = createCertificatePdf(tur, alici);
+            pendingPdfBase64 = await createCertificatePdf(tur, alici);
             pendingPdfFileName = `${tur}_${alici.replace(/\s+/g, '_')}.pdf`;
             els.btnBelgeGonder.disabled = false;
             els.belgePdfStatus.textContent = `PDF hazır: ${pendingPdfFileName}`;
             showToast('PDF oluşturuldu');
         } catch (err) {
+            pendingPdfBase64 = null;
+            els.btnBelgeGonder.disabled = true;
+            if (els.belgePdfStatus) els.belgePdfStatus.textContent = '';
             showToast(err.message || 'PDF oluşturulamadı', 'error');
+        } finally {
+            btn.disabled = false;
         }
     });
 
@@ -835,8 +826,6 @@ async function init() {
     fillRozetSelect();
     bindEvents();
     await loadUsers();
-    await loadEtut();
-    await loadTakvim();
 
     // Eğitimlerim yönetimindeyken admin çevrimiçi görünsün (sekme açılmasa da)
     await ensureLiveChatPanel();
@@ -845,6 +834,8 @@ async function init() {
     if (tab === 'livechat') {
         switchTab('livechat');
         await openLiveChatForSelectedUser();
+    } else {
+        switchTab(activeTab);
     }
 }
 

@@ -308,8 +308,17 @@ async function handleForgotPassword(e) {
     }
 }
 
+function getSafeCheckoutNext() {
+    const next = new URLSearchParams(window.location.search).get('next');
+    if (!next) return null;
+    // Yalnızca ödeme sayfasına dönüş — açık yönlendirmeyi önler
+    if (/^\.\.\/odeme\/(?:\?paket=[0-9a-f-]{36})?$/i.test(next)) return next;
+    return null;
+}
+
 function redirectToHome() {
-    window.location.href = homeHref();
+    const checkoutNext = getSafeCheckoutNext();
+    window.location.href = checkoutNext || homeHref();
 }
 
 /** Başarılı giriş/kayıt sonrası oturumu doğru depoya yazar */
