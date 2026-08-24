@@ -2317,13 +2317,18 @@ html.dark .pay-field-error { color: #fca5a5; }
     justify-content: center;
     gap: 0.4rem;
     margin: 1rem 0 0.45rem;
-    font-size: 0.72rem;
+    font-size: 1rem;
+    line-height: 1;
     font-weight: 400;
     color: rgb(var(--yaziyo-text-secondary-rgb));
 }
 .pay-iyzico-label img {
-    height: 0.82rem;
+    height: 1em;
     width: auto;
+    max-height: 1rem;
+    max-width: 3.4rem;
+    min-width: 0;
+    flex: 0 0 auto;
     display: block;
     object-fit: contain;
     opacity: 0.72;
