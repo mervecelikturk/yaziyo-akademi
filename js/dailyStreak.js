@@ -5,6 +5,55 @@
 
 const STREAK_CACHE_PREFIX = 'yaziyo-streak-data-';
 const STREAK_RPC_UNAVAILABLE_KEY = 'yaziyo-streak-rpc-unavailable';
+/** Sayfa geçişlerinde rozet 0'dan başlamasın: son bilinen değer (authBoot.js head'de okur) */
+const STREAK_LAST_KEY = 'yaziyo-streak-last';
+
+function readLastStreak() {
+    try {
+        const raw = localStorage.getItem(STREAK_LAST_KEY);
+        const data = raw ? JSON.parse(raw) : null;
+        return data && typeof data.streak_count === 'number' ? data : null;
+    } catch {
+        return null;
+    }
+}
+
+function writeLastStreak(userId, streak, maxStreak) {
+    try {
+        localStorage.setItem(STREAK_LAST_KEY, JSON.stringify({
+            userId,
+            streak_count: Math.max(0, Number(streak) || 0),
+            max_streak: Math.max(0, Number(maxStreak) || 0),
+        }));
+    } catch {
+        /* ignore quota */
+    }
+}
+
+function clearLastStreak() {
+    try {
+        localStorage.removeItem(STREAK_LAST_KEY);
+    } catch {
+        /* ignore */
+    }
+}
+
+/** Oturum henüz hydrate olmadıysa rozeti sıfırlamak yerine son değeri koru */
+function keepOrResetStreak() {
+    const cachedUser = window.YaziyoAuthBoot?.getCachedUser?.();
+    const last = readLastStreak();
+
+    if (cachedUser && last && last.userId === cachedUser.id) {
+        applyStreakUI(last.streak_count, last.max_streak);
+        setStreakWidgetMode(true, last.streak_count, last.max_streak);
+        return last;
+    }
+
+    clearLastStreak();
+    applyStreakUI(0);
+    setStreakWidgetMode(!!cachedUser, 0, 0);
+    return null;
+}
 
 /** Supabase'de 030_gunluk_seri migration'ı yoksa RPC 404 döner */
 function isStreakRpcMissingError(error) {
@@ -51,13 +100,12 @@ async function loadStreakFallback(supabase, userId) {
             streak_count: row?.streak_count ?? 0,
             max_streak: row?.max_streak ?? 0,
         };
+        writeLastStreak(userId, fallback.streak_count, fallback.max_streak);
         applyStreakUI(fallback.streak_count, fallback.max_streak);
         setStreakWidgetMode(true, fallback.streak_count, fallback.max_streak);
         return fallback;
     } catch {
-        applyStreakUI(0);
-        setStreakWidgetMode(true, 0, 0);
-        return null;
+        return keepOrResetStreak();
     }
 }
 
@@ -149,6 +197,7 @@ export function setStreakWidgetMode(loggedIn, streak, maxStreak) {
 }
 
 export function clearStreakSessionCache() {
+    clearLastStreak();
     const keys = [];
     for (let i = 0; i < sessionStorage.length; i++) {
         const k = sessionStorage.key(i);
@@ -184,30 +233,25 @@ function writeCache(userId, localDate, data) {
  */
 export async function syncDailyStreak(supabase) {
     if (!supabase) {
-        applyStreakUI(0);
-        setStreakWidgetMode(false, 0, 0);
-        return null;
+        return keepOrResetStreak();
     }
 
     let userId = null;
     try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user?.id) {
-            applyStreakUI(0);
-            setStreakWidgetMode(false, 0, 0);
-            return null;
+            return keepOrResetStreak();
         }
         userId = session.user.id;
     } catch (err) {
         console.warn('Streak oturum kontrolü:', err);
-        applyStreakUI(0);
-        setStreakWidgetMode(false, 0, 0);
-        return null;
+        return keepOrResetStreak();
     }
 
     const localDate = getLocalDateString();
     const cached = readCache(userId, localDate);
     if (cached) {
+        writeLastStreak(userId, cached.streak_count, cached.max_streak);
         applyStreakUI(cached.streak_count, cached.max_streak);
         setStreakWidgetMode(true, cached.streak_count, cached.max_streak);
         return cached;
@@ -231,6 +275,7 @@ export async function syncDailyStreak(supabase) {
         };
 
         writeCache(userId, localDate, payload);
+        writeLastStreak(userId, payload.streak_count, payload.max_streak);
         applyStreakUI(payload.streak_count, payload.max_streak);
         setStreakWidgetMode(true, payload.streak_count, payload.max_streak);
         return payload;

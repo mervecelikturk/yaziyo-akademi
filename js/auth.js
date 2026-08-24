@@ -74,6 +74,9 @@ function syncAuthNavButtons(user) {
     });
 }
 
+/** Aynı kullanıcı için tekrar tekrar DOM yazmayı (yeniden render) engeller */
+let _appliedUiKey = null;
+
 function updateUIElements(user) {
     if (user) {
         document.documentElement.classList.add('is-logged-in');
@@ -83,28 +86,38 @@ function updateUIElements(user) {
 
     syncAuthNavButtons(user);
 
-    if (user) {
-        // site_full_name: kullanıcının siteden kaydettiği isim (Google OAuth'un full_name'ini ezmez)
-        const name = user.user_metadata?.site_full_name || user.user_metadata?.full_name || 'Kullanıcı';
-        // site_avatar_url: kullanıcının siteden seçtiği avatar (Google OAuth'un avatar_url'ini ezmez)
-        const siteAvatarUrl = user.user_metadata?.site_avatar_url;
-        const resolvedAvatar = siteAvatarUrl
-            ? (window.YaziyoPaths?.resolveAssetUrl?.(siteAvatarUrl) || siteAvatarUrl)
-            : null;
+    if (!user) {
+        _appliedUiKey = null;
+        return;
+    }
 
-        if (document.getElementById('user-name')) document.getElementById('user-name').innerText = name;
-        if (document.getElementById('kpss-user-name')) document.getElementById('kpss-user-name').innerText = name;
+    // site_full_name: kullanıcının siteden kaydettiği isim (Google OAuth'un full_name'ini ezmez)
+    const name = user.user_metadata?.site_full_name || user.user_metadata?.full_name || 'Kullanıcı';
+    // site_avatar_url: kullanıcının siteden seçtiği avatar (Google OAuth'un avatar_url'ini ezmez)
+    const siteAvatarUrl = user.user_metadata?.site_avatar_url;
+    const resolvedAvatar = siteAvatarUrl
+        ? (window.YaziyoPaths?.resolveAssetUrl?.(siteAvatarUrl) || siteAvatarUrl)
+        : null;
 
-        const avatarHTML = resolvedAvatar
-            ? `<img src="${resolvedAvatar}" class="w-full h-full object-cover rounded-full">`
-            : '<i class="fa-solid fa-user text-4xl"></i>';
+    const uiKey = `${user.id}|${name}|${resolvedAvatar || ''}`;
+    if (_appliedUiKey === uiKey) return;
+    _appliedUiKey = uiKey;
 
-        const kpssAvatar = document.getElementById('kpss-profile-avatar');
-        if (kpssAvatar) kpssAvatar.innerHTML = avatarHTML;
+    if (document.getElementById('user-name')) document.getElementById('user-name').innerText = name;
+    if (document.getElementById('kpss-user-name')) document.getElementById('kpss-user-name').innerText = name;
 
-        const profileAvatar = document.getElementById('profile-avatar');
-        if (profileAvatar) profileAvatar.innerHTML = avatarHTML;
+    const avatarHTML = resolvedAvatar
+        ? `<img src="${resolvedAvatar}" class="w-full h-full object-cover rounded-full">`
+        : '<i class="fa-solid fa-user text-4xl"></i>';
 
+    const kpssAvatar = document.getElementById('kpss-profile-avatar');
+    if (kpssAvatar) kpssAvatar.innerHTML = avatarHTML;
+
+    const profileAvatar = document.getElementById('profile-avatar');
+    if (profileAvatar) profileAvatar.innerHTML = avatarHTML;
+
+    // Profil sayfası rütbeyi kendi verisinden yükler; buradan sıfırlanırsa iki kez çizilir.
+    if (!document.getElementById('profile-main-content')) {
         updateGlobalRank(0);
     }
 }

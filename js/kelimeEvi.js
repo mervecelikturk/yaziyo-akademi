@@ -219,7 +219,35 @@
         });
     }
 
-    /* ---------------- Dropdown cascade (klavye çalışması ile aynı) ---------------- */
+    /* ---------------- Dropdown cascade (klavye çalışması + metinlerDB) ---------------- */
+    function db() {
+        return (typeof metinlerDB !== 'undefined') ? metinlerDB : (window.metinlerDB || {});
+    }
+
+    function groupsFor(category) {
+        const labeled = Core.CATEGORIES[category]?.groups || [];
+        const catDb = db()[category] || {};
+        const dbIds = Object.keys(catDb).filter((id) => Array.isArray(catDb[id]) && catDb[id].length);
+        const out = [];
+        const seen = new Set();
+        labeled.forEach((g) => {
+            if (dbIds.includes(g.id)) {
+                out.push(g);
+                seen.add(g.id);
+            }
+        });
+        dbIds.forEach((id) => {
+            if (!seen.has(id)) out.push({ id, label: id });
+        });
+        return out;
+    }
+
+    function textsFor(category, group) {
+        const list = db()[category]?.[group];
+        if (!Array.isArray(list)) return [];
+        return list.filter((item) => item && (item.text || item.content));
+    }
+
     function initDropdowns() {
         const categorySelect = $('category-select');
         const groupSelect = $('group-select');
@@ -263,15 +291,54 @@
         function updateTexts() {
             const category = categorySelect.value;
             const group = groupSelect.value;
-            const texts = (typeof metinlerDB !== 'undefined' && metinlerDB[category]?.[group]) || [];
+            const texts = textsFor(category, group);
 
             textSelect.innerHTML = '';
             textOptions.innerHTML = '';
+            textLabel.textContent = 'Metin Seçin';
 
-            const groups = Core.CATEGORIES[category]?.groups || [];
-            if (!groups.length) {
-                groupLabel.textContent = 'Seçenek Bulunamadı';
+            if (!texts.length) {
+                const opt = document.createElement('option');
+                opt.textContent = 'Metin Bulunamadı';
+                textSelect.appendChild(opt);
                 textLabel.textContent = 'Metin Bulunamadı';
+                return;
+            }
+
+            texts.forEach((itemData, index) => {
+                const opt = document.createElement('option');
+                opt.value = String(index);
+                opt.textContent = itemData.id;
+                textSelect.appendChild(opt);
+
+                const item = document.createElement('div');
+                item.className = 'ke-dropdown-item';
+                item.textContent = itemData.id;
+                item.addEventListener('click', () => {
+                    textSelect.value = String(index);
+                    textLabel.textContent = itemData.id;
+                    closeAll();
+                });
+                textOptions.appendChild(item);
+            });
+
+            textSelect.value = '0';
+            textLabel.textContent = texts[0].id;
+        }
+
+        function updateGroups() {
+            const category = categorySelect.value;
+            const groups = groupsFor(category);
+            groupSelect.innerHTML = '';
+            groupOptions.innerHTML = '';
+            groupLabel.textContent = groups.length ? groups[0].label : 'Seçiniz...';
+
+            if (!groups.length) {
+                const opt = document.createElement('option');
+                opt.textContent = 'Seçenek Bulunamadı';
+                groupSelect.appendChild(opt);
+                groupLabel.textContent = 'Seçenek Bulunamadı';
+                updateTexts();
                 return;
             }
 
@@ -288,67 +355,13 @@
                     groupSelect.value = g.id;
                     groupLabel.textContent = g.label;
                     groupSelect.dispatchEvent(new Event('change'));
+                    closeAll();
                 });
                 groupOptions.appendChild(item);
             });
 
-            if (groups.length) {
-                groupSelect.value = groups[0].id;
-                groupLabel.textContent = groups[0].label;
-            }
-
-            texts.forEach((itemData, index) => {
-                const opt = document.createElement('option');
-                opt.value = index;
-                opt.textContent = itemData.id;
-                textSelect.appendChild(opt);
-
-                const item = document.createElement('div');
-                item.className = 'ke-dropdown-item';
-                item.textContent = itemData.id;
-                item.addEventListener('click', () => {
-                    textSelect.value = index;
-                    textLabel.textContent = itemData.id;
-                });
-                textOptions.appendChild(item);
-            });
-
-            if (texts.length) {
-                textSelect.value = '0';
-                textLabel.textContent = texts[0].id;
-            } else {
-                textLabel.textContent = 'Metin Bulunamadı';
-            }
-        }
-
-        function updateGroups() {
-            const category = categorySelect.value;
-            const groups = Core.CATEGORIES[category]?.groups || [];
-            groupSelect.innerHTML = '';
-            groupOptions.innerHTML = '';
-            groupLabel.textContent = groups.length ? groups[0].label : 'Seçiniz...';
-
-            groups.forEach((g) => {
-                const opt = document.createElement('option');
-                opt.value = g.id;
-                opt.textContent = g.label;
-                groupSelect.appendChild(opt);
-
-                const item = document.createElement('div');
-                item.className = 'ke-dropdown-item';
-                item.textContent = g.label;
-                item.addEventListener('click', () => {
-                    groupSelect.value = g.id;
-                    groupLabel.textContent = g.label;
-                    groupSelect.dispatchEvent(new Event('change'));
-                });
-                groupOptions.appendChild(item);
-            });
-
-            if (groups.length) {
-                groupSelect.value = groups[0].id;
-                groupLabel.textContent = groups[0].label;
-            }
+            groupSelect.value = groups[0].id;
+            groupLabel.textContent = groups[0].label;
             updateTexts();
         }
 
@@ -847,15 +860,19 @@
         cacheEls();
         const category = $('category-select').value;
         const group = $('group-select').value;
-        const textIndex = $('text-select').value;
         const timeVal = parseInt($('time-select').value, 10);
+
+        const texts = textsFor(category, group);
+        const textIndex = parseInt($('text-select').value, 10);
+        const entry = Number.isInteger(textIndex) ? texts[textIndex] : null;
 
         const catDef = Core.CATEGORIES[category];
         state.sessionMeta.kategori = catDef ? catDef.label : category;
         state.sessionMeta.grup = $('group-select-label')?.textContent || group;
-        state.sessionMeta.metinAdi = $('text-select-label')?.textContent || '';
+        state.sessionMeta.metinAdi = $('text-select-label')?.textContent || entry?.id || '';
 
-        if (!metinlerDB[category]?.[group]?.[textIndex]) {
+        const rawText = (entry?.text || entry?.content || '').trim();
+        if (!rawText) {
             alert('Lütfen geçerli bir metin seçiniz.');
             return;
         }
@@ -863,8 +880,7 @@
         await ensureAudioCtx();
         await primeBackgroundAudio();
 
-        const rawText = metinlerDB[category][group][textIndex].text;
-        state.originalWords = rawText.trim().split(/\s+/).filter(w => w.length > 0);
+        state.originalWords = rawText.split(/\s+/).filter(w => w.length > 0);
         prepareWordsDOM(rawText);
 
         state.correctWords = 0;

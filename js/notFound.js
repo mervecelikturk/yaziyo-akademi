@@ -15,7 +15,7 @@
         { slug: 'araba-yarisi', href: '/pages/araba-yarisi/', label: 'Araba Yarışı' },
         { slug: 'haberler', href: '/pages/haberler/', label: 'Haberler' },
         { slug: 'egitim-paketleri', href: '/pages/egitim-paketleri/', label: 'Eğitim Paketleri' },
-        { slug: 'iletisim', href: '/pages/iletisim/', label: 'İletişim' },
+        { slug: 'iletisim', href: '/pages/iletisim/', label: 'Bize Ulaşın' },
     ];
 
     const TYPO_MAP = {

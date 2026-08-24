@@ -3,7 +3,7 @@
  */
 import { supabase } from './lib/supabase.js';
 
-document.addEventListener('DOMContentLoaded', () => {
+function initContactForm() {
     const contactForm = document.getElementById('contact-form');
     const submitBtn = document.getElementById('submit-btn');
     if (!contactForm || !submitBtn) return;
@@ -56,4 +56,12 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.style.pointerEvents = 'auto';
         }, 3000);
     });
-});
+}
+
+// lib/supabase.js modül seviyesinde await kullandığı için bu modül
+// DOMContentLoaded'dan SONRA çalışabilir; o durumda doğrudan başlat.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initContactForm);
+} else {
+    initContactForm();
+}

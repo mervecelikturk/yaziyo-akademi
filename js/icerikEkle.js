@@ -5,7 +5,7 @@
 import { requireAdminAccess } from './lib/adminAuth.js';
 import { refreshAdminMobileTables } from './lib/adminTableMobile.js';
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initIcerikEklePage() {
     if (!(await requireAdminAccess())) return;
 
     const tbody = document.getElementById('page-status-tbody');
@@ -98,7 +98,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncHint.classList.toggle('text-yaziyo-gold', !isError && !!message);
         syncHint.classList.toggle('hidden', !message);
     }
-});
+}
+
+// lib/adminAuth.js → lib/supabase.js modül seviyesinde await kullandığı için bu
+// modül DOMContentLoaded'dan SONRA çalışabilir; o durumda doğrudan başlat.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initIcerikEklePage);
+} else {
+    initIcerikEklePage();
+}
 
 function updateToggleButton(btn, active) {
     const span = btn.querySelector('span');

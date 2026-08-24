@@ -34,12 +34,15 @@
         .yaziyo-auth-btn{gap:.5rem;padding:.5rem 1rem;font-size:.875rem;line-height:1.2}
         .yaziyo-header-streak-badge{gap:.375rem;padding:.375rem .625rem;font-size:.875rem}
         .yaziyo-header-actions{gap:.625rem}
-        #profile-main-content{display:none;gap:2rem;align-items:start;grid-template-columns:1fr 3fr}
+        #profile-main-content{display:none;gap:2rem;align-items:start;grid-template-columns:minmax(0,1fr) minmax(0,3fr)}
+        @media (max-width:1023px){#profile-main-content{grid-template-columns:minmax(0,1fr)}}
         html.is-logged-in #profile-main-content{display:grid!important}
         html:not(.is-logged-in) #profile-main-content{display:none!important}
         html.is-logged-in #auth-gate{display:none!important}
         html:not(.is-logged-in) #auth-gate{display:block!important}
         .profile-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+        @media (max-width:1023px){.profile-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media (max-width:639px){.profile-stat-grid{grid-template-columns:minmax(0,1fr)}}
         .stat-card-profile{display:flex;align-items:center;gap:1rem;padding:1.25rem;min-height:5.5rem;width:100%;box-sizing:border-box}
         .stat-card-profile>.stat-card-icon{width:3rem;height:3rem;flex-shrink:0}
         .stat-card-profile h3{font-size:1.25rem;line-height:1.25;min-height:1.5rem}
@@ -481,7 +484,7 @@
                     <li><a href="javascript:void(0)" class="nav-link disabled" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
                     <li><a href="javascript:void(0)" class="nav-link disabled" data-page="haberler">Haberler</a></li>
                     <li><a href="../kpss-calismasi/" class="nav-link" data-page="kpss-calismasi">KPSS Çalışması</a></li>
-                    <li><a href="../iletisim/" class="nav-link" data-page="iletisim">İletişim</a></li>
+                    <li><a href="../iletisim/" class="nav-link" data-page="iletisim">Bize Ulaşın</a></li>
                 </ul>
 
 
@@ -524,7 +527,7 @@
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="egitim-paketleri">Eğitim Paketleri</a></li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled" data-page="haberler">Haberler</a></li>
                         <li><a href="../kpss-calismasi/" class="mobile-nav-link" data-page="kpss-calismasi">KPSS Çalışması</a></li>
-                        <li><a href="../iletisim/" class="mobile-nav-link" data-page="iletisim">İletişim</a></li>
+                        <li><a href="../iletisim/" class="mobile-nav-link" data-page="iletisim">Bize Ulaşın</a></li>
                     </ul>
                 </div>
             </div>
@@ -532,7 +535,7 @@
     </header>
 
     <!-- PROFİL İÇERİĞİ -->
-    <main class="max-w-7xl mx-auto px-8 py-10 flex-grow" style="max-width:80rem;margin-left:auto;margin-right:auto">
+    <main class="w-full max-w-7xl mx-auto px-8 py-10 flex-grow" style="width:100%;max-width:80rem;margin-left:auto;margin-right:auto">
 
         <!-- Üst Başlık -->
         <div class="mb-10 text-center lg:text-left">
@@ -569,7 +572,7 @@
             </div>
         </div>
 
-        <div id="profile-main-content" style="grid-template-columns:1fr 3fr;gap:2rem;align-items:start">
+        <div id="profile-main-content" style="gap:2rem;align-items:start">
 
             <!-- ============================================================
                  SOL MENÜ KARTI - Tıklanan öğeye göre sağ içİİçerik değişecek
@@ -697,7 +700,7 @@
                 <div class="content-panel active" id="panel-analiz">
 
                     <!-- İSTATİSTİK KARTLARI -->
-                    <div class="profile-stat-grid" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem">
+                    <div class="profile-stat-grid" style="display:grid;gap:1rem">
 
                         <!-- WPM Rekor -->
                         <div
@@ -2386,6 +2389,17 @@
         // FLASH OF WRONG CONTENT ÖNLEME: İçİİçerik veri çekilene kadar gizli kalır
         // ========================================================
         document.addEventListener('DOMContentLoaded', async () => {
+            // Aynı avatar tekrar basılırsa <img> yeniden oluşur ve görsel bir an boş kalır.
+            function setProfileAvatar(rawSrc) {
+                if (!rawSrc) return;
+                const avatarContainer = document.getElementById('profile-avatar');
+                if (!avatarContainer) return;
+                const avatarSrc = window.YaziyoPaths?.resolveAssetUrl?.(rawSrc) || rawSrc;
+                const current = avatarContainer.querySelector('img');
+                if (current && (current.getAttribute('src') === avatarSrc || current.src === avatarSrc)) return;
+                avatarContainer.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover rounded-full">`;
+            }
+
             function applyCachedProfileShell(user) {
                 showProfileContent();
                 const userEmail = document.getElementById('user-email');
@@ -2398,14 +2412,7 @@
                     const userNameEl = document.getElementById('user-name');
                     if (userNameEl) userNameEl.textContent = displayName;
                 }
-                const siteAvatar = meta.site_avatar_url;
-                if (siteAvatar) {
-                    const avatarContainer = document.getElementById('profile-avatar');
-                    const avatarSrc = window.YaziyoPaths?.resolveAssetUrl?.(siteAvatar) || siteAvatar;
-                    if (avatarContainer) {
-                        avatarContainer.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover rounded-full">`;
-                    }
-                }
+                setProfileAvatar(meta.site_avatar_url);
             }
 
             const cachedEarly = getCachedProfileUser();
@@ -2458,14 +2465,8 @@
                         if (editSoyad) editSoyad.value = lastName;
                     }
 
-                    const siteAvatar2 = meta.site_avatar_url;
-                    if (siteAvatar2) {
-                        const avatarContainer = document.getElementById('profile-avatar');
-                        const avatarSrc = window.YaziyoPaths?.resolveAssetUrl?.(siteAvatar2) || siteAvatar2;
-                        if (avatarContainer) {
-                            avatarContainer.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover rounded-full">`;
-                        }
-                    }
+                    setProfileAvatar(meta.site_avatar_url);
+
                     
                     // Veriler tamamen yüklendi
                     const {

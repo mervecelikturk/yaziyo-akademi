@@ -12,7 +12,7 @@ let pendingDeleteUserId = null;
 let pendingMessageUserId = null;
 
 const tbody = () => document.querySelector('#users-tbody') || document.querySelector('tbody');
-const TABLE_COLSPAN = 7;
+const TABLE_COLSPAN = 6;
 
 function formatUserCount(n) {
     return (Number(n) || 0).toLocaleString('tr-TR');
@@ -179,9 +179,6 @@ function renderTable() {
                 <td class="px-6 py-4 text-sm font-medium">${escapeHtml(firstName)}</td>
                 <td class="px-6 py-4 text-sm font-medium">${escapeHtml(lastName)}</td>
                 <td class="px-6 py-4 text-sm text-light-text-secondary dark:text-dark-text-secondary">${escapeHtml(email)}</td>
-                <td class="px-6 py-4">
-                    <span class="font-mono text-sm tracking-widest text-light-text-secondary dark:text-dark-text-secondary opacity-50">••••••••</span>
-                </td>
                 <td class="px-6 py-4 text-sm text-light-text-secondary dark:text-dark-text-secondary">${escapeHtml(createdAt)}</td>
                 <td class="px-6 py-4 text-right">
                     <div class="inline-flex items-center justify-end gap-1.5">
@@ -628,7 +625,7 @@ async function createUser(e) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initKullanicilarPage() {
     showLoading();
     if (!(await requireAdminAccess())) return;
 
@@ -677,7 +674,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('toggle-add-user-password-confirm')?.addEventListener('click', (e) => {
         toggleModalPassword('add-user-password-confirm', e.currentTarget);
     });
-});
+}
+
+// lib/supabase.js modül seviyesinde await kullandığı için bu modül
+// DOMContentLoaded'dan SONRA çalışabilir; o durumda doğrudan başlat.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initKullanicilarPage);
+} else {
+    initKullanicilarPage();
+}
 
 window.fetchUsers = fetchUsers;
 window.closeAddUserModal = closeAddUserModal;

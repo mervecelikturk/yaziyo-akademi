@@ -25,7 +25,7 @@
         { id: 'egitim-paketleri', label: 'Eğitim Paketleri', href: 'egitimPaketleri.html', defaultActive: true },
         { id: 'haberler', label: 'Haberler', href: 'haberler.html', defaultActive: false },
         { id: 'kpss-calismasi', label: 'KPSS Çalışması', href: 'kpssCalismasi.html', defaultActive: true },
-        { id: 'iletisim', label: 'İletişim', href: 'iletisim.html', defaultActive: true }
+        { id: 'iletisim', label: 'Bize Ulaşın', href: 'iletisim.html', defaultActive: true }
     ];
 
     let syncPromise = null;

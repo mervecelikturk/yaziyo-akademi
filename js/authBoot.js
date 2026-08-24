@@ -8,6 +8,8 @@
 
     var REMEMBER_KEY = 'yaziyo-remember-me';
     var AUTH_KEY = 'yaziyo-verified-auth-user';
+    var STREAK_LAST_KEY = 'yaziyo-streak-last';
+    var FLAME_CLASSES = ['text-yellow-400', 'text-orange-400', 'text-red-500', 'text-orange-500'];
 
     function activeStore() {
         try {
@@ -123,8 +125,55 @@
         btn.setAttribute('data-yaziyo-auth-ready', '1');
     }
 
+    function streakColorClass(count) {
+        if (count >= 101) return 'text-red-500';
+        if (count >= 11) return 'text-orange-400';
+        return 'text-yellow-400';
+    }
+
+    /**
+     * Sayfa geçişinde seri rozeti 0 gösterip sonra gerçek değere atlamasın:
+     * son bilinen değeri Supabase beklenmeden uygular.
+     */
+    function applyCachedStreak(user) {
+        if (!user) return false;
+
+        var last = null;
+        try {
+            var raw = global.localStorage.getItem(STREAK_LAST_KEY);
+            last = raw ? JSON.parse(raw) : null;
+        } catch (_) {
+            last = null;
+        }
+        if (!last || last.userId !== user.id || typeof last.streak_count !== 'number') return false;
+
+        var badges = global.document.querySelectorAll('[id="streak-count"]');
+        if (!badges.length) return false;
+
+        var colorClass = streakColorClass(last.streak_count);
+        Array.prototype.forEach.call(badges, function (countEl) {
+            countEl.textContent = String(last.streak_count);
+            FLAME_CLASSES.forEach(function (c) { countEl.classList.remove(c); });
+            countEl.classList.add(colorClass);
+
+            var wrap = countEl.parentElement;
+            var flame = wrap && wrap.querySelector('i.fa-fire');
+            if (flame) {
+                FLAME_CLASSES.forEach(function (c) { flame.classList.remove(c); });
+                flame.classList.add(colorClass);
+            }
+            if (wrap) {
+                wrap.classList.remove('cursor-not-allowed', 'select-none');
+                wrap.classList.add('cursor-default');
+            }
+        });
+        return true;
+    }
+
     function prepareAuthButtons(forcedUser) {
         var user = forcedUser !== undefined ? forcedUser : getCachedUser();
+        applyCachedStreak(user);
+
         var buttons = global.document.querySelectorAll('#auth-button, #auth-nav-btn');
         if (!buttons.length) return false;
 
@@ -170,6 +219,7 @@
     global.YaziyoAuthBoot = {
         getCachedUser: getCachedUser,
         prepareAuthButtons: prepareAuthButtons,
+        applyCachedStreak: applyCachedStreak,
         pageHrefProfil: pageHrefProfil,
         pageHrefGiris: pageHrefGiris,
     };

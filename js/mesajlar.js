@@ -488,7 +488,7 @@ async function confirmDeleteMessage() {
     closeDeleteMessageModal();
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initMesajlarPage() {
     if (!(await requireAdminAccess())) return;
 
     fetchMessages();
@@ -548,7 +548,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('reply-send-btn')?.addEventListener('click', sendReply);
 
     document.getElementById('reply-text')?.addEventListener('input', updateReplyCharCount);
-});
+}
+
+// lib/supabase.js modül seviyesinde await kullandığı için bu modül
+// DOMContentLoaded'dan SONRA çalışabilir; o durumda doğrudan başlat.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMesajlarPage);
+} else {
+    initMesajlarPage();
+}
 
 window.closeMessageModal = closeMessageModal;
 window.closeReplyModal = closeReplyModal;

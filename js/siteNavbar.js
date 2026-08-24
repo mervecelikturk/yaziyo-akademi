@@ -296,7 +296,7 @@
                     </li>
                     <li><a href="javascript:void(0)" class="nav-link disabled${ac(active, 'haberler')}" data-page="haberler">Haberler</a></li>
                     <li><a href="${paths.pageHref('kpssCalismasi.html')}" class="nav-link${ac(active, 'kpss-calismasi')}" data-page="kpss-calismasi">KPSS Çalışması</a></li>
-                    <li><a href="${paths.pageHref('iletisim.html')}" class="nav-link${ac(active, 'iletisim')}" data-page="iletisim">İletişim</a></li>
+                    <li><a href="${paths.pageHref('iletisim.html')}" class="nav-link${ac(active, 'iletisim')}" data-page="iletisim">Bize Ulaşın</a></li>
                 </ul>
                 <div class="lg:hidden flex items-center justify-between py-2">
                     <span class="yaziyo-mobile-menu-label text-sm font-inter">Menü</span>
@@ -331,7 +331,7 @@
                         </li>
                         <li><a href="javascript:void(0)" class="mobile-nav-link disabled${ac(active, 'haberler')}" data-page="haberler">Haberler</a></li>
                         <li><a href="${paths.pageHref('kpssCalismasi.html')}" class="mobile-nav-link${ac(active, 'kpss-calismasi')}" data-page="kpss-calismasi">KPSS Çalışması</a></li>
-                        <li><a href="${paths.pageHref('iletisim.html')}" class="mobile-nav-link${ac(active, 'iletisim')}" data-page="iletisim">İletişim</a></li>
+                        <li><a href="${paths.pageHref('iletisim.html')}" class="mobile-nav-link${ac(active, 'iletisim')}" data-page="iletisim">Bize Ulaşın</a></li>
                     </ul>
                 </div>
             </div>
@@ -355,6 +355,8 @@
 
         header.innerHTML = buildHeaderInner(active);
         header.dataset.yaziyoSharedHeaderMounted = '1';
+        // Yeni header basıldığı anda oturum/seri değerlerini uygula (0 → gerçek değer sıçraması olmasın)
+        global.YaziyoAuthBoot?.prepareAuthButtons?.();
         applyNavActive(active);
         bindNavClickHandler();
         return true;

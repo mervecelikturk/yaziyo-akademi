@@ -102,6 +102,13 @@
             border-color: rgb(var(--yaziyo-gold-rgb));
             box-shadow: 0 0 0 4px rgb(var(--yaziyo-gold-rgb) / 0.15);
         }
+
+        #users-table-col {
+            width: 100%;
+            max-width: 76rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 </head>
 
@@ -232,7 +239,8 @@
             </div>
         </div>
 
-        <!-- Arama ve Filtreleme Alanı -->
+        <!-- Arama + tablo (aynı hiza) -->
+        <div id="users-table-col">
         <div class="mb-6">
             <div class="relative max-w-md">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary dark:text-dark-text-secondary/50 text-sm"></i>
@@ -242,7 +250,7 @@
         </div>
 
         <!-- KULLANICILAR TABLOSU -->
-        <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden transition-colors duration-300">
+        <div id="users-table-card" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden transition-colors duration-300">
             <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
                 <thead>
@@ -251,7 +259,6 @@
                         <th class="px-6 py-4 text-xs font-poppins font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">İsim</th>
                         <th class="px-6 py-4 text-xs font-poppins font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Soyisim</th>
                         <th class="px-6 py-4 text-xs font-poppins font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">E-posta Adresi</th>
-                        <th class="px-6 py-4 text-xs font-poppins font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Şifre</th>
                         <th class="px-6 py-4 text-xs font-poppins font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary">Katılma Tarihi</th>
                         <th class="px-6 py-4 text-xs font-poppins font-bold uppercase tracking-wider text-light-text-secondary dark:text-dark-text-secondary text-right">İşlemler</th>
                     </tr>
@@ -261,6 +268,7 @@
             </table>
         </div>
     </div>
+        </div>
     </main>
 
     <!-- YENİ KULLANICI MODALI -->

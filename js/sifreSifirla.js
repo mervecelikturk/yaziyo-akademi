@@ -284,4 +284,10 @@ async function initPage() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', initPage);
+// Modül seviyesindeki await'ler yüzünden bu dosya DOMContentLoaded'dan SONRA
+// çalışabilir; o durumda doğrudan başlat.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPage);
+} else {
+    initPage();
+}

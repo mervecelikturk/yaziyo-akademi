@@ -256,38 +256,12 @@ export async function deletePaket(id, client = supabase) {
 }
 
 /**
- * Paket satın alımı — satış limiti doluysa "Şu an aktif değil" döner.
+ * Paket teslimi istemciden yapılmaz.
+ *
+ * Eğitim erişimi yalnızca `odeme_siparis_teslim_et` ile, sağlayıcı ödemesi
+ * doğrulandıktan sonra service_role tarafından tanımlanır. Buradan çağrılabilen
+ * bir satın alma ucu bilerek bırakılmamıştır (bkz. sql/033).
  */
-export async function purchasePaket(paketId, client = supabase) {
-    if (!client || !paketId) {
-        return { data: null, error: new Error('Geçersiz istek') };
-    }
-
-    const { data: { session } } = await client.auth.getSession();
-    if (!session?.user) {
-        return {
-            data: { success: false, code: 'auth', message: 'Satın almak için giriş yapmalısınız.' },
-            error: null
-        };
-    }
-
-    const { data, error } = await client.rpc('satin_al_egitim_paketi', {
-        p_paket_id: paketId
-    });
-
-    if (error) {
-        const msg = (error.message || '').toLowerCase();
-        if (msg.includes('satin_al_egitim_paketi') || msg.includes('schema cache') || error.code === 'PGRST202') {
-            return {
-                data: null,
-                error: new Error('Satın alma sistemi henüz kurulmamış. sql/024_egitim_paketi_satis.sql dosyasını çalıştırın.')
-            };
-        }
-        return { data: null, error };
-    }
-
-    return { data, error: null };
-}
 
 export async function fetchAdminBildirimler(client = supabase, limit = 20) {
     if (!client) return { data: [], error: null };

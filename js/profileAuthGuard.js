@@ -6,6 +6,12 @@
 import { supabase } from './lib/supabase.js';
 import { getStoredVerifiedUser, setStoredVerifiedUser } from './lib/authStorage.js';
 
+function setTextOnce(el, value) {
+    if (!el || !value) return;
+    if (el.textContent === value) return;
+    el.textContent = value;
+}
+
 function forceProfileVisible(user) {
     const mainContent = document.getElementById('profile-main-content');
     const authGate = document.getElementById('auth-gate');
@@ -17,14 +23,10 @@ function forceProfileVisible(user) {
 
     if (user) {
         const name = user.user_metadata?.site_full_name || user.user_metadata?.full_name || user.email || 'Kullanıcı';
-        const email = user.email || '';
-        const userName = document.getElementById('user-name');
-        const userEmail = document.getElementById('user-email');
-        const joinDate = document.getElementById('user-join-date');
-        if (userName) userName.textContent = name;
-        if (userEmail && email) userEmail.textContent = email;
-        if (joinDate && user.created_at) {
-            joinDate.textContent = formatJoinDate(user.created_at);
+        setTextOnce(document.getElementById('user-name'), name);
+        setTextOnce(document.getElementById('user-email'), user.email || '');
+        if (user.created_at) {
+            setTextOnce(document.getElementById('user-join-date'), formatJoinDate(user.created_at));
         }
     }
 }
@@ -39,13 +41,25 @@ function formatJoinDate(dateValue) {
     })}`;
 }
 
+/** Aynı durum tekrar uygulanıp sayfa yeniden çizilmesin */
+let _appliedProfileState = null;
+
 async function applyProfileAuthState() {
     const user = await resolveProfileUser();
     if (user) {
+        const key = `user:${user.id}:${user.user_metadata?.site_full_name || user.user_metadata?.full_name || ''}`;
+        if (_appliedProfileState === key) return;
+        _appliedProfileState = key;
         forceProfileVisible(user);
-    } else {
-        showProfileGate();
+        return;
     }
+
+    // Oturum geç hydrate olabilir: doğrulanmış kullanıcı önbellekte varsa içeriği kapatma.
+    if (getStoredVerifiedUser()) return;
+
+    if (_appliedProfileState === 'gate') return;
+    _appliedProfileState = 'gate';
+    showProfileGate();
 }
 
 function showProfileGate() {
@@ -87,24 +101,24 @@ async function resolveProfileUser() {
     return null;
 }
 
-let _profileAuthPass = 0;
-
 function scheduleProfileAuthChecks() {
     applyProfileAuthState();
 }
 
-document.addEventListener('DOMContentLoaded', scheduleProfileAuthChecks);
+// lib/supabase.js modül seviyesinde await kullandığı için bu modül
+// DOMContentLoaded'dan SONRA çalışabilir; o durumda doğrudan başlat.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scheduleProfileAuthChecks);
+} else {
+    scheduleProfileAuthChecks();
+}
 
 window.addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-        _profileAuthPass = 0;
-        scheduleProfileAuthChecks();
-    }
+    if (event.persisted) scheduleProfileAuthChecks();
 });
 
 if (supabase) {
     supabase.auth.onAuthStateChange(() => {
-        _profileAuthPass = 0;
         applyProfileAuthState();
     });
 }

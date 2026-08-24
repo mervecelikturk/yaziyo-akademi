@@ -85,12 +85,20 @@ export async function submitDeleteRequest() {
     showDeleteSuccess();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function bindDeleteAccountBackdrop() {
     document.getElementById('delete-account-backdrop')?.addEventListener('click', () => {
         if (typeof window.closeDeleteAccountModal === 'function') {
             window.closeDeleteAccountModal();
         }
     });
-});
+}
+
+// lib/supabase.js modül seviyesinde await kullandığı için bu modül
+// DOMContentLoaded'dan SONRA çalışabilir; o durumda doğrudan bağla.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindDeleteAccountBackdrop);
+} else {
+    bindDeleteAccountBackdrop();
+}
 
 window.submitDeleteRequest = submitDeleteRequest;

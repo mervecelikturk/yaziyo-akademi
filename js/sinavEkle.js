@@ -378,11 +378,19 @@ function bindEvents() {
     document.getElementById('delete-confirm').addEventListener('click', confirmDelete);
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initSinavEklePage() {
     if (!(await requireAdminAccess())) return;
 
     cacheEls();
     bindEvents();
     resetForm();
     loadExams();
-});
+}
+
+// lib/supabase.js modül seviyesinde await kullandığı için bu modül
+// DOMContentLoaded'dan SONRA çalışabilir; o durumda doğrudan başlat.
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSinavEklePage);
+} else {
+    initSinavEklePage();
+}
