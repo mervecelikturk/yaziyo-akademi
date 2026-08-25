@@ -208,10 +208,20 @@ export async function fetchUsers() {
     showLoading();
 
     try {
-        const { data: users, error } = await supabase
-            .from('kullanicilar')
-            .select('*')
-            .order('created_at', { ascending: false });
+        let users = null;
+        let error = null;
+
+        const rpc = await supabase.rpc('admin_kullanici_listesi');
+        if (!rpc.error && Array.isArray(rpc.data)) {
+            users = rpc.data;
+        } else {
+            const table = await supabase
+                .from('kullanicilar')
+                .select('*')
+                .order('created_at', { ascending: false });
+            users = table.data;
+            error = table.error;
+        }
 
         if (error) {
             if (error.code === 'PGRST205' || error.code === 'PGRST116' || error.message?.includes('kullanicilar')) {

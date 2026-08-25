@@ -182,7 +182,7 @@
 
         return `
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between">
-            <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 sm:max-w-none">
+            <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 overflow-hidden">
                 <img src="${logoSrc}" alt="YAZİYO AKADEMİ Logo"
                     class="yaziyo-nav-logo w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 shrink-0">
                 <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>

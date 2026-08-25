@@ -170,6 +170,15 @@ export async function saveKlavyeCalismasiSonucu(supabase, payload) {
 
     if (error) throw error;
 
+    if (payload.analiz && typeof payload.analiz === 'object') {
+        const { error: analizError } = await supabase.rpc('egitimlerim_son_calisma_analiz_kaydet', {
+            p_analiz: payload.analiz,
+        });
+        if (analizError) {
+            console.warn('Çalışma analizi kaydı atlandı:', analizError);
+        }
+    }
+
     return {
         toplam_kelime: data?.toplam_kelime ?? 0,
         en_yuksek_kombo: data?.en_yuksek_kombo ?? 0,
@@ -199,12 +208,26 @@ export async function loadGenelSiralama(supabase, limit = 50) {
 export async function loadSonKlavyeCalismalari(supabase, userId, limit = 10) {
     if (!supabase || !userId) return [];
 
-    const { data, error } = await supabase
+    const withAnaliz = 'id, created_at, metin_adi, kategori, dogru_kelime, yanlis_kelime, sure_saniye, yanlis_kelimeler, gecerli_3dk, net_kelime, net_kelime_3dk, analiz';
+    const base = 'id, created_at, metin_adi, kategori, dogru_kelime, yanlis_kelime, sure_saniye, yanlis_kelimeler';
+
+    let { data, error } = await supabase
         .from('klavye_calisma_kayitlari')
-        .select('id, created_at, metin_adi, kategori, dogru_kelime, yanlis_kelime, sure_saniye, yanlis_kelimeler')
+        .select(withAnaliz)
         .eq('kullanici_id', userId)
         .order('created_at', { ascending: false })
         .limit(limit);
+
+    if (error) {
+        const fallback = await supabase
+            .from('klavye_calisma_kayitlari')
+            .select(base)
+            .eq('kullanici_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+        data = fallback.data;
+        error = fallback.error;
+    }
 
     if (error) {
         console.error('Son çalışmalar yükleme hatası:', error);
@@ -269,13 +292,17 @@ export async function loadProfilOzet(supabase, userId) {
     return { ...stats, genel_siralama: siralama ?? 1 };
 }
 
-/**
- * Profil kartındaki "Genel Sıralama" alanını günceller (sıralama arka planda gelince çağrılır)
- */
+/** Profil kartındaki genel sıralama metni (#12 veya —) */
+export function formatGenelSiralamaLabel(siralama) {
+    const n = Number(siralama);
+    if (!Number.isFinite(n) || n <= 0) return '—';
+    return `#${formatStatNumber(n)}`;
+}
+
 export function applyGenelSiralamaUI(siralama) {
     const rankEl = document.getElementById('profile-genel-siralama');
     if (rankEl) {
-        rankEl.textContent = `#${formatStatNumber(siralama ?? 1)}`;
+        rankEl.textContent = formatGenelSiralamaLabel(siralama);
     }
 }
 
@@ -533,7 +560,7 @@ export function applyProfileStatsUI(stats) {
     if (studyEl) studyEl.textContent = formatStudyDuration(stats.calisma_sure_saniye);
     if (record3dkEl) record3dkEl.textContent = formatStatNumber(stats.en_yuksek_3dk_kelime);
     if (rankEl && stats.genel_siralama != null) {
-        rankEl.textContent = `#${formatStatNumber(stats.genel_siralama)}`;
+        rankEl.textContent = formatGenelSiralamaLabel(stats.genel_siralama);
     }
 
     applyRankUI(stats.toplam_kelime);
@@ -600,11 +627,14 @@ export function openGenelSiralamaModal(siralamaData) {
     if (!modal || !tbody) return;
 
     const liste = siralamaData?.liste || [];
-    const benimSiram = siralamaData?.benim_siram ?? '—';
+    const benimSiram = siralamaData?.benim_siram;
     const benimKelime = siralamaData?.benim_kelime ?? 0;
 
     if (myRankEl) {
-        myRankEl.textContent = `Sizin sıranız: #${formatStatNumber(benimSiram)} (${formatStatNumber(benimKelime)} kelime)`;
+        const rankLabel = formatGenelSiralamaLabel(benimSiram);
+        myRankEl.textContent = rankLabel === '—'
+            ? 'Sıralamanız bu listede yer almıyor.'
+            : `Sizin sıranız: ${rankLabel} (${formatStatNumber(benimKelime)} kelime)`;
     }
 
     if (liste.length === 0) {

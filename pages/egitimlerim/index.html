@@ -135,7 +135,7 @@
                     <nav id="eg-menu-list" class="eg-menu-list">
                         <button type="button" class="eg-menu-item active" data-eg-panel="ana"><i class="fa-solid fa-house"></i> Ana Sayfa</button>
                         <button type="button" class="eg-menu-item" data-eg-panel="gorevler"><i class="fa-solid fa-list-check"></i> Görevlerim</button>
-                        <button type="button" class="eg-menu-item" data-eg-panel="ilerleme"><i class="fa-solid fa-chart-line"></i> İlerleme Grafiğim</button>
+                        <button type="button" class="eg-menu-item" data-eg-panel="ilerleme"><i class="fa-solid fa-chart-line"></i> İlerleme-Analiz</button>
                         <button type="button" class="eg-menu-item" data-eg-panel="takvim"><i class="fa-solid fa-calendar-days"></i> Takvim</button>
                         <button type="button" class="eg-menu-item" data-eg-panel="etut"><i class="fa-solid fa-users-rectangle"></i> Etüt Odaları</button>
                         <button type="button" class="eg-menu-item" data-eg-panel="belgeler"><i class="fa-solid fa-file-pdf"></i> Belgelerim</button>
@@ -218,6 +218,40 @@
                             <h3 class="eg-card-title">Günlük Görev Özeti</h3>
                             <p id="eg-gorev-ozeti" class="text-sm text-light-text-secondary">Yükleniyor...</p>
                         </div>
+
+                        <div class="eg-card">
+                            <div class="flex flex-wrap items-start justify-between gap-2 mb-3">
+                                <div>
+                                    <h3 class="eg-card-title mb-1">Metin Havuzu</h3>
+                                    <p class="text-xs text-light-text-secondary">Klavye çalışmasına özel metin ekleyin. En fazla 10 metin.</p>
+                                </div>
+                                <span id="eg-havuz-count" class="text-xs font-bold text-yaziyo-gold">0/10</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                                <div>
+                                    <label class="text-[10px] font-bold uppercase tracking-widest text-light-text-secondary mb-1 block">Metin türü</label>
+                                    <input type="text" id="eg-havuz-tur" value="Kendi Metnim" readonly
+                                        class="w-full rounded-xl px-3 py-2 text-sm bg-light-bg/70 dark:bg-dark-bg/70 border border-light-border dark:border-dark-border text-light-text-secondary cursor-not-allowed">
+                                </div>
+                                <div>
+                                    <label for="eg-havuz-grup" class="text-[10px] font-bold uppercase tracking-widest text-light-text-secondary mb-1 block">Metin grubu</label>
+                                    <input type="text" id="eg-havuz-grup" maxlength="60" placeholder="Örn. Deneme"
+                                        class="w-full rounded-xl px-3 py-2 text-sm bg-light-bg/50 dark:bg-dark-bg/50 border-2 border-light-border dark:border-dark-border">
+                                </div>
+                                <div>
+                                    <label for="eg-havuz-ad" class="text-[10px] font-bold uppercase tracking-widest text-light-text-secondary mb-1 block">Metin adı</label>
+                                    <input type="text" id="eg-havuz-ad" maxlength="80" placeholder="Örn. 1. Metin"
+                                        class="w-full rounded-xl px-3 py-2 text-sm bg-light-bg/50 dark:bg-dark-bg/50 border-2 border-light-border dark:border-dark-border">
+                                </div>
+                            </div>
+                            <label for="eg-havuz-icerik" class="text-[10px] font-bold uppercase tracking-widest text-light-text-secondary mb-1 block">Metin</label>
+                            <textarea id="eg-havuz-icerik" maxlength="20000" rows="5" placeholder="Çalışmak istediğiniz metni yazın..."
+                                class="w-full rounded-xl px-3 py-2 text-sm bg-light-bg/50 dark:bg-dark-bg/50 border-2 border-light-border dark:border-dark-border mb-3"></textarea>
+                            <button type="button" id="eg-havuz-kaydet" class="px-4 py-2 rounded-lg bg-yaziyo-gold text-slate-900 text-xs font-bold">
+                                <i class="fa-solid fa-plus mr-1"></i> Metin Ekle
+                            </button>
+                            <div id="eg-havuz-list" class="mt-4 space-y-2"></div>
+                        </div>
                     </div>
 
                     <!-- PANEL: Görevlerim -->
@@ -228,32 +262,38 @@
                         </div>
                     </div>
 
-                    <!-- PANEL: İlerleme -->
+                    <!-- PANEL: İlerleme-Analiz -->
                     <div id="panel-ilerleme" class="eg-panel">
                         <div class="eg-card mb-4">
-                            <h2 class="font-poppins font-bold text-xl mb-4">İlerleme Grafiğim</h2>
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 text-center">
-                                <div class="rounded-xl border border-light-border dark:border-dark-border p-3">
-                                    <p class="text-[10px] uppercase text-light-text-secondary font-bold">En düşük hız</p>
-                                    <p id="eg-stat-min-hiz" class="text-xl font-poppins font-bold text-yaziyo-gold mt-1">—</p>
-                                </div>
-                                <div class="rounded-xl border border-light-border dark:border-dark-border p-3">
-                                    <p class="text-[10px] uppercase text-light-text-secondary font-bold">En yüksek hız</p>
-                                    <p id="eg-stat-max-hiz" class="text-xl font-poppins font-bold text-yaziyo-gold mt-1">—</p>
-                                </div>
-                                <div class="rounded-xl border border-light-border dark:border-dark-border p-3">
-                                    <p class="text-[10px] uppercase text-light-text-secondary font-bold">En düşük 3dk</p>
-                                    <p id="eg-stat-min-3dk" class="text-xl font-poppins font-bold text-yaziyo-gold mt-1">—</p>
-                                </div>
-                                <div class="rounded-xl border border-light-border dark:border-dark-border p-3">
-                                    <p class="text-[10px] uppercase text-light-text-secondary font-bold">En yüksek 3dk</p>
-                                    <p id="eg-stat-max-3dk" class="text-xl font-poppins font-bold text-yaziyo-gold mt-1">—</p>
-                                </div>
+                            <h2 class="font-poppins font-bold text-xl mb-4">İlerleme-Analiz</h2>
+                            <div class="overflow-x-auto mb-6">
+                                <table class="eg-analiz-table">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>1 dakika</th>
+                                            <th>3 dakika</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">En düşük hız</th>
+                                            <td id="eg-stat-min-hiz">—</td>
+                                            <td id="eg-stat-min-3dk">—</td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">En yüksek hız</th>
+                                            <td id="eg-stat-max-hiz">—</td>
+                                            <td id="eg-stat-max-3dk">—</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div class="eg-chart-wrap">
                                 <div>
-                                    <p class="text-xs font-bold uppercase text-light-text-secondary mb-2">Çizgisel (hedefe göre)</p>
+                                    <p class="text-xs font-bold uppercase text-light-text-secondary mb-2">Son 10 ders — doğru kelime</p>
                                     <canvas id="eg-line-chart" class="eg-line-chart" height="180"></canvas>
+                                    <div id="eg-chart-legend" class="eg-chart-legend"></div>
                                 </div>
                                 <div>
                                     <p class="text-xs font-bold uppercase text-light-text-secondary mb-2">Dairesel (hedef gerçekleşme)</p>
@@ -261,6 +301,12 @@
                                 </div>
                             </div>
                             <p id="eg-hedef-info" class="text-xs text-light-text-secondary mt-4"></p>
+                        </div>
+                        <div class="eg-card">
+                            <h3 class="font-poppins font-bold text-lg mb-3">Son 10 çalışmaya göre analizler</h3>
+                            <ul id="eg-son10-analiz" class="eg-analiz-list">
+                                <li>Veriler yükleniyor...</li>
+                            </ul>
                         </div>
                     </div>
 
@@ -300,6 +346,28 @@
     </main>
 
     <div id="eg-toast" class="hidden fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[130] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl" style="bottom: max(1rem, env(safe-area-inset-bottom, 0px))"></div>
+
+    <!-- Belge önizleme (indirmeden görüntüleme) -->
+    <div id="eg-belge-modal" class="eg-belge-modal hidden" aria-hidden="true">
+        <div class="eg-belge-modal-box" role="dialog" aria-labelledby="eg-belge-baslik">
+            <div class="eg-belge-toolbar">
+                <div class="eg-belge-toolbar-text min-w-0">
+                    <h3 id="eg-belge-baslik" class="font-poppins font-bold text-lg truncate">Belge</h3>
+                    <p id="eg-belge-alt" class="text-xs text-light-text-secondary mt-0.5 truncate"></p>
+                </div>
+                <div class="eg-belge-actions">
+                    <a id="eg-belge-yeni-sekme" href="#" target="_blank" rel="noopener" class="eg-belge-newtab">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>Yeni sekmede</span>
+                    </a>
+                    <button type="button" id="eg-belge-kapat" class="eg-belge-close" aria-label="Kapat">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+            <iframe id="eg-belge-frame" title="Belge önizleme" class="eg-belge-frame"></iframe>
+        </div>
+    </div>
 
     <footer id="main-footer" class="mt-auto bg-light-bg dark:bg-dark-bg border-t border-light-border dark:border-dark-border">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

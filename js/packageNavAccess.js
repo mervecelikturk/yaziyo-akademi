@@ -1,6 +1,6 @@
 /**
  * YAZİYO — Paket satın alımına bağlı navbar erişimi
- * Eğitimlerim: admin pageStatus ile değil, aktif paket ile açılır.
+ * Eğitimlerim: hem İçerik Ekle (aktif/pasif) hem aktif paket gerekir.
  */
 (function (global) {
     const PACKAGE_NAV_IDS = ['egitimlerim'];
@@ -40,13 +40,25 @@
         }
     }
 
+    function isGloballyActive(pageId) {
+        if (!global.YaziyoPageStatus?.isPageActive) return true;
+        return global.YaziyoPageStatus.isPageActive(pageId) !== false;
+    }
+
     function applyPackageNavAccess(hasPackage) {
         const navbar = document.getElementById('main-navbar');
         if (!navbar) return;
 
         PACKAGE_NAV_IDS.forEach((pageId) => {
+            const globallyOn = isGloballyActive(pageId);
+            const unlocked = globallyOn && !!hasPackage;
             navbar.querySelectorAll(`a[data-page="${pageId}"]`).forEach((link) => {
-                setLinkActive(link, !!hasPackage, pageId);
+                setLinkActive(link, unlocked, pageId);
+                if (!unlocked) {
+                    link.title = globallyOn
+                        ? 'Eğitim paketi satın alındığında açılır'
+                        : 'Bu sayfa şu anda kapalı';
+                }
             });
         });
     }

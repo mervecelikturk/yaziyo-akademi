@@ -8,7 +8,7 @@ const ROOT = path.join(__dirname, '..');
 const SITE_URL = 'https://yaziyoakademi.com';
 const SITE_NAME = 'YAZİYO';
 const OG_IMAGE = SITE_URL + '/images/logo.png';
-const OG_IMAGE_ALT = 'YAZİYO — Zabıt Katipliği Çalışma Platformu';
+const OG_IMAGE_ALT = 'YAZİYO — Klavye Çalışma Platformu';
 const DEFAULT_DESCRIPTION =
     'Klavye hız testi, klavye çalışmaları, oyunlar ve online sınavlarla yazma becerini geliştir. Zabıt katipliği hazırlığı için YAZİYO.';
 

@@ -1546,6 +1546,196 @@ html:not(.dark) .theme-icon-moon {
     transform: translateY(0);
 }
 
+.ep-compare-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid rgb(var(--yaziyo-border-rgb));
+    border-radius: 1rem;
+    background: rgb(var(--yaziyo-card-rgb));
+}
+
+.ep-compare-table {
+    width: 100%;
+    min-width: 28rem;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.ep-compare-table thead th {
+    padding: 0.85rem 1rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+    background: rgb(var(--yaziyo-bg-rgb));
+    border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
+    text-align: center;
+    white-space: nowrap;
+}
+
+.ep-compare-table thead th span {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: rgb(var(--yaziyo-gold-rgb));
+}
+
+.ep-compare-table thead th:first-child {
+    text-align: left;
+}
+
+.ep-compare-table tbody th[scope="row"] {
+    padding: 0.7rem 1rem;
+    font-weight: 600;
+    text-align: left;
+    color: rgb(var(--yaziyo-text-rgb));
+    border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
+}
+
+.ep-compare-table tbody td {
+    padding: 0.7rem 1rem;
+    text-align: center;
+    border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
+    width: 8.5rem;
+}
+
+.ep-compare-table tbody tr:last-child th,
+.ep-compare-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.ep-compare-group th {
+    padding: 0.55rem 1rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+    color: rgb(var(--yaziyo-gold-rgb));
+    background: rgb(var(--yaziyo-card-rgb));
+    background-image: linear-gradient(rgba(var(--yaziyo-gold-rgb), 0.08), rgba(var(--yaziyo-gold-rgb), 0.08));
+    border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
+    position: sticky;
+    left: 0;
+    z-index: 2;
+}
+
+.ep-compare-table th:first-child,
+.ep-compare-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: rgb(var(--yaziyo-card-rgb));
+    min-width: 12rem;
+}
+
+.ep-compare-table thead th:first-child {
+    background: rgb(var(--yaziyo-bg-rgb));
+    z-index: 2;
+}
+
+.ep-cmp-yes,
+.ep-cmp-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+}
+
+.ep-cmp-yes {
+    color: #16a34a;
+    background: rgba(22, 163, 74, 0.12);
+}
+
+.ep-cmp-no {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.12);
+}
+
+@media (max-width: 639px) {
+    .ep-compare-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+        border-radius: 0;
+    }
+
+    .ep-compare-table {
+        min-width: 0;
+        font-size: 0.8125rem;
+        border-collapse: separate;
+        border-spacing: 0 0.55rem;
+    }
+
+    .ep-compare-table thead {
+        display: none;
+    }
+
+    .ep-compare-table tbody tr:not(.ep-compare-group) {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid rgb(var(--yaziyo-border-rgb));
+        border-radius: 0.9rem;
+        background: rgb(var(--yaziyo-card-rgb));
+        overflow: hidden;
+    }
+
+    .ep-compare-table tbody th[scope="row"] {
+        grid-column: 1 / -1;
+        border: 0;
+        border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
+        padding: 0.7rem 0.9rem 0.55rem;
+        position: static;
+        min-width: 0;
+        background: rgb(var(--yaziyo-card-rgb));
+    }
+
+    .ep-compare-table tbody td {
+        width: auto;
+        border: 0;
+        padding: 0.7rem 0.5rem 0.85rem;
+        position: static;
+        min-width: 0;
+        background: transparent;
+    }
+
+    .ep-compare-table tbody td::before {
+        content: attr(data-col);
+        display: block;
+        margin-bottom: 0.35rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgb(var(--yaziyo-text-secondary-rgb));
+    }
+
+    .ep-compare-group th {
+        position: static;
+        padding: 0.35rem 0.15rem 0.15rem;
+        border: 0;
+        background: transparent;
+        background-image: none;
+    }
+
+    .ep-compare-table tbody tr:last-child th,
+    .ep-compare-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .ep-compare-table tbody tr:not(.ep-compare-group) th[scope="row"] {
+        border-bottom: 1px solid rgb(var(--yaziyo-border-rgb));
+    }
+}
+
 .ep-value-card {
     display: block;
     width: 100%;

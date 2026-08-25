@@ -11,7 +11,7 @@
 
 @media (min-width: 900px) {
     .alc-layout {
-        grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+        grid-template-columns: minmax(9.5rem, 12rem) minmax(0, 1fr);
         gap: 1.25rem;
     }
 }
@@ -186,11 +186,16 @@
     background: rgb(var(--yaziyo-bg-rgb));
     min-height: 16rem;
     max-height: min(50vh, 28rem);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 
 .alc-day {
     text-align: center;
     margin: 0.75rem 0;
+    width: 100%;
+    align-self: stretch;
 }
 
 .alc-day span {
@@ -207,14 +212,27 @@
 
 .alc-row {
     display: flex;
+    flex-direction: column;
+    width: fit-content;
+    max-width: min(78%, 22rem);
     margin-bottom: 0.5rem;
 }
 
-.alc-row.mine { justify-content: flex-end; }
-.alc-row.theirs { justify-content: flex-start; }
+.alc-row.mine {
+    align-self: flex-end;
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.alc-row.theirs {
+    align-self: flex-start;
+    margin-left: 0;
+    margin-right: auto;
+}
 
 .alc-bubble {
-    max-width: min(78%, 26rem);
+    width: fit-content;
+    max-width: 100%;
     padding: 0.55rem 0.8rem 0.4rem;
     border-radius: 1rem;
     font-size: 0.875rem;
@@ -223,27 +241,52 @@
 }
 
 .alc-row.mine .alc-bubble {
-    background: linear-gradient(160deg, rgb(var(--yaziyo-gold-rgb)), rgb(180 98 10));
-    color: var(--yaziyo-inverse-text-hex);
+    background: #ea580c !important;
+    color: #fff !important;
+    border: none;
     border-bottom-right-radius: 0.3rem;
 }
 
 .alc-row.theirs .alc-bubble {
-    background: rgb(var(--yaziyo-card-rgb));
-    border: 1px solid rgb(var(--yaziyo-border-rgb));
-    color: rgb(var(--yaziyo-text-rgb));
+    background: #fff !important;
+    color: #0f172a !important;
+    border: 1px solid #e5e7eb;
     border-bottom-left-radius: 0.3rem;
+}
+
+.alc-row.mine .alc-meta {
+    color: rgb(255 255 255 / 0.85);
+}
+
+.alc-row.theirs .alc-meta {
+    color: #64748b;
 }
 
 .alc-bubble a { color: inherit; font-weight: 600; text-decoration: underline; }
 
 .alc-meta {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: 0.35rem;
     margin-top: 0.2rem;
     font-size: 0.65rem;
     opacity: 0.85;
+}
+
+/* İletildi (gri tik) / okundu (yeşil tik) — yalnızca adminin mesajlarında */
+.alc-tick {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.78rem;
+    line-height: 1;
+    color: rgb(203 213 225);
+    opacity: 1;
+}
+
+.alc-tick.seen {
+    color: rgb(74 222 128);
+    opacity: 1;
 }
 
 .alc-media-img {
@@ -297,8 +340,8 @@
 }
 
 .alc-row.mine .alc-audio-btn {
-    background: rgb(var(--yaziyo-inverse-text-hex) / 0.92);
-    color: rgb(var(--yaziyo-gold-rgb));
+    background: #fff;
+    color: #ea580c;
 }
 
 .alc-audio-btn:hover { transform: scale(1.05); }

@@ -14,69 +14,6 @@ let selectedPackage = null;
 
 const els = {};
 
-/** Neden YAZİYO Paketleri? — kart detayları (metinler buradan düzenlenebilir) */
-const VALUE_DETAILS = {
-    hizli: {
-        title: 'Daha hızlı öğren',
-        icon: 'fa-bolt',
-        tone: 'tone-gold',
-        lead: 'Adaptif modüllerle kendi hızında ilerle, gereksiz tekrarı azalt.',
-        paragraphs: [
-            'YAZİYO paketlerinde içerikler seviyenize ve çalışma temposunuza göre yapılandırılır. Böylece hem zaman kazanır hem de odaklanmanız gereken konulara daha hızlı ulaşırsınız.',
-        ],
-        bullets: [
-            'Kısa, odaklı ders ve pratik blokları',
-            'Zayıf alanlara öncelik veren ilerleme mantığı',
-            'Klavye ve sınav hazırlığını bir arada sürdürme',
-            'İlerleme durumunu net görme imkânı',
-        ],
-    },
-    plan: {
-        title: 'Günlük plan oluştur',
-        icon: 'fa-calendar-check',
-        tone: 'tone-green',
-        lead: 'Dağınık çalışmayı bırakın; her güne net bir plan çıkarın.',
-        paragraphs: [
-            'Kişisel çalışma takvimi ile günlük görevlerinizi, etütleri ve hedeflerinizi tek yerden takip edersiniz. Planlı ilerlemek motivasyonu korur ve sınav temposunu düzenler.',
-        ],
-        bullets: [
-            'Günlük / haftalık çalışma takvimi',
-            'Görev ve hatırlatmalarla düzenli ritim',
-            'Kaçırılan günleri telafi etme kolaylığı',
-            'Hedefe göre sürdürülebilir çalışma alışkanlığı',
-        ],
-    },
-    destek: {
-        title: 'Canlı Destek',
-        icon: 'fa-headset',
-        tone: 'tone-orange',
-        lead: 'Takıldığınız noktada yalnız kalmayın; anlık destek alın.',
-        paragraphs: [
-            'Canlı destek ile sorularınızı hızlıca iletebilir, teknik veya içerik kaynaklı engelleri beklemeden çözebilirsiniz. Paket kapsamında sunulan destek kanalları üzerinden koç ekibine ulaşılır.',
-        ],
-        bullets: [
-            'Sohbet üzerinden hızlı soru-cevap',
-            'Platform kullanımı ve içerik desteği',
-            'Çalışma sırasında anlık yönlendirme',
-        ],
-    },
-    kocluk: {
-        title: 'Birebir Koçluk',
-        icon: 'fa-user-graduate',
-        tone: 'tone-teal',
-        lead: 'Kişisel mentorluk ile hedeflerinize göre takip ve yönlendirme.',
-        paragraphs: [
-            'Birebir koçluk; genel içerik tüketiminin ötesinde, size özel geri bildirim ve takip sunar. Koçunuzla ilerleme durumunuz değerlendirilir, eksikleriniz netleştirilir ve bir sonraki adımlar planlanır.',
-        ],
-        bullets: [
-            'Kişisel mentor / koç eşleşmesi',
-            'Düzenli takip ve geri bildirim',
-            'Hedefe özel çalışma önerileri',
-            'Motivasyon ve disiplin desteği',
-        ],
-    },
-};
-
 function escapeHtml(str) {
     const d = document.createElement('div');
     d.textContent = str ?? '';
@@ -260,47 +197,6 @@ function closeLegalModal() {
     });
 }
 
-function openValueModal(key) {
-    const detail = VALUE_DETAILS[key];
-    const modal = els.valueModal;
-    if (!detail || !modal || !els.valueBody) return;
-
-    if (els.valueTitle) els.valueTitle.textContent = detail.title;
-    if (els.valueIcon) {
-        els.valueIcon.className = `ep-value-icon ${detail.tone || 'tone-gold'}`;
-        els.valueIcon.innerHTML = `<i class="fa-solid ${detail.icon}"></i>`;
-    }
-
-    const bullets = (detail.bullets || [])
-        .map((b) => `<li>${escapeHtml(b)}</li>`)
-        .join('');
-    const paragraphs = (detail.paragraphs || [])
-        .map((p) => `<p>${escapeHtml(p)}</p>`)
-        .join('');
-
-    els.valueBody.innerHTML = `
-        <p class="ep-value-lead">${escapeHtml(detail.lead || '')}</p>
-        ${paragraphs}
-        ${bullets ? `<ul>${bullets}</ul>` : ''}
-    `;
-    els.valueBody.scrollTop = 0;
-
-    modal.hidden = false;
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeValueModal() {
-    if (!els.valueModal || els.valueModal.hidden) return;
-    els.valueModal.hidden = true;
-    els.valueModal.setAttribute('aria-hidden', 'true');
-    // Paket drawer açıksa body scroll kilitli kalsın
-    if (!els.drawer?.classList.contains('ep-drawer-open')
-        && (!els.legalModal || els.legalModal.hidden)) {
-        document.body.style.overflow = '';
-    }
-}
-
 function openDrawer(pkg) {
     selectedPackage = pkg;
     const drawer = els.drawer;
@@ -415,13 +311,6 @@ function bindEvents() {
     els.btnExplore?.addEventListener('click', () => scrollToSection('ep-packages'));
 
     document.addEventListener('click', (e) => {
-        const valueCard = e.target.closest('[data-ep-value]');
-        if (valueCard) {
-            e.preventDefault();
-            openValueModal(valueCard.dataset.epValue);
-            return;
-        }
-
         const actionBtn = e.target.closest('[data-package-open], [data-package-start]');
         if (actionBtn) {
             e.preventDefault();
@@ -460,16 +349,8 @@ function bindEvents() {
     els.legalOk?.addEventListener('click', closeLegalModal);
     els.legalBackdrop?.addEventListener('click', closeLegalModal);
 
-    els.valueClose?.addEventListener('click', closeValueModal);
-    els.valueOk?.addEventListener('click', closeValueModal);
-    els.valueBackdrop?.addEventListener('click', closeValueModal);
-
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
-        if (els.valueModal && !els.valueModal.hidden) {
-            closeValueModal();
-            return;
-        }
         if (els.legalModal && !els.legalModal.hidden) {
             closeLegalModal();
             return;
@@ -534,13 +415,6 @@ function cacheElements() {
     els.legalBody = document.getElementById('ep-legal-body');
     els.legalDocMss = document.getElementById('ep-legal-doc-mss');
     els.legalDocOnbilgi = document.getElementById('ep-legal-doc-onbilgi');
-    els.valueModal = document.getElementById('ep-value-modal');
-    els.valueBackdrop = document.getElementById('ep-value-backdrop');
-    els.valueClose = document.getElementById('ep-value-close');
-    els.valueOk = document.getElementById('ep-value-ok');
-    els.valueTitle = document.getElementById('ep-value-title');
-    els.valueIcon = document.getElementById('ep-value-icon');
-    els.valueBody = document.getElementById('ep-value-body');
     els.toast = document.getElementById('ep-toast');
 }
 

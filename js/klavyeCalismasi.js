@@ -37,7 +37,8 @@ const turIsimleri = {
     "ingilizce": "İngilizce",
     "ispanyolca": "İspanyolca",
     "italyanca": "İtalyanca",
-    "portekizce": "Portekizce"
+    "portekizce": "Portekizce",
+    "kendi_metnim": "Kendi Metnim"
 };
 
 /** İmlasız modda yok sayılan karakterler (noktalama, sembol, rakam) */
@@ -601,6 +602,10 @@ const CATEGORIES = {
             { id: "italyanca", label: "İtalyanca" },
             { id: "portekizce", label: "Portekizce" }
         ]
+    },
+    "kendi_metnim": {
+        label: "Kendi Metnim",
+        groups: []
     }
 };
 
@@ -783,10 +788,23 @@ document.addEventListener('DOMContentLoaded', () => {
         groupSelect.addEventListener('change', updateTexts);
     }
 
-    // İlk açılış doldurması
-    if(categorySelect) {
-        updateGroups();
+    // İlk açılış doldurması + kullanıcı metin havuzu
+    async function injectKendiMetinler() {
+        try {
+            const { fetchMetinHavuzu, applyMetinHavuzuToCalisma } = await import('./lib/egitimlerimApi.js');
+            const { data } = await fetchMetinHavuzu();
+            const db = (typeof metinlerDB !== 'undefined') ? metinlerDB : window.metinlerDB;
+            applyMetinHavuzuToCalisma(data || [], {
+                categories: CATEGORIES,
+                metinler: db,
+                categorySelect
+            });
+        } catch (err) {
+            console.warn('Kendi metinler yüklenemedi:', err);
+        }
+        if (categorySelect) updateGroups();
     }
+    injectKendiMetinler();
 
 
     /* ============================================ */
@@ -1607,6 +1625,12 @@ document.addEventListener('DOMContentLoaded', () => {
             yanlisKelimeler: mistakesForSave,
             gecerli3dk,
             netKelime3dk: gecerli3dk ? netWords : 0,
+            analiz: {
+                harfMs: (typeof window.YaziyoKeyPressTracker?.getLetterTimingAverages === 'function')
+                    ? window.YaziyoKeyPressTracker.getLetterTimingAverages()
+                    : {},
+                atlanan: skippedWords,
+            },
         };
 
         workspaceScreen.classList.add('hidden');

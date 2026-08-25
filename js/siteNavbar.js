@@ -226,14 +226,14 @@
         const calismalarActive = calismalarOpen ? ' active' : '';
         const calismalarMobOpen = calismalarOpen ? ' open' : '';
         return `
-        <div class="yaziyo-header-bar max-w-7xl mx-auto px-8 py-1.5 flex items-center justify-between gap-2">
-            <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 sm:max-w-none" id="logo-link">
+        <div class="yaziyo-header-bar max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between gap-2">
+            <a href="${home}" class="yaziyo-header-logo flex items-center gap-2 group min-w-0 overflow-hidden" id="logo-link">
                 <img src="${logoSrc}" alt="YAZİYO AKADEMİ Logo"
                     class="yaziyo-nav-logo w-auto object-contain rounded-lg transition-transform duration-300 group-hover:scale-105 shrink-0"
                     id="header-logo">
                 <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
             </a>
-            <div class="yaziyo-header-actions flex items-center justify-end min-w-0">
+            <div class="yaziyo-header-actions flex items-center justify-end shrink-0">
                 <div class="relative group yaziyo-header-icon-wrap">
                     <button id="theme-toggle-btn" type="button" class="yaziyo-header-icon-btn flex items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold" aria-label="Tema Değiştir">
                         <i class="fa-solid fa-sun theme-icon-sun"></i>
@@ -346,7 +346,9 @@
 
         const active = resolveActiveNav();
         const alreadyNew = header.querySelector('.yaziyo-header-bar');
-        if (alreadyNew) {
+        const hasEgitimDropdown = header.querySelector('.nav-dropdown-trigger[data-page="egitimler"]');
+        const hasHizTesti = header.querySelector('a[data-page="hiz-testi"]');
+        if (alreadyNew && hasEgitimDropdown && hasHizTesti) {
             header.dataset.yaziyoSharedHeaderMounted = '1';
             applyNavActive(active);
             bindNavClickHandler();

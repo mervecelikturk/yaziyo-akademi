@@ -2,6 +2,7 @@
  * YAZİYO — Admin Live Chat paneli (paylaşılan)
  * admin-live-chat sayfası + admin-egitimlerim sekmesi
  */
+import { supabase } from './supabase.js';
 import {
     ensureUserConversation,
     fetchAdminConversations,
@@ -83,6 +84,7 @@ export function createAdminLiveChatPanel(options = {}) {
     let recordSeconds = 0;
     let started = false;
     let eventsBound = false;
+    let selfId = null;
     /** @type {null | { kind: 'image'|'file'|'audio', file: File|Blob, name: string, mime?: string, durationSec?: number, previewUrl?: string }} */
     let pendingAttach = null;
     const signedCache = new Map();
@@ -319,7 +321,8 @@ export function createAdminLiveChatPanel(options = {}) {
                 lastDay = day;
                 html += `<div class="alc-day"><span>${escapeHtml(day)}</span></div>`;
             }
-            const mine = msg.gonderen_rol === 'admin';
+            const mine = !!(selfId && msg.gonderen_id && String(msg.gonderen_id) === String(selfId))
+                || (!msg.gonderen_id && msg.gonderen_rol === 'admin');
             let body = '';
             if (msg.tip === 'image') {
                 const url = msg.dosya_url ? signedCache.get(msg.dosya_url) : null;
@@ -351,7 +354,11 @@ export function createAdminLiveChatPanel(options = {}) {
                 body = linkify(msg.icerik || '');
             }
 
-            const seen = mine && msg.goruldu ? '<span>Görüldü</span>' : '';
+            const seen = mine
+                ? (msg.goruldu
+                    ? '<span class="alc-tick seen" title="Öğrenci okudu"><i class="fa-solid fa-check-double"></i></span>'
+                    : '<span class="alc-tick" title="İletildi, henüz okunmadı"><i class="fa-solid fa-check"></i></span>')
+                : '';
             html += `
                 <div class="alc-row ${mine ? 'mine' : 'theirs'}" data-msg-id="${escapeHtml(msg.id)}">
                     <div class="alc-bubble">
@@ -741,6 +748,13 @@ export function createAdminLiveChatPanel(options = {}) {
     async function start() {
         if (!cacheEls()) return { ok: false, reason: 'missing-dom' };
         bindEvents();
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            selfId = session?.user?.id || null;
+        } catch {
+            selfId = null;
+        }
 
         const result = await loadConversations();
         if (result?.missing) return { ok: false, missing: true };

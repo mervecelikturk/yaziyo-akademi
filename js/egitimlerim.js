@@ -20,6 +20,13 @@ import {
     fetchKullaniciPaketOzeti,
     fetchOkunmamisMesajSayisi,
     fetchIlerlemeOzeti,
+    fetchSonKlavyeCalismalariAnaliz,
+    countSkippedFromKayit,
+    mergeHarfMsFromKayitlar,
+    fetchMetinHavuzu,
+    saveMetinHavuzu,
+    deleteMetinHavuzu,
+    METIN_HAVUZU_LIMIT,
     fetchTakvimKullanici,
     fetchEtutler,
     fetchEtutKatilimSayisi,
@@ -39,6 +46,7 @@ let gorevler = [];
 let etutTimerIds = [];
 let currentPaket = null;
 let selectedRating = 0;
+let belgeAktifBlobUrl = null;
 
 const els = {};
 
@@ -215,6 +223,69 @@ async function loadAnaSayfa() {
 
     gorevler = gorevRes.data || [];
     els.gorevOzeti.textContent = buildGunlukGorevOzeti(gorevler).metin;
+    await loadMetinHavuzu();
+}
+
+/* ---------- Metin havuzu ---------- */
+
+function renderMetinHavuzu(items) {
+    const list = els.havuzList;
+    if (els.havuzCount) {
+        els.havuzCount.textContent = `${items.length}/${METIN_HAVUZU_LIMIT}`;
+    }
+    if (els.havuzKaydet) {
+        els.havuzKaydet.disabled = items.length >= METIN_HAVUZU_LIMIT;
+    }
+    if (!list) return;
+    if (!items.length) {
+        list.innerHTML = '<p class="eg-empty" style="padding:0.75rem 0">Henüz metin eklemediniz.</p>';
+        return;
+    }
+    list.innerHTML = items.map((m) => `
+        <div class="eg-havuz-item" data-havuz-id="${escapeHtml(m.id)}">
+            <div class="min-w-0">
+                <p class="text-[10px] uppercase tracking-widest text-yaziyo-gold font-bold">${escapeHtml(m.tur || 'Kendi Metnim')}</p>
+                <p class="font-poppins font-bold text-sm">${escapeHtml(m.ad)}</p>
+                <p class="text-xs text-light-text-secondary">${escapeHtml(m.grup)}</p>
+            </div>
+            <button type="button" class="px-3 py-1.5 rounded-lg border border-red-400/50 text-red-500 text-xs font-bold" data-havuz-sil="${escapeHtml(m.id)}">
+                Sil
+            </button>
+        </div>`).join('');
+}
+
+async function loadMetinHavuzu() {
+    const { data, error } = await fetchMetinHavuzu(currentUser.id);
+    if (error && isEgitimlerimMissingError(error)) {
+        showToast('Metin havuzu için sql/035_egitimlerim_analiz_metin.sql çalıştırın', 'error');
+        renderMetinHavuzu([]);
+        return;
+    }
+    if (error) {
+        showToast(error.message || 'Metin havuzu yüklenemedi', 'error');
+        renderMetinHavuzu([]);
+        return;
+    }
+    renderMetinHavuzu(data || []);
+}
+
+async function kaydetMetinHavuzu() {
+    if (els.havuzTur) els.havuzTur.value = 'Kendi Metnim';
+    const { error } = await saveMetinHavuzu({
+        grup: els.havuzGrup?.value || '',
+        ad: els.havuzAd?.value || '',
+        icerik: els.havuzIcerik?.value || ''
+    });
+    if (error) {
+        const msg = error.message || 'Metin eklenemedi';
+        showToast(msg.includes('egitimlerim_metin') ? 'Metin havuzu için sql/035_egitimlerim_analiz_metin.sql çalıştırın' : msg, 'error');
+        return;
+    }
+    if (els.havuzGrup) els.havuzGrup.value = '';
+    if (els.havuzAd) els.havuzAd.value = '';
+    if (els.havuzIcerik) els.havuzIcerik.value = '';
+    showToast('Metin eklendi. Klavye çalışmasında Kendi Metnim türünden seçebilirsiniz.');
+    await loadMetinHavuzu();
 }
 
 /* ---------- Görevler ---------- */
@@ -239,12 +310,15 @@ function renderGorevler() {
                     <h3 class="font-poppins font-bold text-sm">${escapeHtml(g.baslik)}</h3>
                 </div>
                 <p class="text-sm text-light-text-secondary">${escapeHtml(g.aciklama || '')}</p>
-                <div class="eg-task-meta flex flex-wrap items-center justify-between gap-2">
+                <p class="eg-task-meta flex flex-wrap items-center justify-between gap-2">
                     <span><i class="fa-regular fa-clock mr-1"></i>~${g.tahmini_sure_dk || 15} dk</span>
-                    <select class="eg-task-select" data-gorev-durum="${g.id}">
-                        ${opts}
-                    </select>
-                </div>
+                    <span class="flex items-center gap-2">
+                        <span class="eg-gorev-durum">${escapeHtml(GOREV_DURUMLARI[g.durum]?.label || g.durum)}</span>
+                        <select class="eg-task-select" data-gorev-durum="${g.id}">
+                            ${opts}
+                        </select>
+                    </span>
+                </p>
             </div>`;
     }).join('');
 }
@@ -262,7 +336,7 @@ async function loadGorevler() {
 
 /* ---------- İlerleme grafikleri (canvas) ---------- */
 
-function drawLineChart(canvas, values, labels, hedef) {
+function drawLineChart(canvas, values, labels, targets = []) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
@@ -275,11 +349,12 @@ function drawLineChart(canvas, values, labels, hedef) {
     ctx.clearRect(0, 0, w, cssH);
 
     const h = cssH;
-    const pad = w < 340 ? 20 : 28;
-    const maxVal = Math.max(hedef || 0, ...values, 1) * 1.15;
+    const pad = w < 340 ? 22 : 30;
+    const targetVals = (targets || []).map((t) => Number(t.value) || 0);
+    const maxVal = Math.max(...values, ...targetVals, 1) * 1.18;
     const stepX = (w - pad * 2) / Math.max(values.length - 1, 1);
+    const yOf = (v) => h - pad - ((Number(v) || 0) / maxVal) * (h - pad * 2);
 
-    // grid
     ctx.strokeStyle = 'rgba(148,163,184,0.25)';
     ctx.lineWidth = 1;
     for (let i = 0; i < 4; i++) {
@@ -290,25 +365,34 @@ function drawLineChart(canvas, values, labels, hedef) {
         ctx.stroke();
     }
 
-    // hedef çizgisi
-    if (hedef) {
-        const hy = h - pad - ((hedef / maxVal) * (h - pad * 2));
-        ctx.strokeStyle = 'rgba(234,179,8,0.7)';
-        ctx.setLineDash([6, 4]);
+    (targets || []).forEach((t) => {
+        const val = Number(t.value) || 0;
+        if (!val) return;
+        const hy = yOf(val);
+        ctx.strokeStyle = t.color || 'rgba(234,179,8,0.7)';
+        ctx.lineWidth = 1.75;
+        ctx.setLineDash(t.dash || [6, 4]);
         ctx.beginPath();
         ctx.moveTo(pad, hy);
         ctx.lineTo(w - pad, hy);
         ctx.stroke();
         ctx.setLineDash([]);
+    });
+
+    if (!values.length) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Henüz kayıt yok', w / 2, h / 2);
+        return;
     }
 
-    // çizgi
     ctx.strokeStyle = '#eab308';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     values.forEach((v, i) => {
         const x = pad + i * stepX;
-        const y = h - pad - ((v / maxVal) * (h - pad * 2));
+        const y = yOf(v);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
     });
@@ -317,7 +401,7 @@ function drawLineChart(canvas, values, labels, hedef) {
     const showEvery = values.length > 6 && w < 400 ? 2 : 1;
     values.forEach((v, i) => {
         const x = pad + i * stepX;
-        const y = h - pad - ((v / maxVal) * (h - pad * 2));
+        const y = yOf(v);
         ctx.fillStyle = '#eab308';
         ctx.beginPath();
         ctx.arc(x, y, 4, 0, Math.PI * 2);
@@ -327,7 +411,7 @@ function drawLineChart(canvas, values, labels, hedef) {
         ctx.font = '10px Inter, sans-serif';
         ctx.textAlign = 'center';
         const label = labels[i] || '';
-        const shortLabel = w < 360 && label.length > 6 ? `${label.slice(0, 5)}…` : label;
+        const shortLabel = w < 360 && label.length > 8 ? `${label.slice(0, 7)}…` : label;
         ctx.fillText(shortLabel, x, h - 8);
         ctx.fillText(String(v ?? '—'), x, y - 8);
     });
@@ -374,8 +458,8 @@ let chartResizeObserver = null;
 
 function redrawIlerlemeCharts() {
     if (!lastIlerlemeChart) return;
-    const { lineValues, labels, hedef, ort } = lastIlerlemeChart;
-    drawLineChart(els.lineChart, lineValues, labels, hedef);
+    const { lineValues, labels, targets, ort } = lastIlerlemeChart;
+    drawLineChart(els.lineChart, lineValues, labels, targets);
     drawDonutChart(els.donutChart, ort);
 }
 
@@ -391,42 +475,149 @@ function bindChartResize() {
     chartResizeObserver.observe(target);
 }
 
-async function loadIlerleme() {
-    const { data, error } = await fetchIlerlemeOzeti(currentUser.id);
-    if (error) {
-        if (isEgitimlerimMissingError(error)) {
-            showToast('İlerleme için sql/025_egitimlerim.sql çalıştırın', 'error');
-        }
+function fmtStat(v) {
+    return v == null || Number.isNaN(Number(v)) ? '—' : String(Math.round(Number(v)));
+}
+
+function renderSon10Analiz(rows) {
+    const list = els.son10Analiz;
+    if (!list) return;
+    if (!rows.length) {
+        list.innerHTML = '<li class="text-light-text-secondary">Son 10 çalışma için henüz kayıt yok.</li>';
         return;
     }
-    const minH = data?.min_hiz;
-    const maxH = data?.max_hiz;
-    const min3 = data?.min_3dk;
-    const max3 = data?.max_3dk;
+
+    const harfler = mergeHarfMsFromKayitlar(rows);
+    const fastest = harfler[0] || null;
+    const slowest = harfler.length ? harfler[harfler.length - 1] : null;
+
+    let dogru = 0;
+    let yanlis = 0;
+    let atlanan = 0;
+    rows.forEach((r) => {
+        dogru += Math.max(0, Number(r.dogru_kelime) || 0);
+        yanlis += Math.max(0, Number(r.yanlis_kelime) || 0);
+        atlanan += countSkippedFromKayit(r);
+    });
+    const attempted = dogru + yanlis + atlanan;
+    const skipRate = attempted > 0 ? ((atlanan / attempted) * 100) : 0;
+    const errRate = (dogru + yanlis) > 0 ? ((yanlis / (dogru + yanlis)) * 100) : 0;
+
+    const harfYok = rows.length ? 'Yeni kayıtlardan sonra görünür' : '—';
+    const items = [
+        {
+            label: 'En hızlı harf',
+            value: fastest ? `${fastest.harf.toLocaleUpperCase('tr-TR')} (${fastest.ms} ms)` : harfYok
+        },
+        {
+            label: 'En yavaş harf',
+            value: slowest ? `${slowest.harf.toLocaleUpperCase('tr-TR')} (${slowest.ms} ms)` : harfYok
+        },
+        {
+            label: 'Kelime atlama oranı',
+            value: `${skipRate.toLocaleString('tr-TR', { maximumFractionDigits: 1 })}%`
+        },
+        {
+            label: 'Hata oranı',
+            value: `${errRate.toLocaleString('tr-TR', { maximumFractionDigits: 1 })}%`
+        }
+    ];
+
+    list.innerHTML = items.map((it) =>
+        `<li><span>${escapeHtml(it.label)}</span><span class="eg-analiz-val">${escapeHtml(it.value)}</span></li>`
+    ).join('');
+}
+
+function renderChartLegend(targets) {
+    if (!els.chartLegend) return;
+    const bits = [
+        `<span><i class="eg-legend-swatch" style="background:#eab308"></i> Doğru kelime</span>`
+    ];
+    (targets || []).forEach((t) => {
+        bits.push(
+            `<span><i class="eg-legend-swatch" style="background:${escapeHtml(t.color)}"></i> ${escapeHtml(t.label)}</span>`
+        );
+    });
+    els.chartLegend.innerHTML = bits.join('');
+}
+
+function extremaFromKayitlar(rows) {
+    let min1 = null;
+    let max1 = null;
+    let min3 = null;
+    let max3 = null;
+    (rows || []).forEach((r) => {
+        const sure = Number(r.sure_saniye) || 0;
+        const speed1 = Number(r.net_kelime) || Number(r.dogru_kelime) || 0;
+        const n3 = Number(r.net_kelime_3dk) || 0;
+        if (r.gecerli_3dk && n3 > 0) {
+            min3 = min3 == null ? n3 : Math.min(min3, n3);
+            max3 = max3 == null ? n3 : Math.max(max3, n3);
+        }
+        if (sure >= 50 && sure <= 75 && speed1 > 0) {
+            min1 = min1 == null ? speed1 : Math.min(min1, speed1);
+            max1 = max1 == null ? speed1 : Math.max(max1, speed1);
+        }
+    });
+    return { min1, max1, min3, max3 };
+}
+
+function pickNum(preferred, fallback) {
+    if (preferred != null && !Number.isNaN(Number(preferred))) return Number(preferred);
+    if (fallback != null && !Number.isNaN(Number(fallback))) return Number(fallback);
+    return null;
+}
+
+async function loadIlerleme() {
+    const [ozetRes, sonRes] = await Promise.all([
+        fetchIlerlemeOzeti(currentUser.id),
+        fetchSonKlavyeCalismalariAnaliz(currentUser.id, 80)
+    ]);
+
+    if (ozetRes.error) {
+        if (isEgitimlerimMissingError(ozetRes.error)) {
+            showToast('İlerleme için sql/025_egitimlerim.sql çalıştırın', 'error');
+        }
+    }
+    const data = ozetRes.data;
+    const extra = extremaFromKayitlar(sonRes.data || []);
+    const minH = pickNum(data?.min_hiz, extra.min1);
+    const maxH = pickNum(data?.max_hiz, extra.max1);
+    const min3 = pickNum(data?.min_3dk, extra.min3);
+    const max3 = pickNum(data?.max_3dk, extra.max3);
     const hedefH = Number(data?.hedef_hiz) || 40;
     const hedef3 = Number(data?.hedef_3dk) || 90;
 
-    els.statMinHiz.textContent = minH == null ? '—' : String(Math.round(minH));
-    els.statMaxHiz.textContent = maxH == null ? '—' : String(Math.round(maxH));
-    els.statMin3dk.textContent = min3 == null ? '—' : String(Math.round(min3));
-    els.statMax3dk.textContent = max3 == null ? '—' : String(Math.round(max3));
-    els.hedefInfo.textContent = `Hedefler — Hız testi: ${hedefH} net · 3 dk metin: ${hedef3} net`;
+    if (els.statMinHiz) els.statMinHiz.textContent = fmtStat(minH);
+    if (els.statMaxHiz) els.statMaxHiz.textContent = fmtStat(maxH);
+    if (els.statMin3dk) els.statMin3dk.textContent = fmtStat(min3);
+    if (els.statMax3dk) els.statMax3dk.textContent = fmtStat(max3);
+    if (els.hedefInfo) {
+        els.hedefInfo.textContent = `Hedefler — 1 dk: ${hedefH} net · 3 dk: ${hedef3} net (admin tarafından belirlenir)`;
+    }
 
-    const lineValues = [
-        Number(minH) || 0,
-        Number(maxH) || 0,
-        Number(min3) || 0,
-        Number(max3) || 0
+    const last10 = (sonRes.data || []).slice(0, 10);
+    const rows = [...last10].reverse();
+    const lineValues = rows.map((r) => Math.max(0, Number(r.dogru_kelime) || 0));
+    const labels = rows.map((r, i) => {
+        const d = r.created_at ? new Date(r.created_at) : null;
+        if (!d || Number.isNaN(d.getTime())) return String(i + 1);
+        return d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' });
+    });
+    const targets = [
+        { value: hedefH, color: '#38bdf8', dash: [7, 4], label: `1 dk hedef (${hedefH})` },
+        { value: hedef3, color: '#fb923c', dash: [3, 4], label: `3 dk hedef (${hedef3})` }
     ];
-    const labels = ['Min hız', 'Max hız', 'Min 3dk', 'Max 3dk'];
-    const hedef = Math.max(hedefH, hedef3);
+
     const hizPct = maxH != null ? Math.min(100, (Number(maxH) / hedefH) * 100) : 0;
     const metinPct = max3 != null ? Math.min(100, (Number(max3) / hedef3) * 100) : 0;
     const ort = (hizPct + metinPct) / 2;
 
-    lastIlerlemeChart = { lineValues, labels, hedef, ort };
-    drawLineChart(els.lineChart, lineValues, labels, hedef);
+    lastIlerlemeChart = { lineValues, labels, targets, ort };
+    drawLineChart(els.lineChart, lineValues, labels, targets);
     drawDonutChart(els.donutChart, ort);
+    renderChartLegend(targets);
+    renderSon10Analiz(last10);
     bindChartResize();
 }
 
@@ -569,10 +760,16 @@ function renderBelgeler(items) {
                     ${escapeHtml(BELGE_TURLERI[b.belge_turu]?.label || b.belge_turu)} · ${formatDate(b.created_at)}
                 </p>
             </div>
-            <button type="button" class="px-4 py-2 rounded-lg border border-yaziyo-gold/40 text-yaziyo-gold text-xs font-bold hover:bg-yaziyo-gold hover:text-slate-900 transition-all"
-                data-belge-indir="${b.id}">
-                <i class="fa-solid fa-download mr-1"></i> İndir
-            </button>
+            <div class="flex flex-wrap gap-2">
+                <button type="button" class="px-4 py-2 rounded-lg border border-yaziyo-gold/40 text-yaziyo-gold text-xs font-bold hover:bg-yaziyo-gold hover:text-slate-900 transition-all"
+                    data-belge-goster="${b.id}">
+                    <i class="fa-solid fa-eye mr-1"></i> Görüntüle
+                </button>
+                <button type="button" class="px-4 py-2 rounded-lg border border-yaziyo-gold/40 text-yaziyo-gold text-xs font-bold hover:bg-yaziyo-gold hover:text-slate-900 transition-all"
+                    data-belge-indir="${b.id}">
+                    <i class="fa-solid fa-download mr-1"></i> İndir
+                </button>
+            </div>
         </div>`).join('');
 }
 
@@ -597,6 +794,51 @@ async function indirBelge(id) {
         : `data:application/pdf;base64,${data.dosya_base64}`;
     link.download = data.dosya_adi || `${data.baslik || 'belge'}.pdf`;
     link.click();
+}
+
+/** PDF'i indirmeden gösterebilmek için blob URL üretir */
+function belgeBlobUrlOlustur(dosyaBase64) {
+    const raw = String(dosyaBase64 || '');
+    const payload = raw.includes(',') ? raw.slice(raw.indexOf(',') + 1) : raw;
+    const binary = atob(payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+}
+
+function belgeModalKapat() {
+    els.belgeModal?.classList.add('hidden');
+    els.belgeModal?.classList.remove('is-open');
+    els.belgeModal?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('eg-belge-open');
+    if (els.belgeFrame) els.belgeFrame.removeAttribute('src');
+    if (belgeAktifBlobUrl) {
+        URL.revokeObjectURL(belgeAktifBlobUrl);
+        belgeAktifBlobUrl = null;
+    }
+}
+
+async function gosterBelge(id) {
+    const { data, error } = await fetchBelgeDownload(id);
+    if (error || !data?.dosya_base64) {
+        showToast(error?.message || 'Belge açılamadı', 'error');
+        return;
+    }
+    if (belgeAktifBlobUrl) URL.revokeObjectURL(belgeAktifBlobUrl);
+    try {
+        belgeAktifBlobUrl = belgeBlobUrlOlustur(data.dosya_base64);
+    } catch {
+        showToast('Belge içeriği okunamadı', 'error');
+        return;
+    }
+    if (els.belgeBaslik) els.belgeBaslik.textContent = data.baslik || 'Belge';
+    if (els.belgeAlt) els.belgeAlt.textContent = data.dosya_adi || '';
+    if (els.belgeYeniSekme) els.belgeYeniSekme.href = belgeAktifBlobUrl;
+    if (els.belgeFrame) els.belgeFrame.src = belgeAktifBlobUrl;
+    els.belgeModal?.classList.remove('hidden');
+    els.belgeModal?.classList.add('is-open');
+    els.belgeModal?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('eg-belge-open');
 }
 
 /* ---------- Events / init ---------- */
@@ -636,10 +878,25 @@ function cacheElements() {
     els.lineChart = document.getElementById('eg-line-chart');
     els.donutChart = document.getElementById('eg-donut-chart');
     els.hedefInfo = document.getElementById('eg-hedef-info');
+    els.son10Analiz = document.getElementById('eg-son10-analiz');
+    els.chartLegend = document.getElementById('eg-chart-legend');
+    els.havuzTur = document.getElementById('eg-havuz-tur');
+    els.havuzGrup = document.getElementById('eg-havuz-grup');
+    els.havuzAd = document.getElementById('eg-havuz-ad');
+    els.havuzIcerik = document.getElementById('eg-havuz-icerik');
+    els.havuzKaydet = document.getElementById('eg-havuz-kaydet');
+    els.havuzList = document.getElementById('eg-havuz-list');
+    els.havuzCount = document.getElementById('eg-havuz-count');
     els.takvimList = document.getElementById('eg-takvim-list');
     els.etutList = document.getElementById('eg-etut-list');
     els.etutKatilim = document.getElementById('eg-etut-katilim');
     els.belgeList = document.getElementById('eg-belge-list');
+    els.belgeModal = document.getElementById('eg-belge-modal');
+    els.belgeBaslik = document.getElementById('eg-belge-baslik');
+    els.belgeAlt = document.getElementById('eg-belge-alt');
+    els.belgeFrame = document.getElementById('eg-belge-frame');
+    els.belgeYeniSekme = document.getElementById('eg-belge-yeni-sekme');
+    els.belgeKapat = document.getElementById('eg-belge-kapat');
     els.toast = document.getElementById('eg-toast');
 }
 
@@ -673,6 +930,35 @@ function bindEvents() {
             return;
         }
         showToast('Günlük not kaydedildi');
+    });
+
+    els.havuzKaydet?.addEventListener('click', async () => {
+        els.havuzKaydet.disabled = true;
+        try {
+            await kaydetMetinHavuzu();
+        } finally {
+            if (els.havuzKaydet && (els.havuzCount?.textContent || '').startsWith(`${METIN_HAVUZU_LIMIT}/`)) {
+                els.havuzKaydet.disabled = true;
+            } else if (els.havuzKaydet) {
+                els.havuzKaydet.disabled = false;
+            }
+        }
+    });
+
+    els.havuzTur?.addEventListener('input', () => {
+        els.havuzTur.value = 'Kendi Metnim';
+    });
+
+    els.havuzList?.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-havuz-sil]');
+        if (!btn) return;
+        const { error } = await deleteMetinHavuzu(btn.dataset.havuzSil);
+        if (error) {
+            showToast(error.message || 'Metin silinemedi', 'error');
+            return;
+        }
+        showToast('Metin silindi');
+        await loadMetinHavuzu();
     });
 
     els.ratingStars?.addEventListener('click', (e) => {
@@ -732,9 +1018,22 @@ function bindEvents() {
     });
 
     els.belgeList?.addEventListener('click', async (e) => {
+        const goster = e.target.closest('[data-belge-goster]');
+        if (goster) {
+            await gosterBelge(goster.dataset.belgeGoster);
+            return;
+        }
         const btn = e.target.closest('[data-belge-indir]');
         if (!btn) return;
         await indirBelge(btn.dataset.belgeIndir);
+    });
+
+    els.belgeKapat?.addEventListener('click', belgeModalKapat);
+    els.belgeModal?.addEventListener('click', (e) => {
+        if (e.target === els.belgeModal) belgeModalKapat();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') belgeModalKapat();
     });
 }
 
@@ -765,6 +1064,12 @@ async function init() {
     });
 
     await loadAnaSayfa();
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden || !currentUser) return;
+        const ilerlemeOpen = document.getElementById('panel-ilerleme')?.classList.contains('active');
+        if (ilerlemeOpen) loadIlerleme();
+    });
 }
 
 if (document.readyState === 'loading') {

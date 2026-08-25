@@ -332,7 +332,8 @@ export async function mountLiveChatWidget(user) {
     }
 
     function buildMessageHtml(msg, mediaUrl = null) {
-        const mine = msg.gonderen_rol === 'kullanici';
+        const mine = !!(user?.id && msg.gonderen_id && String(msg.gonderen_id) === String(user.id))
+            || (!msg.gonderen_id && msg.gonderen_rol === 'kullanici');
         let body = '';
         if (msg.tip === 'text' || msg.tip === 'link') {
             body = linkify(msg.icerik || '');

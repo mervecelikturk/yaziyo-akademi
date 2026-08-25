@@ -1,6 +1,6 @@
 /* ============================================ */
 /* YAZİYO - Ana JavaScript Dosyası              */
-/* Zabıt Katipliği Çalışma Platformu            */
+/* Klavye Çalışma Platformu            */
 /* ============================================ */
 
 function closeMobileMenuUi() {

@@ -30,7 +30,7 @@ export const PAKET_YETKILERI = [
         items: [
             { id: 'egitimlerim', label: 'Eğitimlerim paneli' },
             { id: 'egitimlerim-gorevler', label: 'Görevlerim' },
-            { id: 'egitimlerim-ilerleme', label: 'İlerleme grafiği' },
+            { id: 'egitimlerim-ilerleme', label: 'İlerleme-Analiz' },
             { id: 'egitimlerim-takvim', label: 'Takvim' },
             { id: 'egitimlerim-etut', label: 'Etüt odaları' },
             { id: 'egitimlerim-belgeler', label: 'Belgelerim' },
@@ -520,6 +520,41 @@ export async function cancelKullaniciPaketi(satinAlmaId, client = supabase) {
 
     if (data && data.success === false) {
         return { data, error: new Error(data.message || 'Paket iptal edilemedi') };
+    }
+
+    return { data, error: null };
+}
+
+/**
+ * Yönetici: kullanıcıya paket tanımlar (RPC, sql/034).
+ *
+ * Ödeme akışının yerine geçmez; yalnızca aktif yöneticiye açıktır ve her çağrı
+ * yonetici_bildirimleri tablosuna iz bırakır.
+ */
+export async function adminPaketTanimla(userId, paketId, gun = null, client = supabase) {
+    if (!client || !userId || !paketId) {
+        return { data: null, error: new Error('Kullanıcı ve paket zorunlu') };
+    }
+
+    const { data, error } = await client.rpc('admin_paket_tanimla', {
+        p_kullanici_id: userId,
+        p_paket_id: paketId,
+        p_gun: gun
+    });
+
+    if (error) {
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('admin_paket_tanimla') || msg.includes('schema cache') || error.code === 'PGRST202') {
+            return {
+                data: null,
+                error: new Error('Paket tanımlama sistemi henüz kurulmamış. sql/034_admin_egitimlerim.sql dosyasını çalıştırın.')
+            };
+        }
+        return { data: null, error };
+    }
+
+    if (data && data.success === false) {
+        return { data, error: new Error(data.message || 'Paket tanımlanamadı') };
     }
 
     return { data, error: null };

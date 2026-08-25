@@ -23,6 +23,7 @@
         { id: 'mulakat-simulasyonu', label: 'Mülakat Simülasyonu', navLabel: 'Mülakat Simülasyonu', href: 'mulakatSimulasyonu.html', defaultActive: true },
         { id: 'becayis', label: 'Becayiş', href: 'becayis.html', defaultActive: true },
         { id: 'egitim-paketleri', label: 'Eğitim Paketleri', href: 'egitimPaketleri.html', defaultActive: true },
+        { id: 'egitimlerim', label: 'Eğitimlerim', href: 'egitimlerim.html', defaultActive: true },
         { id: 'haberler', label: 'Haberler', href: 'haberler.html', defaultActive: false },
         { id: 'kpss-calismasi', label: 'KPSS Çalışması', href: 'kpssCalismasi.html', defaultActive: true },
         { id: 'iletisim', label: 'Bize Ulaşın', href: 'iletisim.html', defaultActive: true }
@@ -177,6 +178,7 @@
 
         document.querySelectorAll('#main-navbar a').forEach((link) => {
             if (isProtectedAdminNavLink(link)) return;
+            if ((link.dataset.page || '').toLowerCase() === 'egitimlerim') return;
             const current = link.dataset.originalHref || link.getAttribute('href') || '';
             if (hrefMatchesPage(current, href) || hrefMatchesPage(link.getAttribute('href') || '', href)) {
                 if (!link.dataset.originalHref && isUsableHref(current)) {
@@ -216,14 +218,16 @@
     }
 
     function applyDirectLink(pageId, active, href) {
-        // Paket kapılı sayfalar admin pageStatus ile yönetilmez
-        if (pageId === 'egitimlerim') return;
-
         document.querySelectorAll(`#main-navbar [data-page="${pageId}"]`).forEach((el) => {
             if (el.tagName !== 'A') return;
             if (isProtectedAdminNavLink(el)) return;
             if (isUsableHref(href) && !el.dataset.originalHref) {
                 el.dataset.originalHref = href;
+            }
+            // Eğitimlerim: pasifse kapat. Aktifse paket satın alımı açar.
+            if (pageId === 'egitimlerim') {
+                if (!active) disableLink(el);
+                return;
             }
             if (active) {
                 enableLink(el, href);
@@ -242,6 +246,10 @@
 
     function applyPage(page, active) {
         const href = resolveHref(page);
+        if (page.id === 'egitimlerim') {
+            applyDirectLink(page.id, active, href);
+            return;
+        }
         if (page.navLabel) {
             applyByNavLabel(page.navLabel, active, href);
         } else if (page.href) {
@@ -283,6 +291,14 @@
 
                 const status = applyRemoteMap(remoteMap);
                 applyToNavbar();
+                const pkg = global.YaziyoPackageNavAccess;
+                if (pkg) {
+                    if (typeof global.__yaziyoHasPurchasedPaket === 'boolean') {
+                        pkg.applyPackageNavAccess(global.__yaziyoHasPurchasedPaket);
+                    } else {
+                        void pkg.syncPackageNavAccess?.();
+                    }
+                }
                 return status;
             } catch (err) {
                 console.warn('Sayfa durumu senkronu atlandı:', err);
@@ -299,6 +315,9 @@
     async function setPageActiveAsync(pageId, active) {
         const status = setPageActive(pageId, active);
         applyToNavbar();
+        if (pageId === 'egitimlerim') {
+            global.YaziyoPackageNavAccess?.syncPackageNavAccess?.();
+        }
 
         try {
             const mod = await import('./lib/pageStatusApi.js');

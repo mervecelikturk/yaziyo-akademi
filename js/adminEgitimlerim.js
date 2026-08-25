@@ -16,6 +16,10 @@ import {
     upsertEgitimlerimProfil,
     fetchNotlarAdmin,
     setNotEmoji,
+    deleteNot,
+    bildirimGonder,
+    fetchAdminKullaniciOzeti,
+    fetchAdminKullaniciCalismalari,
     fetchGorevler,
     upsertGorev,
     deleteGorev,
@@ -26,15 +30,24 @@ import {
     upsertEtut,
     deleteEtut,
     fetchBelgeler,
+    fetchBelgeDownload,
     gonderBelge,
     deleteBelge
 } from './lib/egitimlerimApi.js';
 import {
     fetchKullaniciPaketleri,
-    cancelKullaniciPaketi
+    cancelKullaniciPaketi,
+    fetchAllPaketlerAdmin,
+    adminPaketTanimla
 } from './lib/egitimPaketleriApi.js';
 import { createAdminLiveChatPanel } from './lib/adminLiveChatPanel.js';
-import { createCertificatePdf } from './lib/certificatePdf.js';
+import { createCertificatePdf, buildBelgeCumlesi, formatBelgeAdi } from './lib/certificatePdf.js';
+import {
+    formatStatNumber,
+    formatStudyDuration,
+    formatPracticeDuration,
+    analyzeLetterMistakesFromSessions
+} from './userStats.js';
 
 let users = [];
 let selectedUserId = '';
@@ -44,10 +57,25 @@ let liveChatPanel = null;
 let liveChatReady = false;
 let syncingUserFromChat = false;
 let activeTab = 'profil';
+let paketOptions = [];
+let calismalar = [];
+let belgeBlobUrl = null;
+
+/** Harf analizi profil sayfasıyla aynı pencereyi kullanır */
+const HARF_ANALIZI_SEANS = 10;
+
+/** Çalışma listesi bu kadar günü gösterir */
+const CALISMA_GUN = 5;
+
+/** İstatistik/harf analizi için çekilen geçmiş penceresi */
+const CALISMA_FETCH_GUN = 30;
 
 const USER_REQUIRED_TABS = new Set(['profil', 'paketler', 'notlar', 'gorevler', 'takvim', 'etut', 'belgeler']);
+/** Paketler dışında tüm sekmeler: kullanıcının satın alımı yoksa kilitli */
+const PACKAGE_GATED_TABS = new Set(['profil', 'notlar', 'gorevler', 'takvim', 'etut', 'belgeler', 'livechat']);
 
 const els = {};
+let selectedUserHasPaket = null;
 
 function escapeHtml(str) {
     const d = document.createElement('div');
@@ -110,13 +138,42 @@ function needsSelectedUser() {
     return USER_REQUIRED_TABS.has(activeTab) && !selectedUserId;
 }
 
+function needsPurchasedPaket() {
+    return !!selectedUserId
+        && PACKAGE_GATED_TABS.has(activeTab)
+        && selectedUserHasPaket === false;
+}
+
+function setNeedUserOverlay(mode) {
+    const title = els.needUserTitle;
+    const text = els.needUserText;
+    const icon = els.needUserIcon;
+    if (mode === 'paket') {
+        if (icon) icon.className = 'fa-solid fa-box-open text-3xl text-yaziyo-gold mb-3';
+        if (title) title.textContent = 'Kullanıcı paket satın almadı';
+        if (text) text.textContent = 'Bu kullanıcı henüz eğitim paketi satın almamış. Paketler sekmesinden paket tanımlayabilirsiniz.';
+        return;
+    }
+    if (icon) icon.className = 'fa-regular fa-user text-3xl text-yaziyo-gold mb-3';
+    if (title) title.textContent = 'Bir kullanıcı seçin';
+    if (text) text.textContent = 'Soldan bir kullanıcı seçtikten sonra bu bölümü yönetebilirsiniz.';
+}
+
 function updateNeedUserState() {
-    const blocked = needsSelectedUser();
+    const noUser = needsSelectedUser();
+    const noPaket = needsPurchasedPaket();
+    const blocked = noUser || noPaket;
+    if (blocked) setNeedUserOverlay(noPaket ? 'paket' : 'user');
     els.needUser?.classList.toggle('hidden', !blocked);
     document.querySelectorAll('.admin-panel').forEach((p) => p.classList.add('hidden'));
     if (!blocked) {
         document.getElementById(`tab-${activeTab}`)?.classList.remove('hidden');
     }
+}
+
+function setSelectedUserHasPaket(value) {
+    selectedUserHasPaket = value;
+    updateNeedUserState();
 }
 
 function switchTab(id) {
@@ -131,10 +188,9 @@ async function ensureLiveChatPanel() {
         liveChatPanel = createAdminLiveChatPanel({
             showToast,
             onUserSelect(userId) {
-                if (!els.userSelect || els.userSelect.value === userId) return;
+                if (selectedUserId === userId) return;
                 syncingUserFromChat = true;
-                els.userSelect.value = userId;
-                selectedUserId = userId;
+                applyUserSelection(userId);
                 syncBelgeAlici();
                 syncingUserFromChat = false;
             },
@@ -162,6 +218,88 @@ async function openLiveChatForSelectedUser() {
     });
 }
 
+let userListOpen = false;
+let userHighlightIndex = -1;
+
+function userSearchHaystack(u) {
+    return `${userDisplayName(u)} ${u.email || ''}`.toLocaleLowerCase('tr-TR');
+}
+
+function filteredUsers(query) {
+    const q = String(query || '').trim().toLocaleLowerCase('tr-TR');
+    if (!q) return users;
+    return users.filter((u) => userSearchHaystack(u).includes(q));
+}
+
+function syncUserSearchDisplay() {
+    if (!els.userSearch) return;
+    const u = selectedUser();
+    els.userSearch.value = u ? userDisplayName(u) : '';
+    els.userSearch.placeholder = users.length ? 'İsim veya e-posta ara...' : 'Henüz hiç kullanıcı yok';
+    els.userSearch.disabled = !users.length;
+}
+
+function closeUserList() {
+    userListOpen = false;
+    userHighlightIndex = -1;
+    els.userList?.setAttribute('hidden', '');
+    els.userSearch?.setAttribute('aria-expanded', 'false');
+}
+
+function renderUserList(query) {
+    if (!els.userList) return;
+    const list = filteredUsers(query);
+    if (!list.length) {
+        els.userList.innerHTML = '<li class="aeg-user-empty">Eşleşen kullanıcı yok.</li>';
+        userHighlightIndex = -1;
+        return;
+    }
+    els.userList.innerHTML = list.map((u, i) => {
+        const name = userDisplayName(u);
+        const mail = u.email && u.email !== name ? u.email : '';
+        const selected = u.id === selectedUserId ? ' is-selected' : '';
+        const active = i === userHighlightIndex ? ' is-active' : '';
+        return `
+            <li>
+                <button type="button" class="aeg-user-option${selected}${active}" role="option"
+                    data-user-id="${u.id}" aria-selected="${u.id === selectedUserId ? 'true' : 'false'}">
+                    <span class="aeg-user-option-name">${escapeHtml(name)}</span>
+                    ${mail ? `<span class="aeg-user-option-mail">${escapeHtml(mail)}</span>` : ''}
+                </button>
+            </li>`;
+    }).join('');
+}
+
+function openUserList() {
+    if (!users.length) return;
+    userListOpen = true;
+    els.userList?.removeAttribute('hidden');
+    els.userSearch?.setAttribute('aria-expanded', 'true');
+    renderUserList(els.userSearch?.value || '');
+}
+
+function applyUserSelection(userId, { load = false } = {}) {
+    selectedUserId = userId || '';
+    syncUserSearchDisplay();
+    closeUserList();
+    if (load) onUserChange();
+}
+
+function pickUserFromList(delta) {
+    const list = filteredUsers(els.userSearch?.value || '');
+    if (!list.length) return;
+    if (userHighlightIndex < 0) userHighlightIndex = delta > 0 ? 0 : list.length - 1;
+    else userHighlightIndex = (userHighlightIndex + delta + list.length) % list.length;
+    renderUserList(els.userSearch?.value || '');
+    els.userList?.querySelector('.is-active')?.scrollIntoView({ block: 'nearest' });
+}
+
+function confirmHighlightedUser() {
+    const list = filteredUsers(els.userSearch?.value || '');
+    const u = list[userHighlightIndex] || list[0];
+    if (u) applyUserSelection(u.id, { load: true });
+}
+
 /* ---------- Kullanıcı listesi ---------- */
 
 async function loadUsers() {
@@ -172,20 +310,8 @@ async function loadUsers() {
     }
     users = data || [];
     selectedUserId = '';
-
-    if (!els.userSelect) return;
-
-    if (!users.length) {
-        els.userSelect.disabled = true;
-        els.userSelect.innerHTML = '<option value="">Henüz hiç kullanıcı yok</option>';
-        return;
-    }
-
-    els.userSelect.disabled = false;
-    els.userSelect.innerHTML = '<option value="">— Kullanıcı seçin —</option>'
-        + users.map((u) =>
-            `<option value="${u.id}">${escapeHtml(userDisplayName(u))}</option>`
-        ).join('');
+    syncUserSearchDisplay();
+    closeUserList();
 }
 
 /* ---------- Paketler ---------- */
@@ -196,16 +322,48 @@ function paketDurumLabel(p) {
     return { text: 'Aktif', cls: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400' };
 }
 
+async function loadPaketOptions() {
+    if (!els.paketEkleSelect) return;
+    const { data, error } = await fetchAllPaketlerAdmin();
+    if (error) {
+        els.paketEkleSelect.innerHTML = '<option value="">Paketler yüklenemedi</option>';
+        els.paketEkleSelect.disabled = true;
+        return;
+    }
+    paketOptions = data || [];
+    if (!paketOptions.length) {
+        els.paketEkleSelect.innerHTML = '<option value="">Tanımlı paket yok</option>';
+        els.paketEkleSelect.disabled = true;
+        return;
+    }
+    els.paketEkleSelect.disabled = false;
+    els.paketEkleSelect.innerHTML = paketOptions.map((p) =>
+        `<option value="${p.id}">${escapeHtml(p.title)}${p.active ? '' : ' (yayında değil)'} · ${p.validityDays} gün</option>`
+    ).join('');
+    syncPaketGunPlaceholder();
+}
+
+function syncPaketGunPlaceholder() {
+    if (!els.paketEkleGun || !els.paketEkleSelect) return;
+    const paket = paketOptions.find((p) => p.id === els.paketEkleSelect.value);
+    els.paketEkleGun.placeholder = paket ? `Varsayılan: ${paket.validityDays} gün` : 'Paketin varsayılanı';
+}
+
 async function loadPaketler() {
     if (!selectedUserId) {
-        els.paketList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Kullanıcı seçin.</p>';
+        setSelectedUserHasPaket(false);
+        if (els.paketList) {
+            els.paketList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Kullanıcı seçin.</p>';
+        }
         return;
     }
     const { data, error } = await fetchKullaniciPaketleri(selectedUserId);
     if (error) {
+        setSelectedUserHasPaket(false);
         els.paketList.innerHTML = `<p class="px-5 py-8 text-center text-sm text-red-500">${escapeHtml(error.message)}</p>`;
         return;
     }
+    setSelectedUserHasPaket((data || []).length > 0);
     if (!data.length) {
         els.paketList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Bu kullanıcının paketi yok.</p>';
         return;
@@ -264,6 +422,226 @@ async function loadProfil() {
     els.fieldHedefHiz.value = data?.hedef_hiz_net ?? 40;
     els.fieldHedef3dk.value = data?.hedef_3dk_net ?? 90;
     els.fieldGorusme.value = toLocalInputValue(data?.sonraki_gorusme);
+    prefillBelgeKoc(data?.koc_adi);
+}
+
+/* ---------- Profil istatistikleri + son çalışmalar ---------- */
+
+function statCard(icon, label, value) {
+    return `
+        <div class="aeg-stat">
+            <div class="aeg-stat-label"><i class="fa-solid ${icon}"></i> ${escapeHtml(label)}</div>
+            <div class="aeg-stat-value">${escapeHtml(value)}</div>
+        </div>`;
+}
+
+async function loadKullaniciIstatistik() {
+    if (!els.statGrid) return;
+    if (!selectedUserId) {
+        els.statGrid.innerHTML = '<p class="text-sm text-light-text-secondary">Kullanıcı seçin.</p>';
+        if (els.harfAnalizi) els.harfAnalizi.innerHTML = '';
+        return;
+    }
+
+    els.statGrid.innerHTML = '<p class="text-sm text-light-text-secondary">Yükleniyor...</p>';
+    const { data, error } = await fetchAdminKullaniciOzeti(selectedUserId);
+    if (error) {
+        els.statGrid.innerHTML = `<p class="text-sm text-red-500">${escapeHtml(error.message)}</p>`;
+        return;
+    }
+
+    const siralama = Number(data?.genel_siralama) || 0;
+    els.statGrid.innerHTML = [
+        statCard('fa-stopwatch', '3 Dk Rekor', `${formatStatNumber(data?.en_yuksek_3dk_kelime)} kelime`),
+        statCard('fa-keyboard', 'Toplam Kelime', formatStatNumber(data?.toplam_kelime)),
+        statCard('fa-ranking-star', 'Genel Sıralama', siralama > 0 ? `#${formatStatNumber(siralama)}` : '—'),
+        statCard('fa-hourglass-half', 'Çalışma Süresi', formatStudyDuration(data?.calisma_sure_saniye)),
+        statCard('fa-bolt', 'En Yüksek Kombo', formatStatNumber(data?.en_yuksek_kombo))
+    ].join('');
+}
+
+function renderHarfAnaliziAdmin() {
+    if (!els.harfAnalizi) return;
+    const klavye = calismalar.filter((c) => c.tur === 'klavye').slice(0, HARF_ANALIZI_SEANS);
+    const items = analyzeLetterMistakesFromSessions(klavye.map((c) => c.raw), 12);
+    if (!items.length) {
+        els.harfAnalizi.innerHTML = '<p class="text-sm text-light-text-secondary italic">Son çalışmalarda önerilecek harf hatası bulunamadı.</p>';
+        return;
+    }
+    els.harfAnalizi.innerHTML = items.map((item) =>
+        `<span class="aeg-harf-chip"><b>${escapeHtml(item.letter)}</b> ${item.count} hata</span>`
+    ).join('');
+}
+
+const CALISMA_TURLERI = {
+    klavye: { label: 'Klavye Çalışması', icon: 'fa-keyboard' },
+    hiz: { label: 'Hız Testi', icon: 'fa-gauge-high' },
+    kelime_evi: { label: 'Kelime Evi', icon: 'fa-house' },
+    sinav: { label: 'Klavye Sınavı', icon: 'fa-file-pen' }
+};
+
+function collectCalismalar(payload) {
+    const push = (rows, tur) => (rows || [])
+        .filter((row) => row && typeof row === 'object')
+        .map((row) => ({
+            tur,
+            tarih: row.created_at || null,
+            raw: row
+        }));
+
+    return [
+        ...push(payload?.klavye, 'klavye'),
+        ...push(payload?.hiz_testi, 'hiz'),
+        ...push(payload?.kelime_evi, 'kelime_evi'),
+        ...push(payload?.sinav, 'sinav')
+    ].sort((a, b) => new Date(b.tarih || 0) - new Date(a.tarih || 0));
+}
+
+function calismaBasligi(item) {
+    const r = item.raw || {};
+    const tur = CALISMA_TURLERI[item.tur]?.label || 'Çalışma';
+    const detay = r.metin_adi || r.kategori || r.sinav_adi || '';
+    return detay ? `${tur} · ${detay}` : tur;
+}
+
+async function loadCalismalar() {
+    if (!els.calismaList) return;
+    if (!selectedUserId) {
+        calismalar = [];
+        els.calismaList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Kullanıcı seçin.</p>';
+        return;
+    }
+
+    els.calismaList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Yükleniyor...</p>';
+    const { data, error } = await fetchAdminKullaniciCalismalari(selectedUserId, CALISMA_FETCH_GUN);
+    if (error) {
+        calismalar = [];
+        els.calismaList.innerHTML = `<p class="px-5 py-8 text-center text-sm text-red-500">${escapeHtml(error.message)}</p>`;
+        return;
+    }
+
+    calismalar = collectCalismalar(data);
+    renderHarfAnaliziAdmin();
+
+    const sinir = Date.now() - CALISMA_GUN * 24 * 60 * 60 * 1000;
+    const son = calismalar.filter((c) => c.tarih && new Date(c.tarih).getTime() >= sinir);
+
+    if (!son.length) {
+        els.calismaList.innerHTML = `<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Son ${CALISMA_GUN} günde çalışma yok.</p>`;
+        return;
+    }
+
+    els.calismaList.innerHTML = son.map((item) => {
+        const idx = calismalar.indexOf(item);
+        const meta = CALISMA_TURLERI[item.tur] || {};
+        return `
+            <div class="px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="font-poppins font-bold text-sm">
+                        <i class="fa-solid ${meta.icon || 'fa-circle'} text-yaziyo-gold mr-1"></i>
+                        ${escapeHtml(calismaBasligi(item))}
+                    </p>
+                    <p class="text-xs text-light-text-secondary mt-0.5">${formatDateTime(item.tarih)}</p>
+                </div>
+                <button type="button" class="px-3 py-2 rounded-lg border border-yaziyo-gold text-yaziyo-gold text-xs font-bold" data-sonuc-index="${idx}">
+                    <i class="fa-solid fa-chart-simple mr-1"></i> Sonuç ekranı
+                </button>
+            </div>`;
+    }).join('');
+}
+
+/* ---------- Çalışma sonuç ekranı ---------- */
+
+function metricRow(label, value) {
+    return `
+        <div class="aeg-stat">
+            <div class="aeg-stat-label">${escapeHtml(label)}</div>
+            <div class="aeg-stat-value">${escapeHtml(value)}</div>
+        </div>`;
+}
+
+function beklenenKelime(m) {
+    if (!m || typeof m !== 'object') return '';
+    return String(m.expected ?? m.original ?? '').trim();
+}
+
+/** Kayıtta hazır alan yoksa doğru/yanlış ve süreden hesaplanır */
+function calismaMetrikleri(item) {
+    const r = item.raw || {};
+    const dogru = Number(r.dogru_kelime);
+    const yanlis = Number(r.yanlis_kelime);
+    const sure = Number(r.sure_saniye);
+    const metrics = [];
+
+    const net = Number(r.net_kelime);
+    if (Number.isFinite(net)) metrics.push(['Net kelime', formatStatNumber(net)]);
+    else if (Number.isFinite(dogru)) metrics.push(['Net kelime', formatStatNumber(Math.max(0, dogru - (yanlis || 0)))]);
+
+    if (Number.isFinite(dogru)) metrics.push(['Doğru kelime', formatStatNumber(dogru)]);
+    if (Number.isFinite(yanlis)) metrics.push(['Yanlış kelime', formatStatNumber(yanlis)]);
+
+    const wpm = Number(r.wpm);
+    if (Number.isFinite(wpm) && wpm > 0) metrics.push(['WPM', String(Math.round(wpm))]);
+    else if (Number.isFinite(dogru) && Number.isFinite(sure) && sure > 0) {
+        metrics.push(['WPM', String(Math.round((dogru / sure) * 60))]);
+    }
+
+    const dogruluk = Number(r.dogruluk);
+    if (Number.isFinite(dogruluk) && dogruluk > 0) metrics.push(['Doğruluk', `${Math.round(dogruluk)}%`]);
+    else if (Number.isFinite(dogru) && Number.isFinite(yanlis) && dogru + yanlis > 0) {
+        metrics.push(['Doğruluk', `${Math.round((dogru / (dogru + yanlis)) * 100)}%`]);
+    }
+
+    if (Number.isFinite(sure) && sure > 0) metrics.push(['Süre', formatPracticeDuration(sure)]);
+    if (Number.isFinite(Number(r.kelime_sayisi))) metrics.push(['Kelime sayısı', formatStatNumber(r.kelime_sayisi)]);
+    if (r.gecerli_3dk) metrics.push(['3 dk net', formatStatNumber(r.net_kelime_3dk)]);
+    if (Number.isFinite(Number(r.max_kombo))) metrics.push(['En yüksek kombo', formatStatNumber(r.max_kombo)]);
+    if (Number.isFinite(Number(r.ev_seviyesi))) metrics.push(['Ev seviyesi', formatStatNumber(r.ev_seviyesi)]);
+    if (Number.isFinite(Number(r.kat_sayisi))) metrics.push(['Kat sayısı', formatStatNumber(r.kat_sayisi)]);
+
+    return metrics;
+}
+
+function openSonucModal(index) {
+    const item = calismalar[index];
+    if (!item || !els.sonucModal) return;
+    const r = item.raw || {};
+
+    els.sonucBaslik.textContent = calismaBasligi(item);
+    const parcalar = [formatDateTime(item.tarih)];
+    if (r.kategori) parcalar.push(r.kategori);
+    if (r.grup) parcalar.push(r.grup);
+    els.sonucAlt.textContent = parcalar.filter(Boolean).join(' · ');
+
+    const metrics = calismaMetrikleri(item);
+    let html = metrics.length
+        ? `<div class="aeg-stat-grid">${metrics.map(([l, v]) => metricRow(l, v)).join('')}</div>`
+        : '<p class="text-sm text-light-text-secondary">Bu kayıt için ölçüm bilgisi yok.</p>';
+
+    const hatalar = Array.isArray(r.yanlis_kelimeler) ? r.yanlis_kelimeler : [];
+    if (hatalar.length) {
+        const chips = hatalar.slice(0, 60).map((m) => {
+            const beklenen = beklenenKelime(m);
+            const yazilan = m && m.user != null ? String(m.user).trim() : '';
+            return `<span class="aeg-harf-chip"><b>${escapeHtml(beklenen || '—')}</b> → ${escapeHtml(yazilan || '—')}</span>`;
+        }).join('');
+        html += `
+            <div class="mt-5">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">
+                    Hatalı kelimeler (${hatalar.length})
+                </h4>
+                <div class="flex flex-wrap gap-2">${chips}</div>
+            </div>`;
+    }
+
+    els.sonucGovde.innerHTML = html;
+    els.sonucModal.classList.add('open');
+    els.sonucModal.setAttribute('aria-hidden', 'false');
+}
+
+function closeSonucModal() {
+    els.sonucModal?.classList.remove('open');
+    els.sonucModal?.setAttribute('aria-hidden', 'true');
 }
 
 /* ---------- Notlar ---------- */
@@ -290,7 +668,10 @@ async function loadNotlar() {
             <div class="px-5 py-4">
                 <div class="flex justify-between gap-2 mb-2">
                     <span class="text-xs font-bold text-yaziyo-gold">${escapeHtml(n.not_tarihi)}</span>
-                    <span class="text-xl">${n.admin_emoji ? (NOT_EMOJILERI[n.admin_emoji]?.emoji || '') : ''}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">${n.admin_emoji ? (NOT_EMOJILERI[n.admin_emoji]?.emoji || '') : ''}</span>
+                        <button type="button" class="w-8 h-8 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10" data-del-not="${n.id}" title="Notu sil"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
                 </div>
                 <p class="text-sm mb-3 whitespace-pre-wrap">${escapeHtml(n.icerik || '—')}</p>
                 <div class="flex flex-wrap gap-2">${emojiBtns}
@@ -323,7 +704,7 @@ async function loadGorevler() {
                     <span class="text-[10px] ml-2 uppercase ${g.oncelik === 'zorunlu' ? 'text-red-500' : 'text-yaziyo-gold'}">${g.oncelik}</span>
                 </p>
                 <p class="text-xs text-light-text-secondary mt-1">${escapeHtml(g.aciklama || '')}</p>
-                <p class="text-[11px] mt-1">${g.tahmini_sure_dk} dk · ${GOREV_DURUMLARI[g.durum]?.label || g.durum}</p>
+                <p class="text-[11px] mt-1">${g.tahmini_sure_dk} dk · <span class="aeg-gorev-durum">${escapeHtml(GOREV_DURUMLARI[g.durum]?.label || g.durum)}</span></p>
             </div>
             <div class="flex gap-2">
                 <button type="button" class="w-8 h-8 rounded-lg border border-light-border hover:border-yaziyo-gold" data-edit-gorev="${g.id}" title="Düzenle"><i class="fa-solid fa-pen text-xs"></i></button>
@@ -424,12 +805,124 @@ function resetEtutForm() {
 
 /* ---------- Belgeler / PDF ---------- */
 
-function syncBelgeAlici() {
-    if (els.belgeAlici) els.belgeAlici.value = '';
+function todayInputValue() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function belgeFormVerisi() {
+    return {
+        aliciAdi: (els.belgeAlici?.value || '').trim(),
+        egitimAdi: (els.belgeEgitim?.value || '').trim(),
+        kocAdi: (els.belgeKoc?.value || '').trim(),
+        baslangic: els.belgeBaslangic?.value || '',
+        bitis: els.belgeBitis?.value || '',
+        belgeTarihi: els.belgeTarih?.value || todayInputValue()
+    };
+}
+
+/** Belge bilgisi değişince hazır PDF geçersizleşir */
+function invalidatePendingPdf() {
     pendingPdfBase64 = null;
     pendingPdfFileName = '';
     if (els.btnBelgeGonder) els.btnBelgeGonder.disabled = true;
     if (els.belgePdfStatus) els.belgePdfStatus.textContent = '';
+}
+
+function updateBelgeOnizleme() {
+    if (!els.belgeCumle) return;
+    const tur = els.belgeTur?.value || 'katilim';
+    const bilgi = belgeFormVerisi();
+    const cumle = buildBelgeCumlesi(tur, bilgi);
+    const kim = formatBelgeAdi(bilgi.aliciAdi);
+    const at = cumle.indexOf(kim);
+    if (at >= 0) {
+        els.belgeCumle.innerHTML =
+            `${escapeHtml(cumle.slice(0, at))}<span class="text-yaziyo-gold font-poppins font-bold">${escapeHtml(kim)}</span>${escapeHtml(cumle.slice(at + kim.length))}`;
+    } else {
+        els.belgeCumle.textContent = cumle;
+    }
+    if (els.belgeSureOzet) {
+        const bas = bilgi.baslangic;
+        const bit = bilgi.bitis;
+        if (bas && bit) {
+            const a = new Date(`${bas}T00:00:00`);
+            const b = new Date(`${bit}T00:00:00`);
+            const gun = Math.round((b - a) / 86400000) + 1;
+            els.belgeSureOzet.textContent = Number.isFinite(gun) && gun > 0
+                ? `Eğitim süresi: ${gun} gün`
+                : 'Eğitim süresi: tarihleri kontrol edin';
+        } else {
+            els.belgeSureOzet.textContent = 'Eğitim süresi, başlangıç ve bitiş tarihlerinden hesaplanır.';
+        }
+    }
+}
+
+function resetBelgeForm() {
+    if (els.belgeAlici) els.belgeAlici.value = '';
+    if (els.belgeEgitim) els.belgeEgitim.value = '';
+    if (els.belgeBaslangic) els.belgeBaslangic.value = '';
+    if (els.belgeBitis) els.belgeBitis.value = '';
+    if (els.belgeTarih) els.belgeTarih.value = todayInputValue();
+    invalidatePendingPdf();
+    syncBelgeAlici();
+}
+
+/** Seçilen kullanıcının adı belgeye aday adı olarak yazılır; admin düzeltebilir */
+function syncBelgeAlici() {
+    if (!els.belgeAlici) return;
+    const u = selectedUser();
+    els.belgeAlici.value = u ? userDisplayName(u) : '';
+    updateBelgeOnizleme();
+}
+
+/** Koç adı seçili kullanıcının profilinden ön doldurulur */
+function prefillBelgeKoc(kocAdi) {
+    if (els.belgeKoc) {
+        els.belgeKoc.value = kocAdi || '';
+        updateBelgeOnizleme();
+    }
+}
+
+function pdfBlobUrl(dosyaBase64) {
+    const base64 = String(dosyaBase64 || '');
+    const payload = base64.includes(',') ? base64.slice(base64.indexOf(',') + 1) : base64;
+    const binary = atob(payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+    return URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+}
+
+function closeBelgeModal() {
+    els.belgeModal?.classList.remove('open');
+    els.belgeModal?.setAttribute('aria-hidden', 'true');
+    if (els.belgeFrame) els.belgeFrame.removeAttribute('src');
+    if (belgeBlobUrl) {
+        URL.revokeObjectURL(belgeBlobUrl);
+        belgeBlobUrl = null;
+    }
+}
+
+async function openBelgeModal(belgeId) {
+    const { data, error } = await fetchBelgeDownload(belgeId);
+    if (error || !data?.dosya_base64) {
+        showToast(error?.message || 'Belge açılamadı', 'error');
+        return;
+    }
+    if (belgeBlobUrl) URL.revokeObjectURL(belgeBlobUrl);
+    try {
+        belgeBlobUrl = pdfBlobUrl(data.dosya_base64);
+    } catch {
+        showToast('Belge içeriği okunamadı', 'error');
+        return;
+    }
+    els.belgeBaslik.textContent = data.baslik || 'Belge';
+    els.belgeAlt.textContent = data.dosya_adi || '';
+    if (els.belgeYeniSekme) els.belgeYeniSekme.href = belgeBlobUrl;
+    if (els.belgeFrame) els.belgeFrame.src = belgeBlobUrl;
+    els.belgeModal?.classList.add('open');
+    els.belgeModal?.setAttribute('aria-hidden', 'false');
 }
 
 async function loadBelgeler() {
@@ -446,31 +939,50 @@ async function loadBelgeler() {
         els.belgeList.innerHTML = '<p class="text-sm text-light-text-secondary">Gönderilmiş belge yok.</p>';
         return;
     }
-    els.belgeList.innerHTML = data.map((b) => `
+    els.belgeList.innerHTML = data.map((b) => {
+        const detay = [
+            BELGE_TURLERI[b.belge_turu]?.label || b.belge_turu,
+            b.alici_adi,
+            b.egitim_adi,
+            b.koc_adi,
+            formatDateTime(b.created_at)
+        ].filter(Boolean).map((x) => escapeHtml(x)).join(' · ');
+        return `
         <div class="py-3 border-b border-light-border dark:border-dark-border last:border-0 flex flex-wrap justify-between gap-3">
-            <div>
+            <div class="min-w-0">
                 <p class="font-poppins font-bold text-sm">${escapeHtml(b.baslik)}</p>
-                <p class="text-xs text-light-text-secondary">${BELGE_TURLERI[b.belge_turu]?.label || b.belge_turu} · ${escapeHtml(b.alici_adi)} · ${formatDateTime(b.created_at)}</p>
+                <p class="text-xs text-light-text-secondary">${detay}</p>
             </div>
-            <button type="button" class="w-8 h-8 rounded-lg border border-red-500/30 text-red-500" data-del-belge="${b.id}"><i class="fa-solid fa-trash text-xs"></i></button>
-        </div>`).join('');
+            <div class="flex gap-2">
+                <button type="button" class="px-3 py-2 rounded-lg border border-yaziyo-gold text-yaziyo-gold text-xs font-bold" data-view-belge="${b.id}">
+                    <i class="fa-solid fa-eye mr-1"></i> Görüntüle
+                </button>
+                <button type="button" class="w-8 h-8 rounded-lg border border-red-500/30 text-red-500" data-del-belge="${b.id}" title="Sil"><i class="fa-solid fa-trash text-xs"></i></button>
+            </div>
+        </div>`;
+    }).join('');
 }
 
 async function onUserChange() {
     if (syncingUserFromChat) return;
-    selectedUserId = els.userSelect.value;
-    syncBelgeAlici();
+    resetBelgeForm();
     resetGorevForm();
     resetTakvimForm();
-    updateNeedUserState();
     if (!selectedUserId) {
+        setSelectedUserHasPaket(false);
         if (els.paketList) {
             els.paketList.innerHTML = '<p class="px-5 py-8 text-center text-sm text-light-text-secondary">Kullanıcı seçin.</p>';
         }
+        calismalar = [];
+        await Promise.all([loadKullaniciIstatistik(), loadCalismalar()]);
         return;
     }
+    selectedUserHasPaket = null;
+    updateNeedUserState();
     await Promise.all([
         loadProfil(),
+        loadKullaniciIstatistik(),
+        loadCalismalar(),
         loadPaketler(),
         loadNotlar(),
         loadGorevler(),
@@ -486,7 +998,12 @@ async function onUserChange() {
 function cacheElements() {
     els.toast = document.getElementById('admin-toast');
     els.needUser = document.getElementById('aeg-need-user');
-    els.userSelect = document.getElementById('admin-user-select');
+    els.needUserIcon = document.getElementById('aeg-need-user-icon');
+    els.needUserTitle = document.getElementById('aeg-need-user-title');
+    els.needUserText = document.getElementById('aeg-need-user-text');
+    els.userSearch = document.getElementById('admin-user-search');
+    els.userList = document.getElementById('admin-user-list');
+    els.userCombo = document.getElementById('admin-user-combo');
     els.fieldKoc = document.getElementById('field-koc');
     els.fieldRozet = document.getElementById('field-rozet');
     els.fieldHedefHiz = document.getElementById('field-hedef-hiz');
@@ -519,11 +1036,37 @@ function cacheElements() {
     els.belgeForm = document.getElementById('belge-form');
     els.belgeTur = document.getElementById('belge-tur');
     els.belgeAlici = document.getElementById('belge-alici');
+    els.belgeEgitim = document.getElementById('belge-egitim');
+    els.belgeKoc = document.getElementById('belge-koc');
+    els.belgeBaslangic = document.getElementById('belge-baslangic');
+    els.belgeBitis = document.getElementById('belge-bitis');
+    els.belgeTarih = document.getElementById('belge-tarih');
+    els.belgeCumle = document.getElementById('belge-cumle-onizleme');
+    els.belgeSureOzet = document.getElementById('belge-sure-ozet');
     els.btnPdfOlustur = document.getElementById('btn-pdf-olustur');
     els.btnBelgeGonder = document.getElementById('btn-belge-gonder');
     els.belgePdfStatus = document.getElementById('belge-pdf-status');
     els.belgeList = document.getElementById('admin-belge-list');
     els.paketList = document.getElementById('admin-paket-list');
+    els.paketEkleForm = document.getElementById('paket-ekle-form');
+    els.paketEkleSelect = document.getElementById('paket-ekle-select');
+    els.paketEkleGun = document.getElementById('paket-ekle-gun');
+    els.btnPaketEkle = document.getElementById('btn-paket-ekle');
+    els.statGrid = document.getElementById('aeg-stat-grid');
+    els.harfAnalizi = document.getElementById('aeg-harf-analizi');
+    els.btnStatYenile = document.getElementById('btn-stat-yenile');
+    els.calismaList = document.getElementById('aeg-calisma-list');
+    els.sonucModal = document.getElementById('aeg-sonuc-modal');
+    els.sonucBaslik = document.getElementById('aeg-sonuc-baslik');
+    els.sonucAlt = document.getElementById('aeg-sonuc-alt');
+    els.sonucGovde = document.getElementById('aeg-sonuc-govde');
+    els.sonucKapat = document.getElementById('aeg-sonuc-kapat');
+    els.belgeModal = document.getElementById('aeg-belge-modal');
+    els.belgeBaslik = document.getElementById('aeg-belge-baslik');
+    els.belgeAlt = document.getElementById('aeg-belge-alt');
+    els.belgeFrame = document.getElementById('aeg-belge-frame');
+    els.belgeYeniSekme = document.getElementById('aeg-belge-yeni-sekme');
+    els.belgeKapat = document.getElementById('aeg-belge-kapat');
 }
 
 function bindEvents() {
@@ -542,11 +1085,113 @@ function bindEvents() {
             if (id === 'notlar') await loadNotlar();
             if (id === 'gorevler') await loadGorevler();
             if (id === 'paketler') await loadPaketler();
-            if (id === 'profil') await loadProfil();
+            if (id === 'profil') {
+                await Promise.all([loadProfil(), loadKullaniciIstatistik(), loadCalismalar()]);
+            }
         });
     });
 
-    els.userSelect?.addEventListener('change', onUserChange);
+    els.userSearch?.addEventListener('focus', () => {
+        els.userSearch.select();
+        userHighlightIndex = Math.max(0, users.findIndex((u) => u.id === selectedUserId));
+        userListOpen = true;
+        els.userList?.removeAttribute('hidden');
+        els.userSearch?.setAttribute('aria-expanded', 'true');
+        renderUserList('');
+    });
+    els.userSearch?.addEventListener('input', () => {
+        userHighlightIndex = 0;
+        openUserList();
+        renderUserList(els.userSearch.value);
+    });
+    els.userSearch?.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (!userListOpen) openUserList();
+            pickUserFromList(1);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (!userListOpen) openUserList();
+            pickUserFromList(-1);
+        } else if (e.key === 'Enter') {
+            if (userListOpen) {
+                e.preventDefault();
+                confirmHighlightedUser();
+            }
+        } else if (e.key === 'Escape') {
+            closeUserList();
+            syncUserSearchDisplay();
+        }
+    });
+    els.userSearch?.addEventListener('blur', () => {
+        window.setTimeout(() => {
+            closeUserList();
+            syncUserSearchDisplay();
+        }, 150);
+    });
+    els.userList?.addEventListener('mousedown', (e) => {
+        const btn = e.target.closest('[data-user-id]');
+        if (!btn) return;
+        e.preventDefault();
+        applyUserSelection(btn.dataset.userId, { load: true });
+    });
+
+    els.btnStatYenile?.addEventListener('click', async () => {
+        if (!requireUser()) return;
+        const icon = els.btnStatYenile.querySelector('i');
+        icon?.classList.add('fa-spin');
+        await Promise.all([loadKullaniciIstatistik(), loadCalismalar()]);
+        setTimeout(() => icon?.classList.remove('fa-spin'), 500);
+    });
+
+    els.calismaList?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-sonuc-index]');
+        if (!btn) return;
+        openSonucModal(Number(btn.dataset.sonucIndex));
+    });
+
+    els.sonucKapat?.addEventListener('click', closeSonucModal);
+    els.sonucModal?.addEventListener('click', (e) => {
+        if (e.target === els.sonucModal) closeSonucModal();
+    });
+
+    els.belgeKapat?.addEventListener('click', closeBelgeModal);
+    els.belgeModal?.addEventListener('click', (e) => {
+        if (e.target === els.belgeModal) closeBelgeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        closeSonucModal();
+        closeBelgeModal();
+    });
+
+    els.paketEkleSelect?.addEventListener('change', syncPaketGunPlaceholder);
+
+    els.paketEkleForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!requireUser()) return;
+        const paketId = els.paketEkleSelect?.value;
+        if (!paketId) {
+            showToast('Paket seçin', 'error');
+            return;
+        }
+        const gunRaw = parseInt(els.paketEkleGun?.value, 10);
+        const gun = Number.isFinite(gunRaw) && gunRaw > 0 ? gunRaw : null;
+        const paketAdi = paketOptions.find((p) => p.id === paketId)?.title || 'Paket';
+        if (!confirm(`“${paketAdi}” bu kullanıcıya tanımlanacak. Onaylıyor musunuz?`)) return;
+
+        els.btnPaketEkle.disabled = true;
+        const { error } = await adminPaketTanimla(selectedUserId, paketId, gun);
+        els.btnPaketEkle.disabled = false;
+        if (error) {
+            showToast(error.message || 'Paket tanımlanamadı', 'error');
+            return;
+        }
+        if (els.paketEkleGun) els.paketEkleGun.value = '';
+        await loadPaketler();
+        showToast('Paket kullanıcıya tanımlandı');
+    });
 
     els.paketList?.addEventListener('click', async (e) => {
         const btn = e.target.closest('[data-cancel-paket]');
@@ -585,6 +1230,19 @@ function bindEvents() {
     });
 
     els.notList?.addEventListener('click', async (e) => {
+        const del = e.target.closest('[data-del-not]');
+        if (del) {
+            if (!confirm('Bu günlük not silinsin mi?')) return;
+            const { error } = await deleteNot(del.dataset.delNot);
+            if (error) {
+                showToast(error.message || 'Not silinemedi', 'error');
+                return;
+            }
+            await loadNotlar();
+            showToast('Not silindi');
+            return;
+        }
+
         const btn = e.target.closest('[data-not-emoji]');
         if (!btn) return;
         const { error } = await setNotEmoji(btn.dataset.notEmoji, btn.dataset.emojiId || null);
@@ -674,8 +1332,7 @@ function bindEvents() {
             els.takvimBitis.value = toLocalInputValue(ev.bitis);
             els.takvimDurum.value = ev.durum || 'planlandi';
             if (ev.kullanici_id) {
-                els.userSelect.value = ev.kullanici_id;
-                selectedUserId = ev.kullanici_id;
+                applyUserSelection(ev.kullanici_id);
             }
             return;
         }
@@ -735,9 +1392,9 @@ function bindEvents() {
 
     els.btnPdfOlustur?.addEventListener('click', async () => {
         if (!requireUser()) return;
-        const alici = (els.belgeAlici.value || '').trim();
-        if (!alici) {
-            showToast('Alıcı adını yazın', 'error');
+        const bilgi = belgeFormVerisi();
+        if (!bilgi.aliciAdi) {
+            showToast('Aday adını yazın', 'error');
             els.belgeAlici?.focus();
             return;
         }
@@ -746,15 +1403,13 @@ function bindEvents() {
         if (els.belgePdfStatus) els.belgePdfStatus.textContent = 'PDF hazırlanıyor...';
         try {
             const tur = els.belgeTur.value;
-            pendingPdfBase64 = await createCertificatePdf(tur, alici);
-            pendingPdfFileName = `${tur}_${alici.replace(/\s+/g, '_')}.pdf`;
+            pendingPdfBase64 = await createCertificatePdf(tur, bilgi);
+            pendingPdfFileName = `${tur}_${bilgi.aliciAdi.replace(/\s+/g, '_')}.pdf`;
             els.btnBelgeGonder.disabled = false;
             els.belgePdfStatus.textContent = `PDF hazır: ${pendingPdfFileName}`;
             showToast('PDF oluşturuldu');
         } catch (err) {
-            pendingPdfBase64 = null;
-            els.btnBelgeGonder.disabled = true;
-            if (els.belgePdfStatus) els.belgePdfStatus.textContent = '';
+            invalidatePendingPdf();
             showToast(err.message || 'PDF oluşturulamadı', 'error');
         } finally {
             btn.disabled = false;
@@ -767,34 +1422,53 @@ function bindEvents() {
             showToast('Önce PDF oluşturun', 'error');
             return;
         }
-        const alici = (els.belgeAlici.value || '').trim();
-        if (!alici) {
-            showToast('Alıcı adını yazın', 'error');
+        const bilgi = belgeFormVerisi();
+        if (!bilgi.aliciAdi) {
+            showToast('Aday adını yazın', 'error');
             els.belgeAlici?.focus();
             return;
         }
         const tur = els.belgeTur.value;
+        const baslik = BELGE_TURLERI[tur]?.label || 'Belge';
         const { error } = await gonderBelge({
             kullanici_id: selectedUserId,
             belge_turu: tur,
-            baslik: BELGE_TURLERI[tur]?.label || 'Belge',
+            baslik,
             dosya_adi: pendingPdfFileName,
             dosya_base64: pendingPdfBase64,
-            alici_adi: alici
+            alici_adi: bilgi.aliciAdi,
+            egitim_adi: bilgi.egitimAdi,
+            koc_adi: bilgi.kocAdi,
+            baslangic_tarihi: bilgi.baslangic || null,
+            bitis_tarihi: bilgi.bitis || null,
+            belge_tarihi: bilgi.belgeTarihi || null
         });
         if (error) {
             showToast(error.message || 'Gönderilemedi', 'error');
             return;
         }
-        pendingPdfBase64 = null;
-        els.btnBelgeGonder.disabled = true;
-        els.belgePdfStatus.textContent = '';
-        els.belgeAlici.value = '';
+
+        const hedefId = selectedUserId;
+        resetBelgeForm();
         await loadBelgeler();
         showToast('Belge kullanıcıya gönderildi');
+
+        const { error: bildirimError } = await bildirimGonder({
+            kullanici_id: hedefId,
+            baslik: 'Yeni belgeniz var',
+            mesaj: `${baslik}${bilgi.egitimAdi ? ` (${bilgi.egitimAdi})` : ''} hesabınıza eklendi. Eğitimlerim > Belgeler bölümünden görüntüleyebilirsiniz.`
+        });
+        if (bildirimError) {
+            showToast('Belge gönderildi, bildirim iletilemedi', 'error');
+        }
     });
 
     els.belgeList?.addEventListener('click', async (e) => {
+        const view = e.target.closest('[data-view-belge]');
+        if (view) {
+            await openBelgeModal(view.dataset.viewBelge);
+            return;
+        }
         const del = e.target.closest('[data-del-belge]');
         if (!del) return;
         if (!confirm('Belge silinsin mi?')) return;
@@ -806,16 +1480,23 @@ function bindEvents() {
         }
     });
 
-    els.belgeTur?.addEventListener('change', () => {
-        pendingPdfBase64 = null;
-        els.btnBelgeGonder.disabled = true;
-        els.belgePdfStatus.textContent = '';
-    });
-
-    els.belgeAlici?.addEventListener('input', () => {
-        pendingPdfBase64 = null;
-        els.btnBelgeGonder.disabled = true;
-        els.belgePdfStatus.textContent = '';
+    [
+        els.belgeTur,
+        els.belgeAlici,
+        els.belgeEgitim,
+        els.belgeKoc,
+        els.belgeBaslangic,
+        els.belgeBitis,
+        els.belgeTarih
+    ].forEach((el) => {
+        el?.addEventListener('input', () => {
+            invalidatePendingPdf();
+            updateBelgeOnizleme();
+        });
+        el?.addEventListener('change', () => {
+            invalidatePendingPdf();
+            updateBelgeOnizleme();
+        });
     });
 }
 
@@ -825,7 +1506,8 @@ async function init() {
     cacheElements();
     fillRozetSelect();
     bindEvents();
-    await loadUsers();
+    resetBelgeForm();
+    await Promise.all([loadUsers(), loadPaketOptions()]);
 
     // Eğitimlerim yönetimindeyken admin çevrimiçi görünsün (sekme açılmasa da)
     await ensureLiveChatPanel();
