@@ -70,6 +70,19 @@ function filterUsers(users) {
     });
 }
 
+function compareByJoinDate(a, b) {
+    const ta = new Date(a.created_at || 0).getTime();
+    const tb = new Date(b.created_at || 0).getTime();
+    if (ta !== tb) return ta - tb;
+    return String(a.id || '').localeCompare(String(b.id || ''));
+}
+
+function assignUyeSirasi(users) {
+    const byJoin = [...(users || [])].sort(compareByJoinDate);
+    const ranked = byJoin.map((u, i) => ({ ...u, uye_sira: i + 1 }));
+    return ranked.sort((a, b) => b.uye_sira - a.uye_sira);
+}
+
 function showLoading() {
     const el = tbody();
     if (!el) return;
@@ -175,7 +188,7 @@ function renderTable() {
 
         return `
             <tr class="hover:bg-light-bg/30 dark:hover:bg-dark-bg/20 transition-colors duration-200 border-b border-light-border dark:border-dark-border last:border-0" data-user-id="${user.id}">
-                <td class="px-4 py-4 text-sm font-poppins font-bold text-yaziyo-gold text-center tabular-nums">${index + 1}</td>
+                <td class="px-4 py-4 text-sm font-poppins font-bold text-yaziyo-gold text-center tabular-nums">#${Number(user.uye_sira) || index + 1}</td>
                 <td class="px-6 py-4 text-sm font-medium">${escapeHtml(firstName)}</td>
                 <td class="px-6 py-4 text-sm font-medium">${escapeHtml(lastName)}</td>
                 <td class="px-6 py-4 text-sm text-light-text-secondary dark:text-dark-text-secondary">${escapeHtml(email)}</td>
@@ -231,7 +244,7 @@ export async function fetchUsers() {
             throw error;
         }
 
-        allUsers = users || [];
+        allUsers = assignUyeSirasi(users || []);
         renderTable();
     } catch (err) {
         console.error('Fetch Users Error:', err);

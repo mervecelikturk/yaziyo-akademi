@@ -215,6 +215,32 @@ function renderTable(liste) {
     tbody.innerHTML = liste.map((entry, idx) => tableRow(entry, entry.sira || idx + 1)).join('');
 }
 
+function extractListe(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (typeof data === 'string') {
+        try {
+            return extractListe(JSON.parse(data));
+        } catch {
+            return [];
+        }
+    }
+    if (Array.isArray(data.liste)) return data.liste;
+    return [];
+}
+
+function renderTableError() {
+    const tbody = document.getElementById('hiz-leaderboard-tbody');
+    if (!tbody) return;
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="5" class="px-6 py-10 text-center text-yaziyo-text-secondary font-inter">
+                Sıralama şu an yüklenemedi. Sayfayı yenileyin.
+            </td>
+        </tr>
+    `;
+}
+
 export async function loadAndRenderHizSiralama() {
     const tbody = document.getElementById('hiz-leaderboard-tbody');
     const podium = document.getElementById('hiz-podium');
@@ -230,13 +256,13 @@ export async function loadAndRenderHizSiralama() {
 
         const { data, error } = await client.rpc('get_gunluk_hiz_siralama', { p_limit: 50 });
         if (error) throw error;
-        const liste = Array.isArray(data?.liste) ? data.liste : [];
+        const liste = extractListe(data);
         renderPodium(liste);
         renderTable(liste);
     } catch (err) {
         console.warn('Günlük hız sıralaması yüklenemedi:', err);
         renderPodium([]);
-        renderTable([]);
+        renderTableError();
     }
 }
 
