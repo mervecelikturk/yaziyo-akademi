@@ -167,36 +167,43 @@ function resetConsents() {
 }
 
 function legalDocEls() {
-    return [els.legalDocMss, els.legalDocOnbilgi, els.legalDocGizlilik];
+    return [
+        document.getElementById('ep-legal-doc-mss'),
+        document.getElementById('ep-legal-doc-onbilgi'),
+        document.getElementById('ep-legal-doc-gizlilik'),
+    ];
 }
 
 function openLegalModal(docKey) {
-    const modal = els.legalModal;
-    if (!modal) return;
-    const docs = {
-        mss: els.legalDocMss,
-        onbilgi: els.legalDocOnbilgi,
-        gizlilik: els.legalDocGizlilik,
+    const key = String(docKey || '').trim();
+    const ids = {
+        mss: 'ep-legal-doc-mss',
+        onbilgi: 'ep-legal-doc-onbilgi',
+        gizlilik: 'ep-legal-doc-gizlilik',
     };
-    const doc = docs[docKey];
-    if (!doc) return;
+    const modal = document.getElementById('ep-legal-modal');
+    const doc = document.getElementById(ids[key] || '');
+    if (!modal || !doc) return;
 
     legalDocEls().forEach((el) => {
         if (el) el.hidden = true;
     });
     doc.hidden = false;
     if (els.legalTitle) {
-        els.legalTitle.textContent = doc.dataset.epLegalTitle || 'Sözleşme';
+        els.legalTitle.textContent = doc.getAttribute('data-ep-legal-title') || 'Sözleşme';
     }
+    document.body.appendChild(modal);
     modal.hidden = false;
+    modal.removeAttribute('hidden');
     modal.setAttribute('aria-hidden', 'false');
-    els.legalBody?.scrollTo?.(0, 0);
+    document.getElementById('ep-legal-body')?.scrollTo?.(0, 0);
 }
 
 function closeLegalModal() {
-    if (!els.legalModal || els.legalModal.hidden) return;
-    els.legalModal.hidden = true;
-    els.legalModal.setAttribute('aria-hidden', 'true');
+    const modal = document.getElementById('ep-legal-modal');
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    modal.setAttribute('aria-hidden', 'true');
     legalDocEls().forEach((el) => {
         if (el) el.hidden = true;
     });
@@ -342,12 +349,16 @@ function bindEvents() {
     els.consentOnbilgi?.addEventListener('change', updatePurchaseCta);
 
     // Sözleşme linkleri — yalnızca tıklanınca açılır; checkbox'ı tetiklemez
-    els.consentBox?.addEventListener('click', (e) => {
-        const link = e.target.closest('[data-ep-legal]');
+    const openFromLegalLink = (e) => {
+        const link = e.target.closest?.('[data-ep-legal]');
         if (!link) return;
         e.preventDefault();
         e.stopPropagation();
-        openLegalModal(link.dataset.epLegal);
+        openLegalModal(link.getAttribute('data-ep-legal'));
+    };
+    els.consentBox?.addEventListener('click', openFromLegalLink);
+    document.querySelectorAll('[data-ep-legal]').forEach((btn) => {
+        btn.addEventListener('click', openFromLegalLink);
     });
 
     els.legalClose?.addEventListener('click', closeLegalModal);

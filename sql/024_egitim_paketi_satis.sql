@@ -137,98 +137,16 @@ create policy "Admins delete yonetici_bildirimleri"
         )
     );
 
--- 4) Satın alma RPC (limit kontrolü + yönetici bildirimi)
-create or replace function public.satin_al_egitim_paketi(p_paket_id uuid)
-returns jsonb
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-    v_uid uuid := auth.uid();
-    v_paket public.egitim_paketleri%rowtype;
-    v_bitis timestamptz;
-    v_email text;
-    v_ad text;
-begin
-    if v_uid is null then
-        return jsonb_build_object('success', false, 'code', 'auth', 'message', 'Satın almak için giriş yapmalısınız.');
-    end if;
-
-    select * into v_paket
-    from public.egitim_paketleri
-    where id = p_paket_id
-    for update;
-
-    if not found then
-        return jsonb_build_object('success', false, 'code', 'not_found', 'message', 'Paket bulunamadı.');
-    end if;
-
-    if coalesce(v_paket.aktif, false) is not true then
-        return jsonb_build_object('success', false, 'code', 'inactive', 'message', 'Şu an aktif değil.');
-    end if;
-
-    if coalesce(v_paket.satis_sayisi, 0) >= coalesce(v_paket.max_satis, 100) then
-        return jsonb_build_object('success', false, 'code', 'sold_out', 'message', 'Şu an aktif değil.');
-    end if;
-
-    if exists (
-        select 1 from public.egitim_paketi_satin_almalar
-        where paket_id = p_paket_id and kullanici_id = v_uid
-    ) then
-        return jsonb_build_object('success', false, 'code', 'already_owned', 'message', 'Bu paketi zaten satın aldınız.');
-    end if;
-
-    v_bitis := now() + make_interval(days => greatest(1, coalesce(v_paket.gecerlilik_gun, 30)));
-
-    insert into public.egitim_paketi_satin_almalar (
-        paket_id, kullanici_id, fiyat, gecerlilik_gun, satin_alma_tarihi, bitis_tarihi
-    ) values (
-        p_paket_id, v_uid, coalesce(v_paket.fiyat, 0), coalesce(v_paket.gecerlilik_gun, 30), now(), v_bitis
-    );
-
-    update public.egitim_paketleri
-    set satis_sayisi = coalesce(satis_sayisi, 0) + 1,
-        updated_at = now()
-    where id = p_paket_id;
-
-    select email into v_email from auth.users where id = v_uid;
-    begin
-        select nullif(trim(coalesce(full_name, '')), '') into v_ad
-        from public.kullanicilar
-        where id = v_uid;
-    exception when others then
-        v_ad := null;
-    end;
-
-    insert into public.yonetici_bildirimleri (baslik, mesaj, tur, paket_id, kullanici_id)
-    values (
-        'Yeni paket satışı',
-        format(
-            '%s paketi satın alındı. Alıcı: %s%s — Geçerlilik: %s gün (bitiş: %s).',
-            coalesce(v_paket.baslik, 'Paket'),
-            coalesce(v_ad, coalesce(v_email, 'Kullanıcı')),
-            case when v_email is not null and v_ad is not null then ' (' || v_email || ')' else '' end,
-            coalesce(v_paket.gecerlilik_gun, 30)::text,
-            to_char(v_bitis at time zone 'Europe/Istanbul', 'DD.MM.YYYY HH24:MI')
-        ),
-        'paket_satis',
-        p_paket_id,
-        v_uid
-    );
-
-    return jsonb_build_object(
-        'success', true,
-        'message', 'Paket başarıyla satın alındı.',
-        'bitis_tarihi', v_bitis,
-        'gecerlilik_gun', coalesce(v_paket.gecerlilik_gun, 30),
-        'icerik_url', coalesce(v_paket.icerik_url, '')
-    );
-end;
-$$;
-
-revoke all on function public.satin_al_egitim_paketi(uuid) from public;
-grant execute on function public.satin_al_egitim_paketi(uuid) to authenticated;
-
-comment on function public.satin_al_egitim_paketi(uuid) is
-    'Eğitim paketi satın alma: satış limiti, geçerlilik ve yönetici bildirimi';
+-- 4) Satın alma RPC — KALDIRILDI (bkz. sql/033_odemesiz_erisim_kapatma.sql)
+--
+-- Burada tanımlı olan public.satin_al_egitim_paketi(uuid) fonksiyonu security
+-- definer idi ve authenticated rolüne execute yetkisi veriliyordu. Ödeme
+-- doğrulaması yapmadan egitim_paketi_satin_almalar tablosuna aktif kayıt
+-- yazdığı için giriş yapmış her kullanıcı ücretli pakete bedava erişebiliyordu.
+--
+-- Eğitim erişimi artık YALNIZCA şu yolla tanımlanır:
+--   sql/031_odeme_siparisleri.sql → public.odeme_siparis_teslim_et(...)
+--   (service_role; sağlayıcı ödemesi doğrulandıktan sonra çağrılır)
+--
+-- Bu bölümü geri eklemeyin. Yönetici elle erişim tanımlamak isterse siparişi
+-- teslim eden fonksiyon service_role ile çağrılmalıdır.

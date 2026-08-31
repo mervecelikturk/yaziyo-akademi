@@ -2083,7 +2083,7 @@ html:not(.dark) .theme-icon-moon {
 .ep-legal-modal {
     position: fixed;
     inset: 0;
-    z-index: 140;
+    z-index: 300;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2130,6 +2130,14 @@ html:not(.dark) .theme-icon-moon {
     overflow-y: auto;
     min-height: 0;
     flex: 1;
+}
+
+.ep-legal-doc[hidden] {
+    display: none !important;
+}
+
+.ep-legal-doc:not([hidden]) {
+    display: block;
 }
 
 .ep-legal-doc h4 {
