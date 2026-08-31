@@ -166,17 +166,22 @@ function resetConsents() {
     if (els.consentOnbilgi) els.consentOnbilgi.checked = false;
 }
 
+function legalDocEls() {
+    return [els.legalDocMss, els.legalDocOnbilgi, els.legalDocGizlilik];
+}
+
 function openLegalModal(docKey) {
     const modal = els.legalModal;
     if (!modal) return;
     const docs = {
         mss: els.legalDocMss,
         onbilgi: els.legalDocOnbilgi,
+        gizlilik: els.legalDocGizlilik,
     };
     const doc = docs[docKey];
     if (!doc) return;
 
-    [els.legalDocMss, els.legalDocOnbilgi].forEach((el) => {
+    legalDocEls().forEach((el) => {
         if (el) el.hidden = true;
     });
     doc.hidden = false;
@@ -192,7 +197,7 @@ function closeLegalModal() {
     if (!els.legalModal || els.legalModal.hidden) return;
     els.legalModal.hidden = true;
     els.legalModal.setAttribute('aria-hidden', 'true');
-    [els.legalDocMss, els.legalDocOnbilgi].forEach((el) => {
+    legalDocEls().forEach((el) => {
         if (el) el.hidden = true;
     });
 }
@@ -415,6 +420,7 @@ function cacheElements() {
     els.legalBody = document.getElementById('ep-legal-body');
     els.legalDocMss = document.getElementById('ep-legal-doc-mss');
     els.legalDocOnbilgi = document.getElementById('ep-legal-doc-onbilgi');
+    els.legalDocGizlilik = document.getElementById('ep-legal-doc-gizlilik');
     els.toast = document.getElementById('ep-toast');
 }
 
