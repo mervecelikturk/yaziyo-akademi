@@ -169,6 +169,7 @@ function resetConsents() {
 function legalDocEls() {
     return [
         document.getElementById('ep-legal-doc-mss'),
+        document.getElementById('ep-legal-doc-iptal'),
         document.getElementById('ep-legal-doc-onbilgi'),
         document.getElementById('ep-legal-doc-gizlilik'),
     ];
@@ -178,6 +179,7 @@ function openLegalModal(docKey) {
     const key = String(docKey || '').trim();
     const ids = {
         mss: 'ep-legal-doc-mss',
+        iptal: 'ep-legal-doc-iptal',
         onbilgi: 'ep-legal-doc-onbilgi',
         gizlilik: 'ep-legal-doc-gizlilik',
     };
@@ -430,6 +432,7 @@ function cacheElements() {
     els.legalTitle = document.getElementById('ep-legal-title');
     els.legalBody = document.getElementById('ep-legal-body');
     els.legalDocMss = document.getElementById('ep-legal-doc-mss');
+    els.legalDocIptal = document.getElementById('ep-legal-doc-iptal');
     els.legalDocOnbilgi = document.getElementById('ep-legal-doc-onbilgi');
     els.legalDocGizlilik = document.getElementById('ep-legal-doc-gizlilik');
     els.toast = document.getElementById('ep-toast');
