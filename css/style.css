@@ -2596,6 +2596,18 @@ html.dark .pay-field-error { color: #fca5a5; }
     max-width: 88px;
     object-fit: contain;
 }
+.pay-badge--iyzico {
+    background: #fff;
+    padding: 0.2rem 0.35rem;
+    min-height: 0;
+}
+.pay-badge--iyzico img {
+    display: block;
+    width: auto;
+    height: 28px;
+    max-width: 140px;
+    object-fit: contain;
+}
 .pay-badge--secure { color: rgb(var(--yaziyo-green-rgb)); }
 
 .pay-summary { padding: 1.25rem; }
@@ -4717,9 +4729,20 @@ html:not(.is-logged-in) #dashboard-grid { display: none; }
     display: none;
 }
 
-.dlo-result-panel {
+.dlo-confetti {
+    position: fixed;
+    inset: 0;
     width: 100%;
-    max-width: 32rem;
+    height: 100%;
+    pointer-events: none;
+    z-index: 201;
+}
+
+.dlo-result-panel {
+    position: relative;
+    z-index: 202;
+    width: 100%;
+    max-width: 40rem;
     max-height: 90vh;
     overflow-y: auto;
     border-radius: 20px;
@@ -4775,10 +4798,35 @@ html:not(.is-logged-in) #dashboard-grid { display: none; }
     color: var(--yaziyo-gold-hex);
 }
 
+.dlo-result-time {
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+}
+
+.dlo-result-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dlo-result-block-title {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgb(var(--yaziyo-text-secondary-rgb));
+}
+
 .dlo-result-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.625rem;
+}
+
+.dlo-result-grid--3 {
+    grid-template-columns: repeat(3, 1fr);
 }
 
 .dlo-result-stat {
@@ -4802,6 +4850,17 @@ html:not(.is-logged-in) #dashboard-grid { display: none; }
     font-family: 'Poppins', sans-serif;
     font-weight: 700;
     font-size: 1rem;
+}
+
+.dlo-result-advice {
+    margin: 0;
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgb(var(--yaziyo-gold-rgb) / 0.35);
+    background: rgb(var(--yaziyo-gold-rgb) / 0.08);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: rgb(var(--yaziyo-text-rgb));
 }
 
 .dlo-exam-stats {
@@ -4863,31 +4922,15 @@ html:not(.is-logged-in) #dashboard-grid { display: none; }
     display: none;
 }
 
-.dlo-result-kazanim {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.875rem 1rem;
-    border-radius: 12px;
-    border: 1px solid rgb(var(--yaziyo-gold-rgb) / 0.3);
-    background: rgb(var(--yaziyo-gold-rgb) / 0.06);
-    font-size: 0.8125rem;
-    line-height: 1.55;
-    color: rgb(var(--yaziyo-text-rgb));
-}
-
-.dlo-result-kazanim.hidden {
-    display: none;
-}
-
-.dlo-result-kazanim i {
-    margin-top: 0.15rem;
-    flex-shrink: 0;
-}
-
 .dlo-result-actions {
     display: flex;
     flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dlo-result-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
 }
 
@@ -4900,33 +4943,25 @@ html:not(.is-logged-in) #dashboard-grid { display: none; }
     font-weight: 700;
     font-size: 0.875rem;
     cursor: pointer;
+    background: linear-gradient(to right, var(--yaziyo-gold-hex), #ea580c);
+    color: #1e293b;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dlo-result-btn:hover:not(:disabled) {
     transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgb(var(--yaziyo-gold-rgb) / 0.28);
 }
 
 .dlo-result-btn:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-.dlo-result-btn--primary {
-    background: linear-gradient(to right, var(--yaziyo-gold-hex), #ea580c);
-    color: #1e293b;
-}
-
-.dlo-result-btn--secondary {
-    background: rgb(var(--yaziyo-bg-rgb));
-    color: rgb(var(--yaziyo-text-rgb));
-    border: 1.5px solid rgb(var(--yaziyo-border-rgb));
-}
-
-.dlo-result-btn--save {
-    background: rgb(var(--yaziyo-card-rgb));
-    color: rgb(var(--yaziyo-text-rgb));
-    border: 1.5px solid rgb(var(--yaziyo-gold-rgb) / 0.45);
+.dlo-result-btn--drill.hidden {
+    display: none;
 }
 
 .dlo-toast {

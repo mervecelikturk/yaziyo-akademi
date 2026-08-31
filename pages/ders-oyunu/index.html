@@ -339,31 +339,33 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            -webkit-mask-size: 100% 100%;
-            mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
         }
         .dlo-hand-paint svg {
             width: 100%;
             height: 100%;
             display: block;
-        }
-        .dlo-hand--left .dlo-hand-paint {
-            -webkit-mask-image: url("../../images/ders-el-sol.png");
-            mask-image: url("../../images/ders-el-sol.png");
-        }
-        .dlo-hand--right .dlo-hand-paint {
-            -webkit-mask-image: url("../../images/ders-el-sag.png");
-            mask-image: url("../../images/ders-el-sag.png");
+            overflow: visible;
         }
         .dlo-tip {
             fill: none;
+            transform-box: fill-box;
+            transform-origin: center;
+            transition: transform 0.18s ease;
         }
         .dlo-tip.is-active {
             fill: #f97316;
+            stroke: #ea580c;
+            stroke-width: 2;
+            filter: drop-shadow(0 0 4px rgba(249, 115, 22, 0.55));
+        }
+        .dlo-tip[data-reach="up"] {
+            transform: translateY(-22%);
+        }
+        .dlo-tip[data-reach="down"] {
+            transform: translateY(24%);
+        }
+        .dark .dlo-hand-img {
+            filter: invert(1);
         }
         .dlo-exam .dlo-text-card {
             position: relative;
@@ -511,12 +513,12 @@
                 <div class="dlo-hand-frame">
                     <img class="dlo-hand-img" src="../../images/ders-el-sol.png" alt="">
                     <div class="dlo-hand-paint">
-                        <svg viewBox="0 0 336 419" preserveAspectRatio="xMidYMid meet">
-                            <circle class="dlo-tip" data-finger="left_pinky" cx="26" cy="149" r="13"/>
-                            <circle class="dlo-tip" data-finger="left_ring" cx="77" cy="56" r="13"/>
-                            <circle class="dlo-tip" data-finger="left_middle" cx="109" cy="22" r="13"/>
-                            <circle class="dlo-tip" data-finger="left_index" cx="189" cy="22" r="13"/>
-                            <circle class="dlo-tip" data-finger="thumb" cx="306" cy="127" r="13"/>
+                        <svg viewBox="0 0 529 712" preserveAspectRatio="xMidYMid meet">
+                            <circle class="dlo-tip" data-finger="left_pinky" cx="38" cy="179" r="20"/>
+                            <circle class="dlo-tip" data-finger="left_ring" cx="134" cy="87" r="20"/>
+                            <circle class="dlo-tip" data-finger="left_middle" cx="225" cy="46" r="20"/>
+                            <circle class="dlo-tip" data-finger="left_index" cx="340" cy="90" r="20"/>
+                            <circle class="dlo-tip" data-finger="thumb" cx="479" cy="323" r="20"/>
                         </svg>
                     </div>
                 </div>
@@ -532,12 +534,12 @@
                 <div class="dlo-hand-frame">
                     <img class="dlo-hand-img" src="../../images/ders-el-sag.png" alt="">
                     <div class="dlo-hand-paint">
-                        <svg viewBox="0 0 342 419" preserveAspectRatio="xMidYMid meet">
-                            <circle class="dlo-tip" data-finger="thumb" cx="24" cy="127" r="13"/>
-                            <circle class="dlo-tip" data-finger="right_index" cx="155" cy="22" r="13"/>
-                            <circle class="dlo-tip" data-finger="right_middle" cx="228" cy="22" r="13"/>
-                            <circle class="dlo-tip" data-finger="right_ring" cx="263" cy="56" r="13"/>
-                            <circle class="dlo-tip" data-finger="right_pinky" cx="312" cy="149" r="13"/>
+                        <svg viewBox="0 0 529 712" preserveAspectRatio="xMidYMid meet">
+                            <circle class="dlo-tip" data-finger="thumb" cx="48" cy="323" r="20"/>
+                            <circle class="dlo-tip" data-finger="right_index" cx="187" cy="90" r="20"/>
+                            <circle class="dlo-tip" data-finger="right_middle" cx="303" cy="46" r="20"/>
+                            <circle class="dlo-tip" data-finger="right_ring" cx="394" cy="87" r="20"/>
+                            <circle class="dlo-tip" data-finger="right_pinky" cx="490" cy="179" r="20"/>
                         </svg>
                     </div>
                 </div>
@@ -547,6 +549,7 @@
 
     <!-- Sonuç -->
     <div class="dlo-result-overlay hidden" id="dlo-result" role="dialog" aria-modal="true" aria-labelledby="dlo-result-title">
+        <canvas id="dlo-confetti" class="dlo-confetti" aria-hidden="true"></canvas>
         <div class="dlo-result-panel">
             <div class="dlo-result-head">
                 <h2 class="dlo-result-title" id="dlo-result-title">Ders Sonucu</h2>
@@ -559,30 +562,78 @@
                     <div class="text-xs uppercase tracking-widest font-bold text-light-text-secondary dark:text-dark-text-secondary mb-1">Başarı Oranı</div>
                     <div class="dlo-result-rate" id="dlo-result-rate">0%</div>
                     <p class="text-sm mt-2" id="dlo-result-message"></p>
+                    <p class="dlo-result-time" id="dlo-result-time">Süre: 00:00</p>
                 </div>
-                <div class="dlo-result-grid">
-                    <div class="dlo-result-stat">
-                        <div class="dlo-result-stat-label">Doğru Kelime</div>
-                        <div class="dlo-result-stat-value text-green-500" id="dlo-stat-correct">0</div>
-                    </div>
-                    <div class="dlo-result-stat">
-                        <div class="dlo-result-stat-label">Yanlış Kelime</div>
-                        <div class="dlo-result-stat-value text-red-500" id="dlo-stat-wrong">0</div>
-                    </div>
-                    <div class="dlo-result-stat">
-                        <div class="dlo-result-stat-label">En Çok Kullanılan Harf</div>
-                        <div class="dlo-result-stat-value" id="dlo-stat-most">—</div>
+
+                <div class="dlo-result-block">
+                    <h3 class="dlo-result-block-title">Tuş vuruşu</h3>
+                    <div class="dlo-result-grid dlo-result-grid--3">
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Doğru</div>
+                            <div class="dlo-result-stat-value text-green-500" id="dlo-stat-keys-ok">0</div>
+                        </div>
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Yanlış</div>
+                            <div class="dlo-result-stat-value text-red-500" id="dlo-stat-keys-err">0</div>
+                        </div>
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Toplam</div>
+                            <div class="dlo-result-stat-value" id="dlo-stat-keys-total">0</div>
+                        </div>
                     </div>
                 </div>
-                <div class="dlo-result-kazanim hidden" id="dlo-result-kazanim">
-                    <i class="fa-solid fa-lightbulb text-yaziyo-gold"></i>
-                    <p id="dlo-result-kazanim-text"></p>
+
+                <div class="dlo-result-block">
+                    <h3 class="dlo-result-block-title">Kelime</h3>
+                    <div class="dlo-result-grid dlo-result-grid--3">
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Doğru</div>
+                            <div class="dlo-result-stat-value text-green-500" id="dlo-stat-correct">0</div>
+                        </div>
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Yanlış</div>
+                            <div class="dlo-result-stat-value text-red-500" id="dlo-stat-wrong">0</div>
+                        </div>
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Toplam</div>
+                            <div class="dlo-result-stat-value" id="dlo-stat-words-total">0</div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="dlo-result-block">
+                    <h3 class="dlo-result-block-title">Sınav istatistiği</h3>
+                    <div class="dlo-result-grid dlo-result-grid--3">
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Yanlış yüzdesi</div>
+                            <div class="dlo-result-stat-value text-red-500" id="dlo-stat-wrong-pct">0%</div>
+                        </div>
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Atlanan kelime</div>
+                            <div class="dlo-result-stat-value" id="dlo-stat-skipped">0</div>
+                        </div>
+                        <div class="dlo-result-stat">
+                            <div class="dlo-result-stat-label">Silme tuşu</div>
+                            <div class="dlo-result-stat-value" id="dlo-stat-backspace">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="dlo-result-advice" id="dlo-result-advice"></p>
+
                 <div class="dlo-result-actions">
-                    <button type="button" class="dlo-result-btn dlo-result-btn--save" id="dlo-btn-save">Sonuçları Kaydet</button>
-                    <button type="button" class="dlo-result-btn dlo-result-btn--primary hidden" id="dlo-btn-continue">Devam Et</button>
-                    <button type="button" class="dlo-result-btn dlo-result-btn--secondary hidden" id="dlo-btn-retry">Tekrar Et</button>
-                    <button type="button" class="dlo-result-btn dlo-result-btn--primary hidden" id="dlo-btn-redo">Yeniden Dene</button>
+                    <button type="button" class="dlo-result-btn dlo-result-btn--drill hidden" id="dlo-btn-drill">
+                        En hatalı tuşu tekrarla
+                    </button>
+                    <div class="dlo-result-actions-row">
+                        <button type="button" class="dlo-result-btn dlo-result-btn--secondary" id="dlo-btn-retry">Tekrar et</button>
+                        <button type="button" class="dlo-result-btn dlo-result-btn--primary" id="dlo-btn-next">Sonraki ders</button>
+                    </div>
+                    <div class="dlo-result-actions-row">
+                        <button type="button" class="dlo-result-btn dlo-result-btn--secondary" id="dlo-btn-prev">Önceki ders</button>
+                        <button type="button" class="dlo-result-btn dlo-result-btn--secondary" id="dlo-btn-back">Geri dön</button>
+                    </div>
+                    <button type="button" class="dlo-result-btn dlo-result-btn--save" id="dlo-btn-save">Sonucu kaydet</button>
                 </div>
             </div>
         </div>
@@ -590,6 +641,7 @@
 
     <div class="dlo-toast" id="dlo-toast" role="status"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="../../js/derslerMetinleriF.js"></script>
     <script src="../../js/derslerMetinleriQ.js"></script>
     <script src="../../js/derslerMetinleri.js"></script>

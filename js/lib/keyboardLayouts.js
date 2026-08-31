@@ -61,30 +61,31 @@ export const KEYBOARD_LAYOUTS = {
                     { id: '3', label: '3' }, { id: '4', label: '4' }, { id: '5', label: '5' },
                     { id: '6', label: '6' }, { id: '7', label: '7' }, { id: '8', label: '8' },
                     { id: '9', label: '9' }, { id: '0', label: '0' }, { id: '/', label: '/' },
-                    { id: '-', label: '-' }, { id: ',', label: ',' },
+                    { id: '-', label: '-' },
                 ],
             },
             {
                 id: 'r2', label: '', keys: [
                     { id: 'f', label: 'F' }, { id: 'g', label: 'G' }, { id: 'ğ', label: 'Ğ' },
-                    { id: 'i', label: 'İ' }, { id: 'o', label: 'O' }, { id: 'd', label: 'D' },
-                    { id: 'n', label: 'N' }, { id: 'h', label: 'H' }, { id: 'p', label: 'P' },
-                    { id: 'q', label: 'Q' }, { id: 'w', label: 'W' },
+                    { id: 'ı', label: 'I' }, { id: 'o', label: 'O' }, { id: 'd', label: 'D' },
+                    { id: 'r', label: 'R' }, { id: 'n', label: 'N' }, { id: 'h', label: 'H' },
+                    { id: 'p', label: 'P' }, { id: 'q', label: 'Q' }, { id: 'w', label: 'W' },
                 ],
             },
             {
                 id: 'r3', label: '', keys: [
-                    { id: 'u', label: 'U' }, { id: 'ı', label: 'I' }, { id: 'a', label: 'A' },
-                    { id: 'e', label: 'E' }, { id: 't', label: 'T' }, { id: 'k', label: 'K' },
-                    { id: 'm', label: 'M' }, { id: 'l', label: 'L' }, { id: 'y', label: 'Y' },
-                    { id: 'ü', label: 'Ü' }, { id: 'z', label: 'Z' }, { id: 's', label: 'S' },
+                    { id: 'u', label: 'U' }, { id: 'i', label: 'İ' }, { id: 'e', label: 'E' },
+                    { id: 'a', label: 'A' }, { id: 'ü', label: 'Ü' }, { id: 't', label: 'T' },
+                    { id: 'k', label: 'K' }, { id: 'm', label: 'M' }, { id: 'l', label: 'L' },
+                    { id: 'y', label: 'Y' }, { id: 'ş', label: 'Ş' }, { id: 'x', label: 'X' },
                 ],
             },
             {
                 id: 'r4', label: '', keys: [
                     { id: 'j', label: 'J' }, { id: 'ö', label: 'Ö' }, { id: 'v', label: 'V' },
-                    { id: 'c', label: 'C' }, { id: 'ç', label: 'Ç' }, { id: 'b', label: 'B' },
-                    { id: '.', label: '.' },
+                    { id: 'c', label: 'C' }, { id: 'ç', label: 'Ç' }, { id: 'z', label: 'Z' },
+                    { id: 's', label: 'S' }, { id: 'b', label: 'B' }, { id: '.', label: '.' },
+                    { id: ',', label: ',' },
                 ],
             },
             {
@@ -96,61 +97,63 @@ export const KEYBOARD_LAYOUTS = {
     },
 };
 
-/** On parmak — Q klavye parmak ataması */
+/**
+ * Q — sütunlar (aynı parmak üst / orta / alt).
+ * Ş ve İ sağ serçe; Ö sağ orta; Ç sağ yüzük.
+ */
 const Q_FINGER_MAP = {
-    '`': 'left_pinky', '1': 'left_pinky', 'q': 'left_pinky', 'a': 'left_pinky', 'z': 'left_pinky', '<': 'left_pinky', 'ö': 'left_pinky',
-    '2': 'left_ring', 'w': 'left_ring', 's': 'left_ring', 'x': 'left_ring',
+    '`': 'left_pinky', '1': 'left_pinky', 'q': 'left_pinky', 'a': 'left_pinky', 'z': 'left_pinky', '<': 'left_pinky',
+    '2': 'left_ring', 'w': 'left_ring', 's': 'left_ring', 'x': 'left_ring', "'": 'left_ring',
     '3': 'left_middle', 'e': 'left_middle', 'd': 'left_middle', 'c': 'left_middle',
-    '4': 'left_index', 'r': 'left_index', 'f': 'left_index', 'v': 'left_index',
-    '5': 'left_index', 't': 'left_index', 'g': 'left_index', 'b': 'left_index',
-    '6': 'right_index', 'y': 'right_index', 'h': 'right_index', 'n': 'right_index',
-    '7': 'right_index', 'u': 'right_index', 'j': 'right_index', 'm': 'right_index',
-    '8': 'right_middle', 'ı': 'right_middle', 'k': 'right_middle', 'ş': 'right_middle',
-    '9': 'right_ring', 'o': 'right_ring', 'l': 'right_ring', 'i': 'right_ring',
-    '0': 'right_pinky', 'p': 'right_pinky', 'ğ': 'right_pinky', 'ü': 'right_pinky', 'ç': 'right_pinky',
-    '*': 'right_pinky', '-': 'right_pinky',
+    '4': 'left_index', '5': 'left_index', 'r': 'left_index', 't': 'left_index', 'f': 'left_index', 'g': 'left_index', 'v': 'left_index', 'b': 'left_index',
+    '6': 'right_index', '7': 'right_index', 'y': 'right_index', 'u': 'right_index', 'h': 'right_index', 'j': 'right_index', 'n': 'right_index', 'm': 'right_index',
+    '8': 'right_middle', 'ı': 'right_middle', 'k': 'right_middle', 'ö': 'right_middle',
+    '9': 'right_ring', 'o': 'right_ring', 'l': 'right_ring', 'ç': 'right_ring',
+    '0': 'right_pinky', '*': 'right_pinky', '-': 'right_pinky', 'p': 'right_pinky', 'ğ': 'right_pinky', 'ü': 'right_pinky', 'ş': 'right_pinky', 'i': 'right_pinky',
     '.': 'right_pinky', ',': 'right_pinky', ';': 'right_pinky', ':': 'right_pinky',
-    '!': 'left_pinky', '?': 'right_pinky', '"': 'right_pinky', "'": 'left_ring',
-    '(': 'right_pinky', ')': 'right_pinky',
+    '!': 'left_pinky', '?': 'right_pinky', '"': 'right_pinky', '(': 'right_pinky', ')': 'right_pinky',
     ' ': 'thumb',
 };
 
-/** On parmak — F klavye parmak ataması (Türkçe F standart) */
+/**
+ * F — MEB / TSE on parmak (temel sıra U İ E A / K M L Y).
+ * Harf adı QWERTY ile karıştırılmaz: F üstte sol serçe, G sol yüzük.
+ */
 const F_FINGER_MAP = {
     '+': 'left_pinky', '1': 'left_pinky', '!': 'left_pinky',
+    'f': 'left_pinky', 'u': 'left_pinky', 'j': 'left_pinky',
     '2': 'left_ring', "'": 'left_ring',
+    'g': 'left_ring', 'i': 'left_ring', 'ö': 'left_ring',
     '3': 'left_middle',
+    'ğ': 'left_middle', 'e': 'left_middle', 'v': 'left_middle',
     '4': 'left_index', '5': 'left_index', '%': 'left_index',
+    'ı': 'left_index', 'o': 'left_index', 'a': 'left_index', 'ü': 'left_index', 'c': 'left_index', 'ç': 'left_index',
     '6': 'right_index', '7': 'right_index', '&': 'right_index',
+    'd': 'right_index', 'r': 'right_index', 't': 'right_index', 'k': 'right_index', 'z': 'right_index', 's': 'right_index',
     '8': 'right_middle',
+    'n': 'right_middle', 'm': 'right_middle', 'b': 'right_middle',
     '9': 'right_ring',
-    '0': 'right_pinky', '/': 'right_pinky', '-': 'right_pinky', ',': 'right_pinky',
+    'h': 'right_ring', 'l': 'right_ring', '.': 'right_ring',
+    '0': 'right_pinky', '/': 'right_pinky', '-': 'right_pinky',
+    'p': 'right_pinky', 'q': 'right_pinky', 'w': 'right_pinky',
+    'y': 'right_pinky', 'ş': 'right_pinky', 'x': 'right_pinky', ',': 'right_pinky',
     '?': 'right_pinky', '(': 'right_pinky', ')': 'right_pinky', '=': 'right_pinky',
     ';': 'right_pinky', ':': 'right_pinky', '"': 'right_pinky',
-    'f': 'left_index', 'g': 'left_index',
-    'ğ': 'left_middle',
-    'i': 'left_ring',
-    'o': 'left_pinky',
-    'd': 'right_index', 'r': 'right_index',
-    'n': 'right_middle',
-    'h': 'right_ring',
-    'p': 'right_pinky', 'q': 'right_pinky', 'w': 'right_pinky',
-    'u': 'left_pinky',
-    'ı': 'left_ring',
-    'e': 'left_middle',
-    'a': 'left_index', 'ü': 'left_index',
-    't': 'right_index', 'k': 'right_index',
-    'm': 'right_middle',
-    'l': 'right_ring',
-    'y': 'right_pinky', 'ş': 'right_pinky', 'z': 'right_pinky', 's': 'right_pinky', 'x': 'right_pinky',
-    'j': 'left_pinky',
-    'ö': 'left_ring',
-    'v': 'left_middle',
-    'c': 'left_index', 'ç': 'left_index',
-    'b': 'right_index',
-    '.': 'right_middle',
     ' ': 'thumb',
 };
+
+const ROW_REACH = { r1: 'up', r2: 'up', r3: 'home', r4: 'down', r5: 'home' };
+
+/** @type {Record<'q'|'f', Record<string, 'up'|'home'|'down'>>} */
+const KEY_REACH_MAP = { q: {}, f: {} };
+['q', 'f'].forEach((id) => {
+    KEYBOARD_LAYOUTS[id].rows.forEach((row) => {
+        const reach = ROW_REACH[row.id] || 'home';
+        row.keys.forEach((key) => {
+            KEY_REACH_MAP[id][key.id] = reach;
+        });
+    });
+});
 
 export const FINGER_LABELS = {
     left_pinky: 'Sol Serçe',
@@ -215,4 +218,15 @@ export function normalizePressedKey(rawKey) {
 
 export function getLayoutLabel(layoutId) {
     return KEYBOARD_LAYOUTS[layoutId === 'f' ? 'f' : 'q'].label;
+}
+
+/**
+ * Tuşun sırası: üst (sayı / harf üst), orta (yuvada), alt.
+ * @param {string} layoutId
+ * @param {string} keyId
+ * @returns {'up'|'home'|'down'}
+ */
+export function getKeyReach(layoutId, keyId) {
+    const map = KEY_REACH_MAP[layoutId === 'f' ? 'f' : 'q'];
+    return map[keyId] || 'home';
 }
