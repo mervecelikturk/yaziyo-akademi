@@ -167,30 +167,25 @@ function resetConsents() {
 }
 
 function legalDocEls() {
-    return [
-        document.getElementById('ep-legal-doc-mss'),
-        document.getElementById('ep-legal-doc-iptal'),
-        document.getElementById('ep-legal-doc-onbilgi'),
-        document.getElementById('ep-legal-doc-gizlilik'),
-    ];
+    return Array.from(document.querySelectorAll('.ep-legal-doc'));
 }
 
 function openLegalModal(docKey) {
-    const key = String(docKey || '').trim();
-    const ids = {
-        mss: 'ep-legal-doc-mss',
-        iptal: 'ep-legal-doc-iptal',
-        onbilgi: 'ep-legal-doc-onbilgi',
-        gizlilik: 'ep-legal-doc-gizlilik',
-    };
+    const key = String(docKey || '').trim().toLowerCase();
     const modal = document.getElementById('ep-legal-modal');
-    const doc = document.getElementById(ids[key] || '');
+    const body = document.getElementById('ep-legal-body');
+    const doc = document.getElementById(`ep-legal-doc-${key}`);
     if (!modal || !doc) return;
 
     legalDocEls().forEach((el) => {
-        if (el) el.hidden = true;
+        el.hidden = true;
+        el.setAttribute('hidden', '');
     });
+    if (body && doc.parentElement !== body) {
+        body.appendChild(doc);
+    }
     doc.hidden = false;
+    doc.removeAttribute('hidden');
     if (els.legalTitle) {
         els.legalTitle.textContent = doc.getAttribute('data-ep-legal-title') || 'Sözleşme';
     }
@@ -198,7 +193,7 @@ function openLegalModal(docKey) {
     modal.hidden = false;
     modal.removeAttribute('hidden');
     modal.setAttribute('aria-hidden', 'false');
-    document.getElementById('ep-legal-body')?.scrollTo?.(0, 0);
+    body?.scrollTo?.(0, 0);
 }
 
 function closeLegalModal() {
@@ -350,18 +345,23 @@ function bindEvents() {
     els.consentMss?.addEventListener('change', updatePurchaseCta);
     els.consentOnbilgi?.addEventListener('change', updatePurchaseCta);
 
-    // Sözleşme linkleri — yalnızca tıklanınca açılır; checkbox'ı tetiklemez
-    const openFromLegalLink = (e) => {
+    // Sözleşme linkleri — label dışında, yakalama aşamasında (satır kırılınca tıklama kaçmasın)
+    document.addEventListener('click', (e) => {
         const link = e.target.closest?.('[data-ep-legal]');
-        if (!link) return;
+        if (!link) {
+            const item = e.target.closest?.('#ep-consent-box .ep-consent-item');
+            if (!item) return;
+            const check = item.querySelector('.ep-consent-check');
+            if (check && e.target !== check) {
+                check.checked = !check.checked;
+                check.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            return;
+        }
         e.preventDefault();
         e.stopPropagation();
         openLegalModal(link.getAttribute('data-ep-legal'));
-    };
-    els.consentBox?.addEventListener('click', openFromLegalLink);
-    document.querySelectorAll('[data-ep-legal]').forEach((btn) => {
-        btn.addEventListener('click', openFromLegalLink);
-    });
+    }, true);
 
     els.legalClose?.addEventListener('click', closeLegalModal);
     els.legalOk?.addEventListener('click', closeLegalModal);
