@@ -1,24 +1,22 @@
 /**
  * YAZİYO — Ödeme sayfası
- * Kart verisi sunucuya gönderilmez ve console'a yazılmaz.
+ * Kart verisi bu sayfada toplanmaz; iyzico Checkout Form / 3D Secure kullanılır.
  */
 import {
     loadCheckoutContext,
     startPayment,
-    validateCardForm,
-    formatCardNumber,
-    formatExpiry,
-    detectCardBrand,
-    cvvLength,
+    confirmPaymentFromProvider,
+    validateBuyerForm,
+    formatPhoneInput,
     sanitizeCardName,
     formatCheckoutAmount,
+    mountIyzicoCheckout,
     PaymentErrorCode,
 } from './lib/paymentService.js';
 
 const els = {};
 let checkout = null;
 let submitting = false;
-let currentBrand = null;
 
 function escapeHtml(str) {
     const d = document.createElement('div');
@@ -48,15 +46,11 @@ function cacheElements() {
     els.form = document.getElementById('pay-form');
     els.firstName = document.getElementById('pay-first-name');
     els.lastName = document.getElementById('pay-last-name');
-    els.cardNumber = document.getElementById('pay-card-number');
-    els.expiry = document.getElementById('pay-expiry');
-    els.cvv = document.getElementById('pay-cvv');
-    els.brand = document.getElementById('pay-card-brand');
-    els.cvvHelp = document.getElementById('pay-cvv-help');
-    els.cvvTip = document.getElementById('pay-cvv-tip');
+    els.phone = document.getElementById('pay-phone');
     els.submit = document.getElementById('pay-submit');
     els.formAlert = document.getElementById('pay-form-alert');
     els.toast = document.getElementById('pay-toast');
+    els.iyzicoBox = document.getElementById('iyzipay-checkout-form');
     els.amountEls = document.querySelectorAll('[data-pay-amount]');
     els.pkgTitleEls = document.querySelectorAll('[data-pay-pkg-title]');
     els.pkgDesc = document.getElementById('pay-pkg-desc');
@@ -69,7 +63,7 @@ function cacheElements() {
 
 function showView(name) {
     const overlay = els.loading;
-    const checkout = els.checkout;
+    const checkoutEl = els.checkout;
     const others = {
         auth: els.authGate,
         error: els.errorBox,
@@ -81,13 +75,13 @@ function showView(name) {
     });
 
     if (name === 'loading' || name === 'checkout') {
-        if (checkout) checkout.hidden = false;
+        if (checkoutEl) checkoutEl.hidden = false;
         if (overlay) overlay.hidden = name !== 'loading';
         if (els.summaryBody) els.summaryBody.hidden = name === 'loading';
         return;
     }
 
-    if (checkout) checkout.hidden = true;
+    if (checkoutEl) checkoutEl.hidden = true;
     if (overlay) overlay.hidden = true;
     const target = others[name];
     if (target) target.hidden = false;
@@ -131,9 +125,7 @@ function readFormFields() {
     return {
         firstName: els.firstName?.value || '',
         lastName: els.lastName?.value || '',
-        cardNumber: els.cardNumber?.value || '',
-        expiry: els.expiry?.value || '',
-        cvv: els.cvv?.value || '',
+        phone: els.phone?.value || '',
     };
 }
 
@@ -141,9 +133,7 @@ function applyValidation(result, { touchedOnly } = {}) {
     const map = {
         firstName: els.firstName,
         lastName: els.lastName,
-        cardNumber: els.cardNumber,
-        expiry: els.expiry,
-        cvv: els.cvv,
+        phone: els.phone,
     };
     Object.entries(map).forEach(([key, input]) => {
         if (!input) return;
@@ -154,41 +144,58 @@ function applyValidation(result, { touchedOnly } = {}) {
     });
 }
 
-function updatePayButton(result) {
-    if (!els.submit) return;
-    const past = result?.expiryPast === true;
-    els.submit.disabled = submitting || past;
+function isTypingEvent(e) {
+    return e.type === 'input' && (
+        e.inputType === 'insertText'
+        || e.inputType === 'insertFromPaste'
+        || e.inputType === 'deleteContentBackward'
+        || e.inputType === 'deleteContentForward'
+        || e.inputType === 'deleteByCut'
+        || e.inputType === 'deleteContent'
+    );
 }
 
-function updateBrand(digits) {
-    const brand = detectCardBrand(digits);
-    currentBrand = brand;
-    if (!els.brand) return;
-    els.brand.dataset.brand = brand || '';
-    els.brand.innerHTML = brandIcon(brand);
-    els.brand.hidden = !brand;
-    if (els.cvv) {
-        els.cvv.maxLength = cvvLength(brand);
-        els.cvv.setAttribute('placeholder', brand === 'amex' ? '••••' : '•••');
-    }
+function splitAccountName(fullName) {
+    const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return { firstName: '', lastName: '' };
+    if (parts.length === 1) return { firstName: parts[0], lastName: '' };
+    return { firstName: parts[0], lastName: parts.slice(1).join(' ') };
 }
 
-function brandIcon(brand) {
-    const logos = {
-        visa: '../../images/odeme/visa.png',
-        mastercard: '../../images/odeme/mastercard.png',
-        amex: '../../images/odeme/amex.png',
-        troy: '../../images/odeme/troy.png',
+function prefillBuyer(user) {
+    const { firstName, lastName } = splitAccountName(user?.name || '');
+    if (els.firstName && !els.firstName.value) els.firstName.value = firstName;
+    if (els.lastName && !els.lastName.value) els.lastName.value = lastName;
+}
+
+function bindBuyerInputs() {
+    const onName = (e) => {
+        if (!isTypingEvent(e)) return;
+        e.target.value = sanitizeCardName(e.target.value);
     };
-    const src = logos[brand];
-    if (!src) return '';
-    const labels = {
-        visa: 'Visa',
-        mastercard: 'Mastercard',
-        amex: 'American Express',
-        troy: 'TROY',
+    const onPhone = (e) => {
+        if (!isTypingEvent(e)) return;
+        e.target.value = formatPhoneInput(e.target.value);
+        if (e.target.dataset.touched === '1') {
+            applyValidation(validateBuyerForm(readFormFields()), { touchedOnly: true });
+        }
     };
-    return `<img src="${src}" alt="${labels[brand]}" title="${labels[brand]}">`;
+
+    els.firstName?.addEventListener('input', onName);
+    els.lastName?.addEventListener('input', onName);
+    els.phone?.addEventListener('input', onPhone);
+
+    [els.firstName, els.lastName, els.phone].forEach((input) => {
+        input?.addEventListener('blur', () => {
+            if (input === els.firstName || input === els.lastName) {
+                input.value = sanitizeCardName(input.value);
+            } else if (input === els.phone) {
+                input.value = formatPhoneInput(input.value);
+            }
+            input.dataset.touched = '1';
+            applyValidation(validateBuyerForm(readFormFields()), { touchedOnly: true });
+        });
+    });
 }
 
 function fillPackageSummary(pkg, amountLabel) {
@@ -224,119 +231,44 @@ function showFormAlert(message) {
     els.formAlert.textContent = message;
 }
 
-function isTypingEvent(e) {
-    return e.type === 'input' && (
-        e.inputType === 'insertText'
-        || e.inputType === 'insertFromPaste'
-        || e.inputType === 'deleteContentBackward'
-        || e.inputType === 'deleteContentForward'
-        || e.inputType === 'deleteByCut'
-        || e.inputType === 'deleteContent'
-    );
+function setSubmitting(on) {
+    submitting = on;
+    if (!els.submit) return;
+    els.submit.disabled = on;
+    if (on) {
+        els.submit.dataset.originalText = els.submit.textContent;
+        els.submit.textContent = 'İşleniyor...';
+    } else {
+        els.submit.textContent = els.submit.dataset.originalText || 'Ödeme Yap';
+    }
 }
 
-function bindCardInputs() {
-    const onFirstName = (e) => {
-        if (!isTypingEvent(e)) return;
-        e.target.value = sanitizeCardName(e.target.value);
-    };
-    const onLastName = (e) => {
-        if (!isTypingEvent(e)) return;
-        e.target.value = sanitizeCardName(e.target.value);
-    };
-    const onCardNumber = (e) => {
-        const digits = e.target.value.replace(/\D/g, '');
-        updateBrand(digits);
-        if (!isTypingEvent(e)) return;
-        e.target.value = formatCardNumber(digits, currentBrand);
-        if (e.target.dataset.touched === '1') {
-            applyValidation(validateCardForm(readFormFields()), { touchedOnly: true });
-        }
-        updatePayButton(validateCardForm(readFormFields()));
-    };
-    const onExpiry = (e) => {
-        if (!isTypingEvent(e)) {
-            updatePayButton(validateCardForm(readFormFields()));
-            return;
-        }
-        e.target.value = formatExpiry(e.target.value);
-        const result = validateCardForm(readFormFields());
-        if (e.target.dataset.touched === '1') applyValidation(result, { touchedOnly: true });
-        updatePayButton(result);
-    };
-    const onCvv = (e) => {
-        if (!isTypingEvent(e)) return;
-        const max = cvvLength(currentBrand);
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, max);
-        if (e.target.dataset.touched === '1') {
-            applyValidation(validateCardForm(readFormFields()), { touchedOnly: true });
-        }
-    };
-
-    els.firstName?.addEventListener('input', onFirstName);
-    els.lastName?.addEventListener('input', onLastName);
-    els.cardNumber?.addEventListener('input', onCardNumber);
-    els.expiry?.addEventListener('input', onExpiry);
-    els.cvv?.addEventListener('input', onCvv);
-
-    [els.firstName, els.lastName, els.cardNumber, els.expiry, els.cvv].forEach((input) => {
-        input?.addEventListener('blur', () => {
-            if (input === els.cardNumber) {
-                const digits = input.value.replace(/\D/g, '');
-                updateBrand(digits);
-                input.value = formatCardNumber(digits, currentBrand);
-            } else if (input === els.expiry) {
-                input.value = formatExpiry(input.value);
-            } else if (input === els.firstName || input === els.lastName) {
-                input.value = sanitizeCardName(input.value);
-            }
-            input.dataset.touched = '1';
-            applyValidation(validateCardForm(readFormFields()), { touchedOnly: true });
-            updatePayButton(validateCardForm(readFormFields()));
-        });
-    });
-}
-
-function bindCvvHelp() {
-    if (!els.cvvHelp || !els.cvvTip) return;
-
-    const open = () => {
-        els.cvvTip.hidden = false;
-        els.cvvHelp.setAttribute('aria-expanded', 'true');
-    };
-    const close = () => {
-        els.cvvTip.hidden = true;
-        els.cvvHelp.setAttribute('aria-expanded', 'false');
-    };
-
-    els.cvvHelp.addEventListener('mouseenter', open);
-    els.cvvHelp.addEventListener('mouseleave', close);
-    els.cvvHelp.addEventListener('focus', open);
-    els.cvvHelp.addEventListener('blur', close);
-    els.cvvHelp.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (els.cvvTip.hidden) open();
-        else close();
-    });
-    document.addEventListener('click', (e) => {
-        if (!els.cvvHelp.contains(e.target) && !els.cvvTip.contains(e.target)) close();
-    });
+function openIyzicoCheckout(payResult) {
+    if (payResult.paymentPageUrl) {
+        window.location.assign(payResult.paymentPageUrl);
+        return true;
+    }
+    if (els.iyzicoBox && mountIyzicoCheckout(payResult.checkoutFormContent, els.iyzicoBox)) {
+        els.iyzicoBox.hidden = false;
+        if (els.submit) els.submit.hidden = true;
+        return true;
+    }
+    return false;
 }
 
 async function onSubmit(e) {
     e.preventDefault();
     showFormAlert('');
 
-    [els.firstName, els.lastName, els.cardNumber, els.expiry, els.cvv].forEach((input) => {
+    [els.firstName, els.lastName, els.phone].forEach((input) => {
         if (input) input.dataset.touched = '1';
     });
 
-    const result = validateCardForm(readFormFields());
+    const result = validateBuyerForm(readFormFields());
     applyValidation(result);
-    updatePayButton(result);
 
     if (!result.valid) {
-        showFormAlert('Kart bilgilerinizi kontrol edip tekrar deneyebilirsiniz.');
+        showFormAlert('Bilgilerinizi kontrol edip tekrar deneyebilirsiniz.');
         const firstError = els.form?.querySelector('.pay-input.is-error');
         firstError?.focus();
         return;
@@ -352,43 +284,38 @@ async function onSubmit(e) {
         return;
     }
 
-    submitting = true;
-    if (els.submit) {
-        els.submit.disabled = true;
-        els.submit.dataset.originalText = els.submit.textContent;
-        els.submit.textContent = 'İşleniyor...';
-    }
+    setSubmitting(true);
 
     try {
         const payResult = await startPayment({
             packageId: checkout?.package?.id,
+            buyer: {
+                firstName: result.firstName,
+                lastName: result.lastName,
+                phone: result.phone,
+            },
         });
-        if (payResult?.ok && payResult.order) {
-            showSuccess(payResult.order);
+        if (payResult?.ok && openIyzicoCheckout(payResult)) {
             return;
         }
         const message = payResult?.message
             || (payResult?.code === PaymentErrorCode.PROVIDER_NOT_READY
                 ? 'Ödeme henüz aktif değil.'
-                : 'Ödeme gerçekleştirilemedi. Kart bilgilerinizi kontrol edip tekrar deneyebilirsiniz.');
+                : 'Ödeme gerçekleştirilemedi. Lütfen tekrar deneyin.');
         if (payResult?.code === PaymentErrorCode.PROVIDER_NOT_READY) {
             showToast(message, 'error');
         } else {
             showFormAlert(message);
         }
     } catch {
-        showFormAlert('Ödeme gerçekleştirilemedi. Kart bilgilerinizi kontrol edip tekrar deneyebilirsiniz.');
+        showFormAlert('Ödeme gerçekleştirilemedi. Lütfen tekrar deneyin.');
     } finally {
-        submitting = false;
-        if (els.submit) {
-            els.submit.textContent = els.submit.dataset.originalText || 'Ödeme Yap';
-            updatePayButton(validateCardForm(readFormFields()));
-        }
+        setSubmitting(false);
     }
 }
 
 function showSuccess(order) {
-    if (els.successOrder) els.successOrder.textContent = `#${order.orderNumber}`;
+    if (els.successOrder) els.successOrder.textContent = `#${order.orderNumber || '—'}`;
     if (els.successPkg) els.successPkg.textContent = order.packageTitle || checkout?.package?.title || '';
     showView('success');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -410,21 +337,86 @@ function showPageError(message) {
     showView('error');
 }
 
+function cleanResultParams() {
+    const url = new URL(window.location.href);
+    ['sonuc', 'kod', 'siparis', 'token', 'conversationId'].forEach((key) => url.searchParams.delete(key));
+    const next = `${url.pathname}${url.search}${url.hash}`;
+    window.history.replaceState({}, '', next);
+}
+
+async function handleProviderReturn(params) {
+    const sonuc = params.get('sonuc');
+    const token = params.get('token');
+    if (sonuc === 'ok') {
+        showSuccess({
+            orderNumber: params.get('siparis') || '—',
+            packageTitle: checkout?.package?.title || '',
+        });
+        cleanResultParams();
+        return true;
+    }
+    if (sonuc === 'hata') {
+        const code = params.get('kod');
+        showView('checkout');
+        showFormAlert(
+            code === 'threeds_cancelled'
+                ? '3D Secure işlemi iptal edildi. Ödeme tamamlanmadı.'
+                : code === 'orphan'
+                    ? 'Ödemeniz alınmış olabilir. Sipariş durumunuz kısa süre içinde güncellenecektir.'
+                    : 'Ödeme gerçekleştirilemedi. Kart bilgilerinizi kontrol edip tekrar deneyebilirsiniz.',
+        );
+        cleanResultParams();
+        return true;
+    }
+    if (token) {
+        const confirmed = await confirmPaymentFromProvider({
+            token,
+            conversationId: params.get('conversationId') || '',
+        });
+        if (confirmed?.ok && confirmed.order) {
+            showSuccess(confirmed.order);
+            cleanResultParams();
+            return true;
+        }
+        showView('checkout');
+        showFormAlert(confirmed?.message || 'Ödeme sonucu doğrulanamadı.');
+        cleanResultParams();
+        return true;
+    }
+    return false;
+}
+
 async function init() {
     cacheElements();
     if (els.authLink) els.authLink.href = loginHref();
 
-    bindCardInputs();
-    bindCvvHelp();
+    bindBuyerInputs();
     bindNetwork();
     els.form?.addEventListener('submit', onSubmit);
 
     showView('loading');
 
+    const params = new URLSearchParams(window.location.search);
+    const returnedOk = params.get('sonuc') === 'ok';
     const ctx = await loadCheckoutContext(paketIdFromUrl());
+
+    if (returnedOk) {
+        checkout = ctx.ok ? ctx : null;
+        showSuccess({
+            orderNumber: params.get('siparis') || '—',
+            packageTitle: ctx.ok ? ctx.package.title : '',
+        });
+        cleanResultParams();
+        return;
+    }
+
     if (!ctx.ok) {
         if (ctx.code === PaymentErrorCode.AUTH) {
             showView('auth');
+            return;
+        }
+        if (ctx.code === PaymentErrorCode.ALREADY_OWNED) {
+            showPageError('Bu paketi zaten satın aldınız.');
             return;
         }
         showPageError(ctx.message);
@@ -433,7 +425,10 @@ async function init() {
 
     checkout = ctx;
     fillPackageSummary(ctx.package, formatCheckoutAmount(ctx.amount));
+    prefillBuyer(ctx.user);
     showView('checkout');
+
+    if (await handleProviderReturn(params)) return;
 }
 
 if (document.readyState === 'loading') {

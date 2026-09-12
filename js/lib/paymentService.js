@@ -10,7 +10,7 @@
  * - Sipariş teslimi yalnızca backend/webhook doğrulamasından sonra yapılır.
  */
 
-import { supabase } from './supabase.js';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase.js';
 import { ensureSession } from '../authVerification.js';
 import {
     fetchPublishedPaketById,
@@ -20,8 +20,8 @@ import {
     isTableMissingError,
 } from './egitimPaketleriApi.js';
 
-/** 'stub' | 'iyzico' — sağlayıcı anlaşması sonrası 'iyzico' yapılır */
-export const PAYMENT_PROVIDER = 'stub';
+/** 'stub' | 'iyzico' */
+export const PAYMENT_PROVIDER = 'iyzico';
 
 export const PaymentErrorCode = {
     PROVIDER_NOT_READY: 'provider_not_ready',
@@ -143,7 +143,7 @@ function makeIdempotencyKey(packageId, userId) {
  * Ödeme akışını başlatır. Kart verisi parametre olarak ALINMAZ.
  * Iyzico bağlanınca adapter Checkout Form / tokenizasyon kullanır.
  */
-export async function startPayment({ packageId, idempotencyKey } = {}, client = supabase) {
+export async function startPayment({ packageId, idempotencyKey, buyer } = {}, client = supabase) {
     if (!navigator.onLine) {
         return fail(PaymentErrorCode.NETWORK);
     }
@@ -163,7 +163,12 @@ export async function startPayment({ packageId, idempotencyKey } = {}, client = 
             packageId: ctx.package.id,
             amount: ctx.amount,
             currency: ctx.currency,
-            buyer: ctx.user,
+            buyer: {
+                ...ctx.user,
+                firstName: buyer?.firstName,
+                lastName: buyer?.lastName,
+                phone: buyer?.phone,
+            },
             packageTitle: ctx.package.title,
         });
     } catch (err) {
@@ -219,31 +224,137 @@ const stubAdapter = {
     },
 };
 
-/**
- * Iyzico bağlama noktası.
- *
- * Yapılacaklar (sağlayıcı onayından sonra):
- * 1. Supabase Edge Function: `odeme-baslat`
- *    - Auth doğrula
- *    - `odeme_siparis_olustur(paket_id)` ile sipariş oluştur (tutar DB'den)
- *    - Iyzico Checkout Form / 3D Secure oturumu başlat
- *    - checkoutFormContent veya token döndür
- * 2. Bu adapter Iyzico formunu mount eder (iframe). Ham PAN bizim sunucuya gitmez.
- * 3. Edge Function: `odeme-webhook` / `odeme-dogrula`
- *    - Iyzico'dan ödeme durumunu sorgula
- *    - odendi ise paketi teslim et, sipariş no / işlem ID kaydet
- *    - Kart verisi kaydetme
- */
+async function functionHeaders() {
+    const { data } = await supabase.auth.getSession();
+    const token = data?.session?.access_token || '';
+    return {
+        Authorization: `Bearer ${token || SUPABASE_ANON_KEY}`,
+        apikey: SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+    };
+}
+
 const iyzicoAdapter = {
-    async startPayment() {
-        // HOOK: const res = await fetch(`${SUPABASE_URL}/functions/v1/odeme-baslat`, ...)
-        return fail(PaymentErrorCode.PROVIDER_NOT_READY);
+    async startPayment({ packageId, buyer }) {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/odeme-baslat`, {
+            method: 'POST',
+            headers: await functionHeaders(),
+            body: JSON.stringify({
+                packageId,
+                buyer: {
+                    firstName: buyer?.firstName || '',
+                    lastName: buyer?.lastName || '',
+                    phone: buyer?.phone || '',
+                },
+            }),
+        });
+        const data = await res.json().catch(() => null);
+        if (!data?.ok) {
+            return fail(data?.code || PaymentErrorCode.UNKNOWN, {
+                message: data?.message,
+            });
+        }
+        return {
+            ok: true,
+            token: data.token,
+            checkoutFormContent: data.checkoutFormContent || '',
+            paymentPageUrl: data.paymentPageUrl || '',
+            order: {
+                orderNumber: data.siparis_no,
+                packageTitle: data.paket_baslik,
+            },
+        };
     },
-    async confirmPayment() {
-        // HOOK: backend token ile Iyzico'dan doğrular; frontend sonucuna güvenilmez
-        return fail(PaymentErrorCode.PROVIDER_NOT_READY);
+    async confirmPayment({ token, conversationId }) {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/odeme-dogrula`, {
+            method: 'POST',
+            headers: await functionHeaders(),
+            body: JSON.stringify({ token, conversationId }),
+        });
+        const data = await res.json().catch(() => null);
+        if (!data?.ok) {
+            return fail(data?.code || PaymentErrorCode.ORPHAN, {
+                message: data?.message,
+            });
+        }
+        return {
+            ok: true,
+            already: !!data.already,
+            order: data.order || null,
+        };
     },
 };
+
+export function formatPhoneInput(value) {
+    const d = digitsOnly(value).slice(0, 11);
+    if (d.length <= 4) return d;
+    if (d.length <= 7) return `${d.slice(0, 4)} ${d.slice(4)}`;
+    if (d.length <= 9) return `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7)}`;
+    return `${d.slice(0, 4)} ${d.slice(4, 7)} ${d.slice(7, 9)} ${d.slice(9)}`;
+}
+
+export function normalizeGsm(phone) {
+    const d = digitsOnly(phone);
+    if (d.startsWith('90') && d.length === 12 && d[2] === '5') return `+${d}`;
+    if (d.startsWith('0') && d.length === 11 && d[1] === '5') return `+90${d.slice(1)}`;
+    if (d.length === 10 && d[0] === '5') return `+90${d}`;
+    return null;
+}
+
+export function validateBuyerForm(fields) {
+    const errors = {};
+    const firstName = sanitizeCardName(fields.firstName).trim();
+    const lastName = sanitizeCardName(fields.lastName).trim();
+    const phone = String(fields.phone || '').trim();
+
+    if (!firstName) errors.firstName = 'Adınızı giriniz.';
+    else if (firstName.length < 2) errors.firstName = 'Ad en az 2 karakter olmalıdır.';
+
+    if (!lastName) errors.lastName = 'Soyadınızı giriniz.';
+    else if (lastName.length < 2) errors.lastName = 'Soyad en az 2 karakter olmalıdır.';
+
+    if (!phone) errors.phone = 'Cep telefonunuzu giriniz.';
+    else if (!normalizeGsm(phone)) errors.phone = 'Geçerli bir cep telefonu giriniz.';
+
+    return {
+        valid: Object.keys(errors).length === 0,
+        errors,
+        firstName,
+        lastName,
+        phone: normalizeGsm(phone) || phone,
+    };
+}
+
+export function mountIyzicoCheckout(html, container) {
+    if (!container) return false;
+    let content = String(html || '').trim();
+    if (!content) return false;
+    if (!content.includes('<')) {
+        try {
+            content = atob(content);
+        } catch {
+            return false;
+        }
+    }
+    container.innerHTML = '';
+    const host = document.createElement('div');
+    host.innerHTML = content;
+    const scripts = [...host.querySelectorAll('script')].map((node) => {
+        const src = node.getAttribute('src') || '';
+        const text = node.textContent || '';
+        node.remove();
+        return { src, text };
+    });
+    container.appendChild(host);
+    scripts.forEach(({ src, text }) => {
+        const el = document.createElement('script');
+        if (src) el.src = src;
+        else el.textContent = text;
+        document.body.appendChild(el);
+    });
+    return true;
+}
 
 /* ------------------------------------------------------------------ */
 /* Kart formu yardımcıları — yalnızca tarayıcıda, asla loglanmaz /     */

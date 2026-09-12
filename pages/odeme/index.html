@@ -144,44 +144,24 @@
                 <div class="pay-layout">
                     <section class="pay-card" aria-labelledby="pay-form-title">
                         <h2 id="pay-form-title" class="pay-card-title">
-                            <i class="fa-solid fa-credit-card"></i> Kart bilgileri
+                            <i class="fa-solid fa-user"></i> Alıcı bilgileri
                         </h2>
 
                         <form id="pay-form" method="post" autocomplete="off">
                             <div class="pay-grid pay-grid-2">
-                                <div class="pay-field" data-pay-label="Kart Üzerindeki Ad">
-                                    <input id="pay-first-name" class="pay-input" type="text" name="ad" maxlength="40" placeholder="Adınız" aria-label="Ad" aria-describedby="pay-first-name-err" autocomplete="off">
+                                <div class="pay-field" data-pay-label="Ad">
+                                    <input id="pay-first-name" class="pay-input" type="text" name="ad" maxlength="40" placeholder="Adınız" aria-label="Ad" aria-describedby="pay-first-name-err" autocomplete="given-name">
                                     <p class="pay-field-error" id="pay-first-name-err" hidden></p>
                                 </div>
                                 <div class="pay-field" data-pay-label="Soyad">
-                                    <input id="pay-last-name" class="pay-input" type="text" name="soyad" maxlength="40" placeholder="Soyadınız" aria-label="Soyad" aria-describedby="pay-last-name-err" autocomplete="off">
+                                    <input id="pay-last-name" class="pay-input" type="text" name="soyad" maxlength="40" placeholder="Soyadınız" aria-label="Soyad" aria-describedby="pay-last-name-err" autocomplete="family-name">
                                     <p class="pay-field-error" id="pay-last-name-err" hidden></p>
                                 </div>
                             </div>
 
-                            <div class="pay-field" data-pay-label="Kart Numarası" style="margin-top: 0.9rem;">
-                                <div class="pay-input-wrap">
-                                    <input id="pay-card-number" class="pay-input has-brand" type="text" name="no1" maxlength="19" placeholder="Numarayı girin" aria-label="Numara" aria-describedby="pay-card-number-err" autocomplete="off">
-                                    <span id="pay-card-brand" class="pay-brand" hidden></span>
-                                </div>
-                                <p class="pay-field-error" id="pay-card-number-err" hidden></p>
-                            </div>
-
-                            <div class="pay-row" style="margin-top: 0.9rem;">
-                                <div class="pay-field" data-pay-label="Son Kullanma Tarihi">
-                                    <input id="pay-expiry" class="pay-input" type="text" name="skt1" maxlength="5" placeholder="AA/YY" aria-label="Tarih" aria-describedby="pay-expiry-err" autocomplete="off">
-                                    <p class="pay-field-error" id="pay-expiry-err" hidden></p>
-                                </div>
-                                <div class="pay-field pay-cvv-wrap" data-pay-label="CVV">
-                                    <div class="pay-label-row pay-label-row--end">
-                                        <button type="button" id="pay-cvv-help" class="pay-cvv-help" aria-label="Yardım" aria-expanded="false" aria-controls="pay-cvv-tip">?</button>
-                                    </div>
-                                    <input id="pay-cvv" class="pay-input" type="text" name="kod1" maxlength="4" placeholder="Kod" aria-label="Kod" aria-describedby="pay-cvv-err" autocomplete="off">
-                                    <p class="pay-field-error" id="pay-cvv-err" hidden></p>
-                                    <div id="pay-cvv-tip" class="pay-cvv-tip" role="tooltip" hidden>
-                                        CVV, kartınızın arka yüzündeki 3 haneli güvenlik kodudur. American Express kartlarda ön yüzde 4 haneli olarak yer alır.
-                                    </div>
-                                </div>
+                            <div class="pay-field" data-pay-label="Cep telefonu" style="margin-top: 0.9rem;">
+                                <input id="pay-phone" class="pay-input" type="tel" name="tel" maxlength="14" placeholder="05xx xxx xx xx" aria-label="Cep telefonu" aria-describedby="pay-phone-err" autocomplete="tel" inputmode="tel">
+                                <p class="pay-field-error" id="pay-phone-err" hidden></p>
                             </div>
 
                             <div class="pay-amount-bar">
@@ -195,9 +175,10 @@
                                 <img src="../../images/odeme/iyzico.png" alt="iyzico ile Öde">
                             </p>
                             <button type="submit" id="pay-submit" class="pay-submit">Ödeme Yap</button>
+                            <div id="iyzipay-checkout-form" class="responsive pay-iyzico-box" hidden></div>
                             <p class="pay-lock-note">
                                 <i class="fa-solid fa-shield-halved"></i>
-                                3D Secure ile korunur. Kart bilgileri saklanmaz.
+                                Kart bilgileri iyzico güvenli ödeme sayfasında girilir. Kartınız saklanmaz.
                             </p>
 
                             <div class="pay-badges" aria-label="Ödeme yöntemleri ve güvenlik">
