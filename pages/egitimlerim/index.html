@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1680392405109153">
     <meta name="description" content="YAZİYO Eğitimlerim - Kişisel eğitim paneli, görevler, takvim ve belgeler.">
     <title>Eğitimlerim - YAZİYO</title>
     <link rel="icon" type="image/png" href="../../images/favicon-48.png" sizes="48x48">
@@ -36,8 +37,6 @@
     <script src="../../js/authBoot.js"></script>
     <script src="../../js/lib/sitePaths.js"></script>
     <script type="module" src="../../js/auth.js"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6139144813128892"
-     crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
@@ -139,6 +138,7 @@
                         <button type="button" class="eg-menu-item" data-eg-panel="takvim"><i class="fa-solid fa-calendar-days"></i> Takvim</button>
                         <button type="button" class="eg-menu-item" data-eg-panel="etut"><i class="fa-solid fa-users-rectangle"></i> Etüt Odaları</button>
                         <button type="button" class="eg-menu-item" data-eg-panel="belgeler"><i class="fa-solid fa-file-pdf"></i> Belgelerim</button>
+                        <button type="button" class="eg-menu-item eg-menu-item-bottom" data-eg-panel="paket"><i class="fa-solid fa-box-open"></i> Paket Detay</button>
                     </nav>
                 </aside>
 
@@ -340,10 +340,45 @@
                         </div>
                     </div>
 
+                    <!-- PANEL: Paket Detay -->
+                    <div id="panel-paket" class="eg-panel">
+                        <div class="eg-card">
+                            <h2 class="font-poppins font-bold text-xl mb-1">Paket Detay</h2>
+                            <p class="text-xs text-light-text-secondary mb-4">Aktif eğitim paketinizin özeti. İptal talebiniz yöneticiye mesaj olarak iletilir.</p>
+                            <div id="eg-paket-detay-list"></div>
+                        </div>
+                    </div>
+
                 </section>
             </div>
         </div>
     </main>
+
+    <div id="eg-iptal-modal" class="eg-belge-modal hidden" aria-hidden="true">
+        <div class="eg-iptal-modal-box" role="dialog" aria-labelledby="eg-iptal-baslik" aria-modal="true">
+            <div class="flex items-start justify-between gap-3 mb-3">
+                <div>
+                    <h3 id="eg-iptal-baslik" class="font-poppins font-bold text-lg">Paketi İptal Et</h3>
+                    <p class="text-xs text-light-text-secondary mt-1">Neden iptal etmek istiyorsunuz?</p>
+                </div>
+                <button type="button" id="eg-iptal-kapat" class="eg-belge-close" aria-label="Kapat">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p id="eg-iptal-paket-adi" class="text-sm font-semibold mb-3"></p>
+            <label for="eg-iptal-neden" class="sr-only">İptal nedeni</label>
+            <textarea id="eg-iptal-neden" maxlength="800" rows="5" placeholder="İptal nedeninizi yazın (en az 8 karakter)..."
+                class="w-full rounded-xl px-3 py-2 text-sm bg-light-bg/50 dark:bg-dark-bg/50 border-2 border-light-border dark:border-dark-border mb-2"></textarea>
+            <div class="flex items-center justify-between gap-2 mb-4">
+                <span id="eg-iptal-count" class="text-[11px] text-light-text-secondary">0/800</span>
+                <p class="text-[11px] text-light-text-secondary text-right">Talebiniz yöneticiye iletilir; paket hemen kapanmaz.</p>
+            </div>
+            <div class="flex flex-col-reverse sm:flex-row gap-2">
+                <button type="button" id="eg-iptal-vazgec" class="flex-1 min-h-11 py-2.5 rounded-xl border border-light-border dark:border-dark-border font-bold text-sm">Vazgeç</button>
+                <button type="button" id="eg-iptal-gonder" class="flex-1 min-h-11 py-2.5 rounded-xl bg-red-500 text-white font-poppins font-bold text-sm">Talebi Gönder</button>
+            </div>
+        </div>
+    </div>
 
     <div id="eg-toast" class="hidden fixed left-4 right-4 bottom-4 sm:left-auto sm:right-6 sm:bottom-6 max-w-sm z-[130] px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl" style="bottom: max(1rem, env(safe-area-inset-bottom, 0px))"></div>
 

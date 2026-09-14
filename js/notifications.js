@@ -153,6 +153,7 @@ function ensureNotificationListContainer() {
 }
 
 function updateNotificationBadge(unreadCount) {
+    if (document.getElementById('main-header')?.dataset?.yaziyoAdminHeader === '1') return;
     const badge = document.querySelector('#notification-btn span.absolute');
     if (!badge) return;
     if (document.body.dataset.hideNotificationBadge === 'true') {
@@ -282,6 +283,7 @@ export async function onGoalsCompleted(supabase, completedGoals = []) {
  */
 export async function initNotifications(supabase) {
     if (!supabase) return;
+    if (document.getElementById('main-header')?.dataset?.yaziyoAdminHeader === '1') return;
     _notificationSupabase = supabase;
 
     const { data: { session } } = await supabase.auth.getSession();
@@ -342,6 +344,7 @@ function ensureGuestModalCopy(notificationContent) {
 }
 
 export async function openNotificationModal() {
+    if (document.getElementById('main-header')?.dataset?.yaziyoAdminHeader === '1') return;
     const notificationModal = document.getElementById('notification-modal');
     const notificationBackdrop = document.getElementById('notification-backdrop');
     const notificationContent = document.getElementById('notification-content');
@@ -415,6 +418,7 @@ export function bindNotificationModal() {
     _modalUiBound = true;
 
     document.addEventListener('click', (e) => {
+        if (document.getElementById('main-header')?.dataset?.yaziyoAdminHeader === '1') return;
         if (e.target.closest('#notification-btn')) {
             e.preventDefault();
             openNotificationModal();
@@ -427,6 +431,7 @@ export function bindNotificationModal() {
 
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
+        if (document.getElementById('main-header')?.dataset?.yaziyoAdminHeader === '1') return;
         const modal = document.getElementById('notification-modal');
         if (modal && !modal.classList.contains('hidden')) {
             closeNotificationModal();

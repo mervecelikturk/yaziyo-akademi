@@ -6,7 +6,7 @@
 import { supabase } from './lib/supabase.js';
 import { isEmailConfirmed, getEmailConfirmRedirectUrl, getOAuthRedirectUrl } from './lib/authConfig.js';
 import { clearAllSupabaseAuthKeys, setStoredVerifiedUser } from './lib/authStorage.js';
-import { normalizeName, validateFullNameString } from './lib/nameValidation.js';
+import { validateFullNameString } from './lib/nameValidation.js';
 
 export { isEmailConfirmed };
 
@@ -75,17 +75,17 @@ export async function ensureSession(client = supabase) {
 }
 
 export async function signUp(client, { email, password, fullName }) {
-    const normalizedName = normalizeName(fullName);
-    const nameError = validateFullNameString(normalizedName);
+    const nameError = validateFullNameString(fullName);
     if (nameError) {
         throw new Error(nameError);
     }
 
+    const storedName = typeof fullName === 'string' ? fullName.trim().replace(/\s+/g, ' ') : '';
     const { data, error } = await client.auth.signUp({
         email,
         password,
         options: {
-            data: { full_name: normalizedName },
+            data: { full_name: storedName },
             emailRedirectTo: getEmailConfirmRedirectUrl(),
         },
     });

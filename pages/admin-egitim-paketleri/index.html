@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-1680392405109153">
     <meta name="description" content="YAZİYO Yönetici Paneli - Eğitim Paketi Yönetimi.">
     <title>Eğitim Paketleri - Admin - YAZİYO</title>
     <link rel="icon" type="image/png" href="../../images/favicon-48.png" sizes="48x48">
@@ -41,8 +42,6 @@
     <script src="../../js/authBoot.js"></script>
     <script src="../../js/lib/sitePaths.js"></script>
     <script type="module" src="../../js/auth.js"></script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6139144813128892"
-     crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
@@ -75,6 +74,24 @@
         .admin-stat-card:hover { border-color: var(--yaziyo-gold-hex); }
         @media (hover: hover) {
             .admin-stat-card:hover { transform: translateY(-2px); }
+        }
+        .admin-tab {
+            padding: 0.625rem 1.25rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            border-radius: 0.75rem;
+            border: 1px solid rgb(var(--yaziyo-border-rgb));
+            background: rgb(var(--yaziyo-card-rgb));
+            color: rgb(var(--yaziyo-text-secondary-rgb));
+            transition: all 0.3s ease;
+        }
+        .admin-tab:hover { border-color: var(--yaziyo-gold-hex); color: var(--yaziyo-gold-hex); }
+        .admin-tab-active {
+            background: linear-gradient(135deg, var(--yaziyo-gold-hex), #ca8a04);
+            border-color: transparent;
+            color: #0f172a;
+            box-shadow: 0 4px 16px rgba(var(--yaziyo-gold-rgb), 0.3);
         }
     </style>
 </head>
@@ -111,6 +128,7 @@
                         <button type="button" class="nav-link nav-dropdown-trigger active" data-page="admin-egitimler"><i class="fa-solid fa-box-open mr-1.5 text-[0.85em]"></i>Eğitim Paketleri <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">
                             <li><a href="../admin-egitim-paketleri/" class="nav-dropdown-item active" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                            <li><a href="../admin-egitim-paketleri/#islemler" class="nav-dropdown-item" data-page="admin-egitim-paketleri">Paket İşlemleri</a></li>
                             <li><a href="../admin-egitimlerim/" class="nav-dropdown-item" data-page="admin-egitimlerim">Eğitimlerim</a></li>
                         </ul>
                     </li>
@@ -138,6 +156,7 @@
                             <button type="button" class="mobile-nav-link mobile-dropdown-trigger active open w-full text-left flex items-center justify-between" data-page="admin-egitimler">Eğitim Paketleri <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
                             <ul class="mobile-dropdown-menu open flex flex-col gap-1 pl-3 pt-1">
                                 <li><a href="../admin-egitim-paketleri/" class="mobile-nav-link text-[0.8em] active" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                                <li><a href="../admin-egitim-paketleri/#islemler" class="mobile-nav-link text-[0.8em]" data-page="admin-egitim-paketleri">Paket İşlemleri</a></li>
                                 <li><a href="../admin-egitimlerim/" class="mobile-nav-link text-[0.8em]" data-page="admin-egitimlerim">Eğitimlerim</a></li>
                             </ul>
                         </li>
@@ -175,6 +194,17 @@
             </div>
         </div>
 
+        <div class="flex flex-wrap gap-2 mb-8">
+            <button type="button" id="tab-yonetim" class="admin-tab admin-tab-active">
+                <i class="fa-solid fa-boxes-stacked mr-1.5"></i>Paket Yönetimi
+            </button>
+            <button type="button" id="tab-islemler" class="admin-tab">
+                <i class="fa-solid fa-clipboard-list mr-1.5"></i>Paket İşlemleri
+                <span id="islemler-badge" class="hidden ml-1.5 inline-flex items-center justify-center min-w-[1.15rem] h-5 px-1.5 rounded-full bg-orange-500 text-white text-[10px] font-bold">0</span>
+            </button>
+        </div>
+
+        <div id="section-yonetim">
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
             <div class="admin-stat-card">
                 <p class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary">Toplam</p>
@@ -191,19 +221,6 @@
             <div class="admin-stat-card">
                 <p class="text-[10px] font-bold uppercase tracking-wider text-light-text-secondary">Öne Çıkan</p>
                 <p id="stat-featured-packages" class="text-2xl font-poppins font-bold text-orange-400 mt-1">0</p>
-            </div>
-        </div>
-
-        <div id="admin-purchase-notifications" class="mb-8 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-bg/30 dark:bg-dark-bg/30 flex flex-wrap items-center justify-between gap-3">
-                <div class="flex items-center gap-2">
-                    <h2 class="text-sm font-poppins font-bold text-light-text-secondary uppercase tracking-wider">Satış Bildirimleri</h2>
-                    <span id="notif-unread-badge" class="hidden inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-orange-500 text-white text-[10px] font-bold">0</span>
-                </div>
-                <button type="button" id="btn-mark-all-notif-read" class="text-xs font-bold text-yaziyo-gold hover:underline disabled:opacity-40 disabled:no-underline">Tümünü okundu işaretle</button>
-            </div>
-            <div id="admin-notif-list" class="divide-y divide-light-border dark:divide-dark-border max-h-64 overflow-y-auto custom-scrollbar">
-                <p class="px-6 py-8 text-center text-sm text-light-text-secondary">Bildirim yok.</p>
             </div>
         </div>
 
@@ -246,6 +263,45 @@
                     </thead>
                     <tbody id="packages-admin-tbody" class="divide-y divide-light-border dark:divide-dark-border"></tbody>
                 </table>
+            </div>
+        </div>
+        </div>
+
+        <div id="section-islemler" class="hidden space-y-8">
+            <div id="admin-purchase-notifications" class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-bg/30 dark:bg-dark-bg/30 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-sm font-poppins font-bold text-light-text-secondary uppercase tracking-wider">Satış Bildirimleri</h2>
+                        <span id="notif-unread-badge" class="hidden inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-orange-500 text-white text-[10px] font-bold">0</span>
+                    </div>
+                    <button type="button" id="btn-mark-all-notif-read" class="text-xs font-bold text-yaziyo-gold hover:underline disabled:opacity-40 disabled:no-underline">Tümünü okundu işaretle</button>
+                </div>
+                <div id="admin-notif-list" class="divide-y divide-light-border dark:divide-dark-border max-h-80 overflow-y-auto custom-scrollbar">
+                    <p class="px-6 py-8 text-center text-sm text-light-text-secondary">Bildirim yok.</p>
+                </div>
+            </div>
+
+            <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-bg/30 dark:bg-dark-bg/30 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-sm font-poppins font-bold text-light-text-secondary uppercase tracking-wider">İade Mesajları</h2>
+                        <span id="iade-pending-badge" class="hidden inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-bold">0</span>
+                    </div>
+                    <p class="text-[11px] text-light-text-secondary">Kullanıcıların paket iptal talepleri</p>
+                </div>
+                <div id="admin-iade-list" class="divide-y divide-light-border dark:divide-dark-border max-h-[28rem] overflow-y-auto custom-scrollbar">
+                    <p class="px-6 py-8 text-center text-sm text-light-text-secondary">İade mesajı yok.</p>
+                </div>
+            </div>
+
+            <div class="bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-bg/30 dark:bg-dark-bg/30 flex flex-wrap items-center justify-between gap-3">
+                    <h2 class="text-sm font-poppins font-bold text-light-text-secondary uppercase tracking-wider">Aktif Paketler</h2>
+                    <p class="text-[11px] text-light-text-secondary">Buradan doğrudan paket iptali yapabilirsiniz</p>
+                </div>
+                <div id="admin-aktif-paket-list" class="divide-y divide-light-border dark:divide-dark-border max-h-80 overflow-y-auto custom-scrollbar">
+                    <p class="px-6 py-8 text-center text-sm text-light-text-secondary">Aktif paket yok.</p>
+                </div>
             </div>
         </div>
     </main>
@@ -370,6 +426,19 @@
             <div class="flex gap-3">
                 <button type="button" data-close-delete-modal class="flex-1 py-2.5 rounded-xl border font-bold text-sm">İptal</button>
                 <button type="button" id="btn-confirm-delete" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm">Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cancel-paket-modal" class="fixed inset-0 z-[130] hidden items-center justify-center p-4">
+        <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
+        <div data-panel class="relative w-full max-w-md bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-6 text-center opacity-0 scale-95 transition-all duration-300">
+            <div class="w-14 h-14 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-2xl mx-auto mb-4"><i class="fa-solid fa-ban"></i></div>
+            <h3 class="font-poppins font-bold text-lg mb-2">Paketi İptal Et</h3>
+            <p id="cancel-paket-message" class="text-sm text-light-text-secondary mb-6"></p>
+            <div class="flex gap-3">
+                <button type="button" data-close-cancel-modal class="flex-1 py-2.5 rounded-xl border font-bold text-sm">Vazgeç</button>
+                <button type="button" id="btn-confirm-cancel-paket" class="flex-1 py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm">İptal Et</button>
             </div>
         </div>
     </div>

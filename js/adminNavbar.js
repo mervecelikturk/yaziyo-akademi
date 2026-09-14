@@ -188,12 +188,22 @@
                 <span class="yaziyo-brand-name truncate">YAZİYO AKADEMİ</span>
             </a>
             <div class="flex items-center gap-2 sm:gap-3 shrink-0">
-                <button id="theme-toggle-btn" type="button"
-                    class="yaziyo-header-icon-btn flex items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold"
-                    aria-label="Tema Değiştir">
-                    <i class="fa-solid fa-sun theme-icon-sun"></i>
-                    <i class="fa-solid fa-moon theme-icon-moon"></i>
-                </button>
+                <div class="relative group yaziyo-header-icon-wrap">
+                    <button id="theme-toggle-btn" type="button"
+                        class="yaziyo-header-icon-btn flex items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-yaziyo-gold"
+                        aria-label="Tema Değiştir">
+                        <i class="fa-solid fa-sun theme-icon-sun"></i>
+                        <i class="fa-solid fa-moon theme-icon-moon"></i>
+                    </button>
+                    <span class="yaziyo-header-tooltip">Tema Değiştir</span>
+                </div>
+                <div class="relative group yaziyo-header-icon-wrap">
+                    <button id="notification-btn" type="button" class="yaziyo-header-icon-btn flex relative items-center justify-center rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-secondary dark:text-dark-text-secondary" aria-label="Bildirimler">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="absolute top-2 right-2 w-[8px] h-[8px] bg-red-500 rounded-full border border-light-card dark:border-dark-card shadow-[0_0_8px_rgba(239,68,68,0.6)] hidden"></span>
+                    </button>
+                    <span class="yaziyo-header-tooltip">Bildirimler</span>
+                </div>
                 <a href="${home}"
                     class="relative inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-xs sm:text-sm rounded-lg transition-all duration-300 hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] hover:scale-105 active:scale-95 shrink-0">
                     <i class="fa-solid fa-user-shield"></i>
@@ -215,6 +225,7 @@
                         <button type="button" class="nav-link nav-dropdown-trigger${egitimParentActive(active)}" data-page="admin-egitimler"><i class="fa-solid fa-box-open mr-1 text-[0.85em]"></i>Eğitim Paketleri <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">
                             <li><a href="${p('adminEgitimPaketleri.html')}" class="nav-dropdown-item${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                            <li><a href="${p('adminEgitimPaketleri.html')}#islemler" class="nav-dropdown-item" data-page="admin-egitim-paketleri">Paket İşlemleri</a></li>
                             <li><a href="${p('adminEgitimlerim.html')}" class="nav-dropdown-item${ac(active, 'admin-egitimlerim')}" data-page="admin-egitimlerim">Eğitimlerim</a></li>
                         </ul>
                     </li>
@@ -246,6 +257,7 @@
                             <button type="button" class="mobile-nav-link mobile-dropdown-trigger${egitimParentActive(active)} w-full text-left flex items-center justify-between" data-page="admin-egitimler">Eğitim Paketleri <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
                             <ul class="mobile-dropdown-menu${egitimOpen(active)} flex flex-col gap-1 pl-3 pt-1">
                                 <li><a href="${p('adminEgitimPaketleri.html')}" class="mobile-nav-link text-[0.8em]${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                                <li><a href="${p('adminEgitimPaketleri.html')}#islemler" class="mobile-nav-link text-[0.8em]" data-page="admin-egitim-paketleri">Paket İşlemleri</a></li>
                                 <li><a href="${p('adminEgitimlerim.html')}" class="mobile-nav-link text-[0.8em]${ac(active, 'admin-egitimlerim')}" data-page="admin-egitimlerim">Eğitimlerim</a></li>
                             </ul>
                         </li>
@@ -263,10 +275,25 @@
         </nav>`;
     }
 
+    function loadAdminNotifications() {
+        if (document.querySelector('script[data-yaziyo-admin-notifications]')) return;
+        const src = getPaths().assetHref
+            ? getPaths().assetHref('js/adminNotifications.js')
+            : '../../js/adminNotifications.js';
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.dataset.yaziyoAdminNotifications = '1';
+        script.src = src;
+        document.head.appendChild(script);
+    }
+
     function mountAdminHeader() {
         const header = document.getElementById('main-header');
         if (!header || !isAdminPage()) return false;
-        if (header.dataset.yaziyoAdminHeaderMounted === '1') return true;
+        if (header.dataset.yaziyoAdminHeaderMounted === '1') {
+            loadAdminNotifications();
+            return true;
+        }
 
         const active = resolveActiveNav();
         header.innerHTML = buildAdminHeader(active);
@@ -278,6 +305,7 @@
         if (window.YaziyoMobileMenu?.init) {
             window.YaziyoMobileMenu.init();
         }
+        loadAdminNotifications();
         return true;
     }
 

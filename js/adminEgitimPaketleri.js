@@ -14,15 +14,22 @@ import {
     isPaketSoldOut,
     fetchAdminBildirimler,
     markAdminBildirimOkundu,
-    markAllAdminBildirimOkundu
+    markAllAdminBildirimOkundu,
+    fetchPaketIptalTalepleri,
+    fetchAdminAktifSatinAlmalar,
+    cancelKullaniciPaketi
 } from './lib/egitimPaketleriApi.js';
 
 let packages = [];
 let notifications = [];
+let iadeTalepleri = [];
+let aktifPaketler = [];
 let editingId = null;
 let deleteTarget = null;
+let cancelTarget = null;
 let searchQuery = '';
 let statusFilter = 'all';
+let activeSection = 'yonetim';
 
 const els = {};
 
@@ -55,6 +62,135 @@ function formatDateTime(iso) {
         hour: '2-digit',
         minute: '2-digit'
     });
+}
+
+function notifIcon(tur) {
+    if (tur === 'paket_iade_talep') return { icon: 'fa-rotate-left', wrap: 'bg-red-500/15 text-red-500' };
+    if (tur === 'paket_iptal') return { icon: 'fa-ban', wrap: 'bg-slate-500/15 text-slate-400' };
+    if (tur === 'paket_tanimla') return { icon: 'fa-user-plus', wrap: 'bg-sky-500/15 text-sky-500' };
+    return { icon: 'fa-box-open', wrap: 'bg-orange-500/15 text-orange-500' };
+}
+
+function iadeDurumLabel(durum) {
+    if (durum === 'iptal_edildi') return { text: 'Paket iptal edildi', cls: 'bg-slate-500/15 text-slate-400' };
+    if (durum === 'kapatildi') return { text: 'Kapatıldı', cls: 'bg-slate-500/15 text-slate-400' };
+    return { text: 'Bekliyor', cls: 'bg-orange-500/15 text-orange-500' };
+}
+
+function switchSection(id) {
+    const next = id === 'islemler' ? 'islemler' : 'yonetim';
+    const changed = next !== activeSection;
+    activeSection = next;
+    els.sectionYonetim?.classList.toggle('hidden', activeSection !== 'yonetim');
+    els.sectionIslemler?.classList.toggle('hidden', activeSection !== 'islemler');
+    els.tabYonetim?.classList.toggle('admin-tab-active', activeSection === 'yonetim');
+    els.tabIslemler?.classList.toggle('admin-tab-active', activeSection === 'islemler');
+    if (activeSection === 'islemler') {
+        if (window.location.hash !== '#islemler') {
+            history.replaceState(null, '', `${window.location.pathname}${window.location.search}#islemler`);
+        }
+        if (changed) loadOperations();
+    } else if (window.location.hash === '#islemler') {
+        history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
+    }
+}
+
+function updateIslemlerBadge() {
+    const unread = salesNotifications().filter((n) => !n.okundu).length;
+    const pending = iadeTalepleri.filter((t) => t.durum === 'beklemede').length;
+    const total = unread + pending;
+    const badge = els.islemlerBadge;
+    if (!badge) return;
+    if (total > 0) {
+        badge.textContent = String(total);
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+function renderIadeTalepleri() {
+    const list = els.iadeList;
+    const badge = els.iadeBadge;
+    if (!list) return;
+    const pending = iadeTalepleri.filter((t) => t.durum === 'beklemede').length;
+    if (badge) {
+        if (pending > 0) {
+            badge.textContent = String(pending);
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+    if (!iadeTalepleri.length) {
+        list.innerHTML = '<p class="px-6 py-8 text-center text-sm text-light-text-secondary">Henüz iade mesajı yok.</p>';
+        return;
+    }
+    list.innerHTML = iadeTalepleri.map((t) => {
+        const durum = iadeDurumLabel(t.durum);
+        const canCancel = t.durum === 'beklemede';
+        return `
+            <div class="px-6 py-4 ${canCancel ? 'bg-red-500/5' : 'opacity-75'}">
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <p class="font-poppins font-bold text-sm">${escapeHtml(t.paketAdi)}</p>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${durum.cls}">${durum.text}</span>
+                        </div>
+                        <p class="text-xs text-light-text-secondary">
+                            ${escapeHtml(t.kullaniciAdi)}${t.kullaniciEposta ? ` · ${escapeHtml(t.kullaniciEposta)}` : ''}
+                            · ${escapeHtml(formatDateTime(t.createdAt))}
+                        </p>
+                        <p class="text-sm mt-2 leading-relaxed whitespace-pre-wrap">${escapeHtml(t.neden)}</p>
+                    </div>
+                    ${canCancel ? `
+                        <button type="button"
+                            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-red-500/40 text-red-600 text-xs font-bold hover:bg-red-500/10 shrink-0"
+                            data-cancel-satin="${t.satinAlmaId}">
+                            <i class="fa-solid fa-ban"></i> Paketi İptal Et
+                        </button>` : ''}
+                </div>
+            </div>`;
+    }).join('');
+}
+
+function renderAktifPaketler() {
+    const list = els.aktifPaketList;
+    if (!list) return;
+    if (!aktifPaketler.length) {
+        list.innerHTML = '<p class="px-6 py-8 text-center text-sm text-light-text-secondary">Aktif paket yok.</p>';
+        return;
+    }
+    list.innerHTML = aktifPaketler.map((p) => {
+        const kalan = p.kalanGun == null ? '—' : (p.kalanGun < 0 ? 'Süresi doldu' : `${p.kalanGun} gün`);
+        return `
+            <div class="px-6 py-4 flex flex-wrap items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                    <p class="font-poppins font-bold text-sm">${escapeHtml(p.paketAdi)}</p>
+                    <p class="text-xs text-light-text-secondary mt-1">
+                        ${escapeHtml(p.kullaniciAdi)}${p.kullaniciEposta ? ` · ${escapeHtml(p.kullaniciEposta)}` : ''}
+                    </p>
+                    <p class="text-xs text-light-text-secondary mt-0.5">
+                        ${escapeHtml(formatDateTime(p.baslangic))} → ${escapeHtml(formatDateTime(p.bitis))}
+                        · ${escapeHtml(kalan)}
+                        · ${(p.fiyat || 0).toLocaleString('tr-TR')} ₺
+                    </p>
+                </div>
+                <button type="button"
+                    class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-red-500/40 text-red-600 text-xs font-bold hover:bg-red-500/10 shrink-0"
+                    data-cancel-satin="${p.id}">
+                    <i class="fa-solid fa-ban"></i> İptal et
+                </button>
+            </div>`;
+    }).join('');
+}
+
+function openCancelModal(satinAlmaId, label) {
+    cancelTarget = { id: satinAlmaId, label };
+    if (els.cancelPaketMessage) {
+        els.cancelPaketMessage.textContent = `“${label}” paketi iptal edilsin mi? Kullanıcı bu pakete erişimi kaybeder.`;
+    }
+    openModal(els.cancelPaketModal);
 }
 
 function clampField(value, min, max, fallback) {
@@ -99,7 +235,8 @@ function closeModal(modalEl) {
         modalEl.classList.remove('flex');
         modalEl.classList.add('hidden');
         if (!document.getElementById('package-modal')?.classList.contains('flex')
-            && !document.getElementById('delete-modal')?.classList.contains('flex')) {
+            && !document.getElementById('delete-modal')?.classList.contains('flex')
+            && !document.getElementById('cancel-paket-modal')?.classList.contains('flex')) {
             document.body.style.overflow = '';
         }
     }, 280);
@@ -143,12 +280,21 @@ function showSetupRequired() {
     document.getElementById('ep-reload-btn')?.addEventListener('click', () => location.reload());
 }
 
+function salesNotifications() {
+    return notifications.filter((n) => (
+        n.tur === 'paket_satis'
+        || n.tur === 'paket_iptal'
+        || n.tur === 'paket_tanimla'
+    ));
+}
+
 function renderNotifications() {
     const list = els.notifList;
     const badge = els.notifBadge;
     if (!list) return;
 
-    const unread = notifications.filter((n) => !n.okundu).length;
+    const sales = salesNotifications();
+    const unread = sales.filter((n) => !n.okundu).length;
     if (badge) {
         if (unread > 0) {
             badge.textContent = String(unread);
@@ -161,15 +307,15 @@ function renderNotifications() {
         els.btnMarkAllNotif.disabled = unread === 0;
     }
 
-    if (!notifications.length) {
+    if (!sales.length) {
         list.innerHTML = '<p class="px-6 py-8 text-center text-sm text-light-text-secondary">Henüz satış bildirimi yok.</p>';
         return;
     }
 
-    list.innerHTML = notifications.map((n) => `
+    list.innerHTML = sales.map((n) => `
         <div class="px-6 py-4 flex gap-3 items-start ${n.okundu ? 'opacity-70' : 'bg-yaziyo-gold/5'}" data-notif-id="${n.id}">
-            <div class="w-9 h-9 rounded-full shrink-0 flex items-center justify-center ${n.okundu ? 'bg-slate-500/10 text-slate-400' : 'bg-orange-500/15 text-orange-500'}">
-                <i class="fa-solid fa-box-open text-sm"></i>
+            <div class="w-9 h-9 rounded-full shrink-0 flex items-center justify-center ${n.okundu ? 'bg-slate-500/10 text-slate-400' : notifIcon(n.tur).wrap}">
+                <i class="fa-solid ${notifIcon(n.tur).icon} text-sm"></i>
             </div>
             <div class="min-w-0 flex-grow">
                 <div class="flex flex-wrap items-center justify-between gap-2">
@@ -312,6 +458,50 @@ async function loadNotifications() {
     }
     notifications = data || [];
     renderNotifications();
+    updateIslemlerBadge();
+}
+
+async function loadIadeTalepleri() {
+    const { data, error } = await fetchPaketIptalTalepleri();
+    if (error) {
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('paket_iptal_talepleri') || error.code === 'PGRST205') {
+            if (els.iadeList) {
+                els.iadeList.innerHTML = `
+                    <p class="px-6 py-6 text-center text-sm text-orange-500">
+                        İade mesajları için <code class="text-yaziyo-gold">sql/039_paket_iptal_talepleri.sql</code> dosyasını çalıştırın.
+                    </p>`;
+            }
+            return;
+        }
+        console.warn('İade talepleri yüklenemedi:', error);
+        return;
+    }
+    iadeTalepleri = data || [];
+    renderIadeTalepleri();
+    updateIslemlerBadge();
+}
+
+async function loadAktifPaketler() {
+    const { data, error } = await fetchAdminAktifSatinAlmalar();
+    if (error) {
+        console.warn('Aktif paketler yüklenemedi:', error);
+        return;
+    }
+    aktifPaketler = data || [];
+    renderAktifPaketler();
+}
+
+async function loadOperations() {
+    await Promise.all([loadNotifications(), loadIadeTalepleri(), loadAktifPaketler()]);
+}
+
+function cancelLabelFor(satinAlmaId) {
+    const iade = iadeTalepleri.find((t) => t.satinAlmaId === satinAlmaId);
+    if (iade) return `${iade.paketAdi} — ${iade.kullaniciAdi}`;
+    const aktif = aktifPaketler.find((p) => p.id === satinAlmaId);
+    if (aktif) return `${aktif.paketAdi} — ${aktif.kullaniciAdi}`;
+    return 'paket';
 }
 
 async function loadData() {
@@ -360,7 +550,13 @@ function bindEvents() {
     els.btnYetkiNone?.addEventListener('click', () => setAllYetkiler(false));
 
     els.btnRefresh?.addEventListener('click', async () => {
-        await Promise.all([loadData(), loadNotifications()]);
+        await Promise.all([loadData(), loadOperations()]);
+    });
+
+    els.tabYonetim?.addEventListener('click', () => switchSection('yonetim'));
+    els.tabIslemler?.addEventListener('click', () => switchSection('islemler'));
+    window.addEventListener('hashchange', () => {
+        switchSection(window.location.hash === '#islemler' ? 'islemler' : 'yonetim');
     });
 
     els.search?.addEventListener('input', (e) => {
@@ -437,6 +633,7 @@ function bindEvents() {
         }
         notifications = notifications.map((n) => (n.id === id ? { ...n, okundu: true } : n));
         renderNotifications();
+        updateIslemlerBadge();
     });
 
     els.btnMarkAllNotif?.addEventListener('click', async () => {
@@ -447,7 +644,36 @@ function bindEvents() {
         }
         notifications = notifications.map((n) => ({ ...n, okundu: true }));
         renderNotifications();
+        updateIslemlerBadge();
         showToast('Tüm bildirimler okundu işaretlendi');
+    });
+
+    const onCancelClick = (e) => {
+        const btn = e.target.closest('[data-cancel-satin]');
+        if (!btn) return;
+        openCancelModal(btn.dataset.cancelSatin, cancelLabelFor(btn.dataset.cancelSatin));
+    };
+    els.iadeList?.addEventListener('click', onCancelClick);
+    els.aktifPaketList?.addEventListener('click', onCancelClick);
+
+    els.btnConfirmCancelPaket?.addEventListener('click', async () => {
+        if (!cancelTarget?.id) return;
+        els.btnConfirmCancelPaket.disabled = true;
+        const { error } = await cancelKullaniciPaketi(cancelTarget.id);
+        els.btnConfirmCancelPaket.disabled = false;
+        if (error) {
+            showToast(error.message || 'Paket iptal edilemedi', 'error');
+            return;
+        }
+        closeModal(els.cancelPaketModal);
+        cancelTarget = null;
+        showToast('Paket iptal edildi');
+        await loadOperations();
+        await loadData();
+    });
+
+    document.querySelectorAll('[data-close-cancel-modal]').forEach((btn) => {
+        btn.addEventListener('click', () => closeModal(els.cancelPaketModal));
     });
 
     els.btnConfirmDelete?.addEventListener('click', async () => {
@@ -469,7 +695,7 @@ function bindEvents() {
 
     document.querySelectorAll('[data-close-modal]').forEach((btn) => {
         btn.addEventListener('click', () => {
-            const modal = btn.closest('#package-modal, #delete-modal');
+            const modal = btn.closest('#package-modal, #delete-modal, #cancel-paket-modal');
             if (modal) closeModal(modal);
         });
     });
@@ -524,6 +750,17 @@ function cacheElements() {
     els.notifList = document.getElementById('admin-notif-list');
     els.notifBadge = document.getElementById('notif-unread-badge');
     els.btnMarkAllNotif = document.getElementById('btn-mark-all-notif-read');
+    els.tabYonetim = document.getElementById('tab-yonetim');
+    els.tabIslemler = document.getElementById('tab-islemler');
+    els.sectionYonetim = document.getElementById('section-yonetim');
+    els.sectionIslemler = document.getElementById('section-islemler');
+    els.islemlerBadge = document.getElementById('islemler-badge');
+    els.iadeList = document.getElementById('admin-iade-list');
+    els.iadeBadge = document.getElementById('iade-pending-badge');
+    els.aktifPaketList = document.getElementById('admin-aktif-paket-list');
+    els.cancelPaketModal = document.getElementById('cancel-paket-modal');
+    els.cancelPaketMessage = document.getElementById('cancel-paket-message');
+    els.btnConfirmCancelPaket = document.getElementById('btn-confirm-cancel-paket');
 }
 
 async function init() {
@@ -533,7 +770,8 @@ async function init() {
     populateCategorySelect();
     bindEvents();
     resetForm();
-    await Promise.all([loadData(), loadNotifications()]);
+    await Promise.all([loadData(), loadOperations()]);
+    if (window.location.hash === '#islemler') switchSection('islemler');
 }
 
 if (document.readyState === 'loading') {

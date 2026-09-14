@@ -1,10 +1,8 @@
 /**
  * YAZİYO — Ad / soyad doğrulama
  * Kayıt ve admin kullanıcı oluşturma için ortak kurallar.
- * Boşluk, rakam ve sembol yok; en az 3 harf; Türkçe isim/soyisim listesi.
+ * Boşluk, rakam ve sembol yok; en az 3 harf; saçma / placeholder isimler yasak.
  */
-
-import { isKnownTurkishGivenName, isKnownTurkishSurname } from './turkishNames.js';
 
 export const NAME_MIN_LENGTH = 3;
 export const NAME_MAX_LENGTH = 30;
@@ -13,6 +11,22 @@ export const NAME_MAX_LENGTH = 30;
 export const NAME_PATTERN = /^[\p{L}]+$/u;
 
 const VOWEL_PATTERN = /[aeıioöuüAEIİOÖUÜâêîôûÂÊÎÔÛ]/u;
+
+/** Tamamı klavye sırası olan girişleri yakalamak için (ör. asdf, qwer). */
+const KEYBOARD_ROWS = [
+    'qwertyuiop',
+    'asdfghjkl',
+    'zxcvbnm',
+    'qwertyuıopğü',
+    'asdfghjklşi',
+    'zxcvbnmöç',
+    'poiuytrewq',
+    'lkjhgfdsa',
+    'mnbvcxz',
+    'üğpoiuytrewq',
+    'işlkjhgfdsa',
+    'çömnbvcxz',
+];
 
 /**
  * Yasaklı / anlamsız isimler — yeni terim eklemek için diziye yazmanız yeterli.
@@ -29,7 +43,10 @@ export const BLOCKED_NAMES = [
     'ad',
     'soyad',
     'asdf',
+    'asdfg',
+    'asdfgh',
     'qwerty',
+    'qwert',
     'abc',
     'abcd',
     'null',
@@ -50,8 +67,22 @@ export const BLOCKED_NAMES = [
     'qwe',
     'zzz',
     'xxx',
+    'yyy',
     'name',
     'fullname',
+    'dummy',
+    'fake',
+    'foo',
+    'bar',
+    'baz',
+    'lol',
+    'haha',
+    'hehe',
+    'blah',
+    'npc',
+    'bot',
+    'gamer',
+    'player',
 ];
 
 function blockedSet() {
@@ -84,32 +115,23 @@ function isRepeatedChars(normalized) {
     return /^(.)\1+$/u.test(compact);
 }
 
+function hasTripleRepeat(normalized) {
+    return /(.)\1{2,}/u.test(normalized);
+}
+
+function isKeyboardSmash(normalized) {
+    const lower = normalized.toLocaleLowerCase('tr-TR');
+    if (lower.length < 3) return false;
+    return KEYBOARD_ROWS.some((row) => row.includes(lower));
+}
+
 function letterCount(name) {
     const letters = name.match(/\p{L}/gu);
     return letters ? letters.length : 0;
 }
 
-function isAdLabel(label) {
-    const l = String(label || '').toLocaleLowerCase('tr-TR');
-    return l === 'ad' || l === 'isim' || l.includes('adınız');
-}
-
-function isSoyadLabel(label) {
-    const l = String(label || '').toLocaleLowerCase('tr-TR');
-    return l === 'soyad' || l.includes('soyad');
-}
-
-function whitelistError(label) {
-    if (isSoyadLabel(label)) {
-        return 'Soyad, Türkçede kullanılan bir soyisim olmalıdır.';
-    }
-    return 'Ad, Türkçede kullanılan bir isim olmalıdır.';
-}
-
-function matchesWhitelist(name, label) {
-    if (isSoyadLabel(label)) return isKnownTurkishSurname(name);
-    if (isAdLabel(label) || label === 'İsim') return isKnownTurkishGivenName(name);
-    return isKnownTurkishGivenName(name) || isKnownTurkishSurname(name);
+function isSillyName(name) {
+    return isBlockedName(name) || isRepeatedChars(name) || hasTripleRepeat(name) || isKeyboardSmash(name);
 }
 
 /**
@@ -131,14 +153,11 @@ export function validateNamePart(value, label = 'İsim') {
     if (!NAME_PATTERN.test(name)) {
         return `${label} yalnızca harflerden oluşmalıdır; boşluk, sayı veya sembol kullanılamaz.`;
     }
-    if (isBlockedName(name) || isRepeatedChars(name)) {
+    if (isSillyName(name)) {
         return 'Bu isim kullanılamaz.';
     }
     if (!VOWEL_PATTERN.test(name)) {
         return 'Geçerli bir isim giriniz.';
-    }
-    if (!matchesWhitelist(name, label)) {
-        return whitelistError(label);
     }
     return null;
 }

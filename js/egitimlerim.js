@@ -1,6 +1,6 @@
 /**
  * YAZİYO — Eğitimlerim (öğrenci paneli)
- * Sol sidebar panelleri: ana, görevler, ilerleme, takvim, etüt, belgeler
+ * Sol sidebar panelleri: ana, görevler, ilerleme, takvim, etüt, belgeler, paket
  */
 import { supabase, initSupabaseClient } from './lib/supabase.js';
 import { ensureSession } from './authVerification.js';
@@ -37,7 +37,10 @@ import {
 import {
     submitPaketDegerlendirme,
     fetchKullaniciPaketDegerlendirme,
-    userHasPurchasedPaket
+    userHasPurchasedPaket,
+    fetchKullaniciPaketleri,
+    fetchKullaniciIptalTalepleri,
+    olusturPaketIptalTalebi
 } from './lib/egitimPaketleriApi.js';
 import { mountLiveChatWidget } from './liveChatWidget.js';
 
@@ -47,6 +50,9 @@ let etutTimerIds = [];
 let currentPaket = null;
 let selectedRating = 0;
 let belgeAktifBlobUrl = null;
+let iptalHedef = null;
+let kullaniciPaketleri = [];
+let iptalTalepleri = [];
 
 const els = {};
 
@@ -148,6 +154,110 @@ function renderPaket(paket) {
         setupRatingCard(paket.paketId);
     } else {
         hideRatingCard();
+    }
+}
+
+function paketDurumMetni(p) {
+    if (p.durum === 'iptal_edildi') return { text: 'İptal edildi', cls: 'bg-red-500/15 text-red-500' };
+    if (p.suresiDoldu) return { text: 'Süresi doldu', cls: 'bg-slate-500/15 text-slate-400' };
+    return { text: 'Aktif', cls: 'bg-green-500/15 text-green-500' };
+}
+
+function bekleyenTalep(satinAlmaId) {
+    return iptalTalepleri.find((t) => t.satin_alma_id === satinAlmaId && t.durum === 'beklemede') || null;
+}
+
+function renderPaketDetay() {
+    const list = els.paketDetayList;
+    if (!list) return;
+    if (!kullaniciPaketleri.length) {
+        list.innerHTML = '<p class="eg-empty">Görüntülenecek paket bulunamadı.</p>';
+        return;
+    }
+
+    list.innerHTML = kullaniciPaketleri.map((p) => {
+        const durum = paketDurumMetni(p);
+        const talep = bekleyenTalep(p.id);
+        const kalan = p.durum === 'aktif' && !p.suresiDoldu && p.kalanGun != null
+            ? `${p.kalanGun} gün`
+            : '—';
+        const canRequest = p.durum === 'aktif' && !talep;
+        return `
+            <div class="rounded-2xl border border-light-border dark:border-dark-border p-4 sm:p-5 mb-3 last:mb-0">
+                <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+                    <div class="min-w-0">
+                        <p class="font-poppins font-bold text-lg">${escapeHtml(p.paketAdi)}</p>
+                        <span class="inline-flex mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${durum.cls}">${durum.text}</span>
+                    </div>
+                    ${canRequest ? `
+                        <button type="button" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-600 transition-colors"
+                            data-iptal-talep="${p.id}">
+                            <i class="fa-solid fa-ban"></i> Paketi İptal Et
+                        </button>` : ''}
+                </div>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                    <div class="flex justify-between gap-2"><dt class="text-light-text-secondary">Başlangıç</dt><dd class="font-semibold">${escapeHtml(formatDate(p.baslangic))}</dd></div>
+                    <div class="flex justify-between gap-2"><dt class="text-light-text-secondary">Bitiş</dt><dd class="font-semibold">${escapeHtml(formatDate(p.bitis))}</dd></div>
+                    <div class="flex justify-between gap-2"><dt class="text-light-text-secondary">Kalan gün</dt><dd class="font-bold text-yaziyo-gold">${escapeHtml(kalan)}</dd></div>
+                    <div class="flex justify-between gap-2"><dt class="text-light-text-secondary">Ücret</dt><dd class="font-semibold">${(Number(p.fiyat) || 0).toLocaleString('tr-TR')} ₺</dd></div>
+                </dl>
+                ${talep ? `
+                    <div class="mt-4 rounded-xl bg-orange-500/10 border border-orange-500/20 px-3 py-3">
+                        <p class="text-xs font-bold text-orange-600 dark:text-orange-400 mb-1">İptal talebiniz iletildi</p>
+                        <p class="text-xs text-light-text-secondary leading-relaxed">${escapeHtml(talep.neden)}</p>
+                        <p class="text-[11px] text-light-text-secondary mt-2">Yönetici değerlendirene kadar paketiniz aktif kalır.</p>
+                    </div>` : ''}
+                ${p.durum === 'iptal_edildi' ? `
+                    <p class="mt-3 text-xs text-red-500">Bu paket ${p.iptalEdildiAt ? formatDate(p.iptalEdildiAt) : ''} tarihinde iptal edildi.</p>` : ''}
+            </div>`;
+    }).join('');
+}
+
+async function loadPaketDetay() {
+    if (!currentUser) return;
+    const [paketRes, talepRes] = await Promise.all([
+        fetchKullaniciPaketleri(currentUser.id),
+        fetchKullaniciIptalTalepleri(currentUser.id)
+    ]);
+    if (paketRes.error) {
+        if (els.paketDetayList) {
+            els.paketDetayList.innerHTML = `<p class="eg-empty">${escapeHtml(paketRes.error.message || 'Paketler yüklenemedi')}</p>`;
+        }
+        return;
+    }
+    kullaniciPaketleri = paketRes.data || [];
+    if (talepRes.error) {
+        const msg = (talepRes.error.message || '').toLowerCase();
+        if (msg.includes('paket_iptal_talepleri') || talepRes.error.code === 'PGRST205') {
+            iptalTalepleri = [];
+        } else {
+            iptalTalepleri = [];
+        }
+    } else {
+        iptalTalepleri = talepRes.data || [];
+    }
+    renderPaketDetay();
+}
+
+function iptalModalAc(satinAlmaId, paketAdi) {
+    iptalHedef = { id: satinAlmaId, ad: paketAdi };
+    if (els.iptalPaketAdi) els.iptalPaketAdi.textContent = paketAdi || 'Eğitim paketi';
+    if (els.iptalNeden) els.iptalNeden.value = '';
+    if (els.iptalCount) els.iptalCount.textContent = '0/800';
+    els.iptalModal?.classList.remove('hidden');
+    els.iptalModal?.classList.add('is-open');
+    els.iptalModal?.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('eg-belge-open');
+    els.iptalNeden?.focus();
+}
+
+function iptalModalKapat() {
+    iptalHedef = null;
+    els.iptalModal?.classList.add('hidden');
+    els.iptalModal?.classList.remove('is-open');
+    els.iptalModal?.setAttribute('aria-hidden', 'true');
+    if (!els.belgeModal?.classList.contains('is-open')) {
+        document.body.classList.remove('eg-belge-open');
     }
 }
 
@@ -897,6 +1007,14 @@ function cacheElements() {
     els.belgeFrame = document.getElementById('eg-belge-frame');
     els.belgeYeniSekme = document.getElementById('eg-belge-yeni-sekme');
     els.belgeKapat = document.getElementById('eg-belge-kapat');
+    els.paketDetayList = document.getElementById('eg-paket-detay-list');
+    els.iptalModal = document.getElementById('eg-iptal-modal');
+    els.iptalPaketAdi = document.getElementById('eg-iptal-paket-adi');
+    els.iptalNeden = document.getElementById('eg-iptal-neden');
+    els.iptalCount = document.getElementById('eg-iptal-count');
+    els.iptalGonder = document.getElementById('eg-iptal-gonder');
+    els.iptalKapat = document.getElementById('eg-iptal-kapat');
+    els.iptalVazgec = document.getElementById('eg-iptal-vazgec');
     els.toast = document.getElementById('eg-toast');
 }
 
@@ -915,6 +1033,7 @@ function bindEvents() {
             if (id === 'takvim') await loadTakvim();
             if (id === 'etut') await loadEtut();
             if (id === 'belgeler') await loadBelgeler();
+            if (id === 'paket') await loadPaketDetay();
         });
     });
 
@@ -1032,8 +1151,45 @@ function bindEvents() {
     els.belgeModal?.addEventListener('click', (e) => {
         if (e.target === els.belgeModal) belgeModalKapat();
     });
+    els.paketDetayList?.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-iptal-talep]');
+        if (!btn) return;
+        const paket = kullaniciPaketleri.find((p) => p.id === btn.dataset.iptalTalep);
+        iptalModalAc(btn.dataset.iptalTalep, paket?.paketAdi || 'Eğitim paketi');
+    });
+    els.iptalNeden?.addEventListener('input', () => {
+        if (els.iptalCount) els.iptalCount.textContent = `${els.iptalNeden.value.length}/800`;
+    });
+    els.iptalKapat?.addEventListener('click', iptalModalKapat);
+    els.iptalVazgec?.addEventListener('click', iptalModalKapat);
+    els.iptalModal?.addEventListener('click', (e) => {
+        if (e.target === els.iptalModal) iptalModalKapat();
+    });
+    els.iptalGonder?.addEventListener('click', async () => {
+        if (!iptalHedef?.id) return;
+        const neden = (els.iptalNeden?.value || '').trim();
+        if (neden.length < 8) {
+            showToast('Lütfen iptal nedeninizi en az 8 karakter yazın', 'error');
+            return;
+        }
+        els.iptalGonder.disabled = true;
+        const { error } = await olusturPaketIptalTalebi(iptalHedef.id, neden);
+        els.iptalGonder.disabled = false;
+        if (error) {
+            showToast(error.message || 'Talep gönderilemedi', 'error');
+            return;
+        }
+        iptalModalKapat();
+        showToast('İptal talebiniz yöneticiye iletildi');
+        await loadPaketDetay();
+    });
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') belgeModalKapat();
+        if (e.key !== 'Escape') return;
+        if (els.iptalModal?.classList.contains('is-open')) {
+            iptalModalKapat();
+            return;
+        }
+        belgeModalKapat();
     });
 }
 

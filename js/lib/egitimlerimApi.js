@@ -298,6 +298,7 @@ export async function fetchKullaniciPaketOzeti(userId, client = supabase) {
             satinAlmaId: data.id,
             paketId: data.paket_id,
             paketAdi: data.egitim_paketleri?.baslik || 'Eğitim Paketi',
+            fiyat: Number(data.fiyat) || 0,
             baslangic: data.satin_alma_tarihi,
             bitis,
             kalanGun: kalan,

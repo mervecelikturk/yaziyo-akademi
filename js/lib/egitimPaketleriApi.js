@@ -263,17 +263,138 @@ export async function deletePaket(id, client = supabase) {
  * bir satın alma ucu bilerek bırakılmamıştır (bkz. sql/033).
  */
 
-export async function fetchAdminBildirimler(client = supabase, limit = 20) {
+export async function fetchAdminBildirimler(client = supabase, limit = 40, types = null) {
     if (!client) return { data: [], error: null };
 
-    const { data, error } = await client
+    let query = client
         .from('yonetici_bildirimleri')
         .select('id, baslik, mesaj, tur, paket_id, kullanici_id, okundu, created_at')
         .order('created_at', { ascending: false })
         .limit(limit);
 
+    if (Array.isArray(types) && types.length) {
+        query = query.in('tur', types);
+    }
+
+    const { data, error } = await query;
+
     if (error) return { data: [], error };
     return { data: data || [], error: null };
+}
+
+async function attachKullaniciAdlari(rows, client = supabase) {
+    const ids = [...new Set((rows || []).map((r) => r.kullanici_id).filter(Boolean))];
+    if (!ids.length) return rows || [];
+    const { data } = await client
+        .from('kullanicilar')
+        .select('id, full_name, email')
+        .in('id', ids);
+    const map = new Map((data || []).map((u) => [u.id, u]));
+    return (rows || []).map((r) => {
+        const u = map.get(r.kullanici_id);
+        return {
+            ...r,
+            kullaniciAdi: (u?.full_name || '').trim() || u?.email || 'Kullanıcı',
+            kullaniciEposta: u?.email || ''
+        };
+    });
+}
+
+export async function fetchPaketIptalTalepleri(client = supabase, limit = 50) {
+    if (!client) return { data: [], error: null };
+
+    const { data, error } = await client
+        .from('paket_iptal_talepleri')
+        .select('id, satin_alma_id, paket_id, kullanici_id, neden, durum, created_at, isleme_alindi_at, egitim_paketleri(baslik)')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+    if (error) return { data: [], error };
+    const enriched = await attachKullaniciAdlari(data || [], client);
+    return {
+        data: enriched.map((row) => ({
+            id: row.id,
+            satinAlmaId: row.satin_alma_id,
+            paketId: row.paket_id,
+            paketAdi: row.egitim_paketleri?.baslik || 'Eğitim Paketi',
+            kullaniciId: row.kullanici_id,
+            kullaniciAdi: row.kullaniciAdi,
+            kullaniciEposta: row.kullaniciEposta,
+            neden: row.neden,
+            durum: row.durum,
+            createdAt: row.created_at,
+            islemeAlindiAt: row.isleme_alindi_at
+        })),
+        error: null
+    };
+}
+
+export async function fetchKullaniciIptalTalepleri(userId, client = supabase) {
+    if (!client || !userId) return { data: [], error: null };
+    const { data, error } = await client
+        .from('paket_iptal_talepleri')
+        .select('id, satin_alma_id, neden, durum, created_at')
+        .eq('kullanici_id', userId)
+        .order('created_at', { ascending: false });
+    if (error) return { data: [], error };
+    return { data: data || [], error: null };
+}
+
+export async function olusturPaketIptalTalebi(satinAlmaId, neden, client = supabase) {
+    if (!client || !satinAlmaId) {
+        return { data: null, error: new Error('Geçersiz istek') };
+    }
+    const { data, error } = await client.rpc('olustur_paket_iptal_talebi', {
+        p_satin_alma_id: satinAlmaId,
+        p_neden: String(neden || '').trim()
+    });
+    if (error) {
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('olustur_paket_iptal_talebi') || msg.includes('schema cache') || error.code === 'PGRST202') {
+            return {
+                data: null,
+                error: new Error('İptal talebi sistemi henüz kurulmamış. sql/039_paket_iptal_talepleri.sql dosyasını çalıştırın.')
+            };
+        }
+        return { data: null, error };
+    }
+    if (data && data.success === false) {
+        return { data, error: new Error(data.message || 'İptal talebi gönderilemedi') };
+    }
+    return { data, error: null };
+}
+
+export async function fetchAdminAktifSatinAlmalar(client = supabase, limit = 40) {
+    if (!client) return { data: [], error: null };
+
+    const { data, error } = await client
+        .from('egitim_paketi_satin_almalar')
+        .select('id, paket_id, kullanici_id, fiyat, satin_alma_tarihi, bitis_tarihi, durum, egitim_paketleri(baslik)')
+        .eq('durum', 'aktif')
+        .order('satin_alma_tarihi', { ascending: false })
+        .limit(limit);
+
+    if (error) return { data: [], error };
+    const enriched = await attachKullaniciAdlari(data || [], client);
+    const now = Date.now();
+    return {
+        data: enriched.map((row) => {
+            const bitisMs = row.bitis_tarihi ? new Date(row.bitis_tarihi).getTime() : 0;
+            return {
+                id: row.id,
+                paketId: row.paket_id,
+                paketAdi: row.egitim_paketleri?.baslik || 'Eğitim Paketi',
+                kullaniciId: row.kullanici_id,
+                kullaniciAdi: row.kullaniciAdi,
+                kullaniciEposta: row.kullaniciEposta,
+                fiyat: Number(row.fiyat) || 0,
+                baslangic: row.satin_alma_tarihi,
+                bitis: row.bitis_tarihi,
+                kalanGun: bitisMs > 0 ? Math.ceil((bitisMs - now) / (1000 * 60 * 60 * 24)) : null
+            };
+        }),
+        error: null
+    };
 }
 
 export async function markAdminBildirimOkundu(id, client = supabase) {
@@ -285,12 +406,25 @@ export async function markAdminBildirimOkundu(id, client = supabase) {
     return { error };
 }
 
-export async function markAllAdminBildirimOkundu(client = supabase) {
+export async function markAllAdminBildirimOkundu(client = supabase, types = null) {
     if (!client) return { error: new Error('Geçersiz istek') };
-    const { error } = await client
+    let query = client
         .from('yonetici_bildirimleri')
         .update({ okundu: true })
         .eq('okundu', false);
+    if (Array.isArray(types) && types.length) {
+        query = query.in('tur', types);
+    }
+    const { error } = await query;
+    return { error };
+}
+
+export async function deleteAdminBildirim(id, client = supabase) {
+    if (!client || !id) return { error: new Error('Geçersiz istek') };
+    const { error } = await client
+        .from('yonetici_bildirimleri')
+        .delete()
+        .eq('id', id);
     return { error };
 }
 

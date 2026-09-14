@@ -190,9 +190,11 @@ async function checkAuth() {
         if (hasSession) {
             html.classList.add('is-logged-in');
             updateUIElements(userData);
-            import('./notifications.js')
-                .then(({ initNotifications }) => initNotifications(getSupabaseClient()))
-                .catch(() => {});
+            if (document.getElementById('main-header')?.dataset?.yaziyoAdminHeader !== '1') {
+                import('./notifications.js')
+                    .then(({ initNotifications }) => initNotifications(getSupabaseClient()))
+                    .catch(() => {});
+            }
             import('./dailyStreak.js')
                 .then(({ syncDailyStreak }) => syncDailyStreak(getSupabaseClient()))
                 .catch(() => {});
