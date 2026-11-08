@@ -16,6 +16,7 @@ import {
     mirrorSessionToWindowName,
     clearAllSupabaseAuthKeys,
 } from './lib/authStorage.js';
+import { syncKeyboardPreferenceFromUser } from './lib/keyboardPreference.js';
 
 const isAdminPanelPage = () =>
     window.YaziyoAdminPaths?.isAdminPanelPage?.() === true;
@@ -88,8 +89,11 @@ function updateUIElements(user) {
 
     if (!user) {
         _appliedUiKey = null;
+        syncKeyboardPreferenceFromUser(null);
         return;
     }
+
+    syncKeyboardPreferenceFromUser(user);
 
     // site_full_name: kullanıcının siteden kaydettiği isim (Google OAuth'un full_name'ini ezmez)
     const name = user.user_metadata?.site_full_name || user.user_metadata?.full_name || 'Kullanıcı';
@@ -265,6 +269,7 @@ function attachAuthEvents() {
 
 window.performLogout = async () => {
     document.documentElement.classList.remove('is-logged-in', 'profile-auth-ready');
+    syncKeyboardPreferenceFromUser(null);
     clearAllSupabaseAuthKeys();
     window.name = '';
 

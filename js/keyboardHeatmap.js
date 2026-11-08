@@ -2,13 +2,14 @@
  * Profil — Klavye Isı Haritası UI
  */
 import { KEYBOARD_LAYOUTS } from './lib/keyboardLayouts.js';
+import { getStoredKeyboardLayout } from './lib/keyboardPreference.js';
 import { getHeatLevel, getHeatLevelClass, HEAT_LEGEND } from './lib/keyboardHeatmapColors.js';
 import { loadHeatmapSessions, loadHeatmapAggregate } from './lib/keyboardHeatmapApi.js';
 import { formatKeyDisplay } from './lib/keyboardHeatmapAnalytics.js';
 
 /** @type {{ layout: string, sessionId: string|null, sessions: object[], aggregate: object|null, loading: boolean, rendered: boolean }} */
 const state = {
-    layout: 'q',
+    layout: getStoredKeyboardLayout(),
     sessionId: null,
     sessions: [],
     aggregate: null,
@@ -326,12 +327,10 @@ async function loadHeatmapData() {
 
     try {
         state.sessions = await loadHeatmapSessions(supabaseClient, 10);
-        // Varsayılan klavye: seçili oturumun düzeni, yoksa ilk oturumun düzeni
         if (state.sessionId) {
             syncSessionToLayout();
-        }
-        if (!state.sessionId && state.sessions.length > 0) {
-            state.layout = normalizeLayout(state.sessions[0].keyboard_layout);
+        } else {
+            state.layout = normalizeLayout(getStoredKeyboardLayout());
         }
         await refreshAggregate();
     } catch (err) {

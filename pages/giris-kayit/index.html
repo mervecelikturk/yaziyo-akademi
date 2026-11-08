@@ -370,7 +370,6 @@
                                             class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
                                         <input type="text" id="reg-name" required autocomplete="given-name"
                                             class="w-full pl-11 pr-4 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300"
-                                            placeholder="Adınız (en az 3 harf)"
                                             minlength="3" maxlength="30" spellcheck="false">
                                     </div>
                                 </div>
@@ -382,7 +381,6 @@
                                             class="fa-solid fa-user-tag absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary/50"></i>
                                         <input type="text" id="reg-surname" required autocomplete="family-name"
                                             class="w-full pl-11 pr-4 py-3.5 bg-yaziyo-bg/50 border-2 border-yaziyo-border/80 text-yaziyo-text rounded-xl focus:outline-none focus:border-yaziyo-gold hover:border-yaziyo-gold/40 input-focus-ring transition-all duration-300"
-                                            placeholder="Soyadınız (en az 3 harf)"
                                             minlength="3" maxlength="30" spellcheck="false">
                                     </div>
                                 </div>
@@ -717,6 +715,8 @@
             // ==========================================
             // ŞİFRE GÜÇLÜLÜK VE DOĞRULAMA MANTIĞI
             // ==========================================
+            const regName = document.getElementById('reg-name');
+            const regSurname = document.getElementById('reg-surname');
             const regPassword = document.getElementById('reg-password');
             const regConfirm = document.getElementById('reg-password-confirm');
             const strengthBar = document.getElementById('password-strength-bar');
@@ -790,6 +790,17 @@
 
             const termsAccept = document.getElementById('terms-accept');
 
+            function namesAreValid() {
+                const api = window.YaziyoNameValidation;
+                const name = regName?.value || '';
+                const surname = regSurname?.value || '';
+                if (!name || !surname) return false;
+                if (api?.validateNamePart) {
+                    return !api.validateNamePart(name, 'Ad') && !api.validateNamePart(surname, 'Soyad');
+                }
+                return /^[\p{L}]+$/u.test(name) && /^[\p{L}]+$/u.test(surname);
+            }
+
             function checkFormValidity() {
                 if (!regPassword || !regConfirm || !submitBtn) return;
                 const pw = regPassword.value;
@@ -798,6 +809,7 @@
                 const allRulesMet = Object.values(rules).every(rule => rule(pw));
                 const passwordsMatch = pw === cpw && pw.length > 0;
                 const termsOk = termsAccept?.checked === true;
+                const namesOk = namesAreValid();
 
                 // Eşleşme Durumu UI
                 if (matchStatus) {
@@ -821,8 +833,8 @@
                     }
                 }
 
-                // Buton Durumu Toggle (şifre kuralları + sözleşme onayı)
-                if (allRulesMet && passwordsMatch && termsOk) {
+                // Buton Durumu Toggle (ad/soyad + şifre kuralları + sözleşme onayı)
+                if (namesOk && allRulesMet && passwordsMatch && termsOk) {
                     submitBtn.disabled = false;
                     submitBtn.classList.remove('bg-yaziyo-gold/50', 'to-yellow-600/50', 'text-slate-900/50', 'shadow-none', 'cursor-not-allowed');
                     submitBtn.classList.add('bg-yaziyo-gold', 'to-yellow-600', 'text-slate-900', 'shadow-glow-gold', 'cursor-pointer', 'hover:scale-[1.02]', 'active:scale-95');
@@ -865,7 +877,9 @@
                 updateUI();
                 toggleValidationPopup();
             });
-            
+
+            regName?.addEventListener('input', () => queueMicrotask(checkFormValidity));
+            regSurname?.addEventListener('input', () => queueMicrotask(checkFormValidity));
             regConfirm?.addEventListener('input', checkFormValidity);
             termsAccept?.addEventListener('change', checkFormValidity);
             window.addEventListener('terms-accept-changed', checkFormValidity);

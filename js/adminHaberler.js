@@ -455,16 +455,6 @@ async function confirmDelete() {
     await loadData();
 }
 
-function exportDraft() {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `yaziyo-haberler-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    showToast('Veriler JSON olarak indirildi.');
-}
-
 function bindEvents() {
     els.tabNews?.addEventListener('click', () => setTab('news'));
     els.tabRg?.addEventListener('click', () => setTab('rg'));
@@ -509,7 +499,6 @@ function bindEvents() {
     });
 
     els.btnConfirmDelete?.addEventListener('click', confirmDelete);
-    els.btnExport?.addEventListener('click', exportDraft);
     els.btnRefresh?.addEventListener('click', loadData);
 }
 
@@ -550,7 +539,6 @@ function cacheElements() {
     els.newsPreview = document.getElementById('news-preview');
     els.deleteMessage = document.getElementById('delete-message');
     els.btnConfirmDelete = document.getElementById('btn-confirm-delete');
-    els.btnExport = document.getElementById('btn-export-draft');
     els.toast = document.getElementById('admin-toast');
 }
 

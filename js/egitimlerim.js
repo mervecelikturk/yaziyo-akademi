@@ -37,7 +37,7 @@ import {
 import {
     submitPaketDegerlendirme,
     fetchKullaniciPaketDegerlendirme,
-    userHasPurchasedPaket,
+    userHasActivePaket,
     fetchKullaniciPaketleri,
     fetchKullaniciIptalTalepleri,
     olusturPaketIptalTalebi
@@ -1206,7 +1206,7 @@ async function init() {
 
     currentUser = result.user;
 
-    const hasPackage = await userHasPurchasedPaket(supabase);
+    const hasPackage = await userHasActivePaket(supabase);
     if (!hasPackage) {
         window.location.replace('../egitim-paketleri/');
         return;
@@ -1221,8 +1221,13 @@ async function init() {
 
     await loadAnaSayfa();
 
-    document.addEventListener('visibilitychange', () => {
+    document.addEventListener('visibilitychange', async () => {
         if (document.hidden || !currentUser) return;
+        const stillActive = await userHasActivePaket(supabase);
+        if (!stillActive) {
+            window.location.replace('../egitim-paketleri/');
+            return;
+        }
         const ilerlemeOpen = document.getElementById('panel-ilerleme')?.classList.contains('active');
         if (ilerlemeOpen) loadIlerleme();
     });

@@ -177,7 +177,34 @@
         }
 
         /* Sınav Ekranı — gri kenarlık, eş font, daha geniş alan */
+        #workspace-screen.exam-mode #workspace-top-left {
+            top: 0.3rem !important;
+            left: 0.15rem !important;
+        }
+
+        #workspace-screen.exam-mode #workspace-top-right {
+            top: 0.5rem !important;
+        }
+
+        #workspace-screen.exam-mode .timer-box {
+            padding: 0.36rem 0.7rem !important;
+            border-radius: 8px !important;
+            gap: 5px !important;
+            box-shadow: none !important;
+        }
+
+        #workspace-screen.exam-mode .timer-box span {
+            font-size: 0.82rem !important;
+            letter-spacing: 0.01em;
+        }
+
+        #workspace-screen.exam-mode .timer-box #timer-display {
+            font-size: 1rem !important;
+        }
+
         #workspace-screen.exam-mode #workspace-content {
+            padding-top: 0.5rem !important;
+            padding-bottom: 0.75rem !important;
             padding-left: 0.75rem !important;
             padding-right: 0.75rem !important;
         }
@@ -185,24 +212,43 @@
         #workspace-screen.exam-mode #workspace-panels,
         #workspace-screen.exam-mode #workspace-content > .w-full.max-w-5xl {
             max-width: none !important;
-            width: 84% !important;
+            width: min(82%, calc(100% - 17rem)) !important;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
         #workspace-screen.exam-mode #text-display-card {
             width: 100% !important;
+            margin-top: 0 !important;
             border: 1px solid #D1D5DB !important;
+            border-radius: 0 !important;
             box-shadow: none !important;
-            height: min(380px, calc(var(--yaziyo-vvh, 1vh) * 44)) !important;
-            min-height: 220px !important;
-            max-height: min(420px, calc(var(--yaziyo-vvh, 1vh) * 48)) !important;
+            flex: 0 0 auto;
+            height: calc(var(--yaziyo-vvh, 1vh) * 50) !important;
+            min-height: 0 !important;
+            max-height: calc(var(--yaziyo-vvh, 1vh) * 50) !important;
         }
 
         #workspace-screen.exam-mode #text-content {
             font-family: Inter, system-ui, sans-serif !important;
-            font-size: 16.5px !important;
+            font-size: 15.5px !important;
             font-weight: 400 !important;
             line-height: 1.5 !important;
             letter-spacing: normal !important;
+            text-align: justify !important;
+            padding: 1.25rem 1.5rem !important;
+        }
+
+        #workspace-screen.exam-mode .exit-btn {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 10px !important;
+        }
+
+        #workspace-screen.exam-mode .exit-btn i {
+            font-size: 1.15rem !important;
         }
 
         #workspace-screen.exam-mode #user-input,
@@ -221,6 +267,10 @@
             line-height: 1.5 !important;
             letter-spacing: normal !important;
             color: #4B5563 !important;
+            flex: 0 0 auto;
+            height: calc(var(--yaziyo-vvh, 1vh) * 50 - 4.5rem) !important;
+            min-height: 0 !important;
+            max-height: calc(var(--yaziyo-vvh, 1vh) * 50 - 4.5rem) !important;
         }
 
         #workspace-screen.exam-mode #user-input:focus,
@@ -268,10 +318,30 @@
             transform: scale(1.05);
         }
 
-        /* Geri sayım (3-2-1 / BAŞLA!) */
+        /* Geri sayım (3-2-1 / BAŞLA!) — çarpı her ekranda üstte ve tıklanabilir */
         #countdown-overlay {
             overflow: hidden;
             padding: 0 1rem;
+            pointer-events: none;
+        }
+
+        #workspace-top-right,
+        #close-workspace-btn {
+            z-index: 280 !important;
+            pointer-events: auto !important;
+        }
+
+        #workspace-screen.is-countdown #workspace-top-right,
+        #workspace-screen.is-countdown.exam2-mode #workspace-top-right,
+        #workspace-screen.is-countdown.exam3-mode #workspace-top-right,
+        #workspace-screen.is-countdown #close-workspace-btn,
+        #workspace-screen.is-countdown.exam2-mode #close-workspace-btn,
+        #workspace-screen.is-countdown.exam3-mode #close-workspace-btn {
+            display: flex !important;
+        }
+
+        #workspace-screen.is-countdown:not(.exam-mode):not(.exam2-mode):not(.exam3-mode) #timer-container {
+            display: none !important;
         }
 
         #countdown-number {
@@ -357,13 +427,21 @@
             #workspace-screen.exam-mode #workspace-panels,
             #workspace-screen.exam-mode #workspace-content > .w-full.max-w-5xl {
                 max-width: none !important;
-                width: 90% !important;
+                width: min(82%, calc(100% - 17rem)) !important;
             }
 
             #workspace-screen.exam-mode #text-display-card {
-                height: min(280px, calc(var(--yaziyo-vvh, 1vh) * 38)) !important;
-                min-height: 180px !important;
-                max-height: min(320px, calc(var(--yaziyo-vvh, 1vh) * 42)) !important;
+                height: calc(var(--yaziyo-vvh, 1vh) * 50) !important;
+                min-height: 0 !important;
+                max-height: calc(var(--yaziyo-vvh, 1vh) * 50) !important;
+            }
+
+            #workspace-screen.exam-mode #user-input,
+            #workspace-screen.exam-mode #user-input:focus,
+            #workspace-screen.exam-mode #user-input:focus-visible {
+                height: calc(var(--yaziyo-vvh, 1vh) * 50 - 4.5rem) !important;
+                min-height: 0 !important;
+                max-height: calc(var(--yaziyo-vvh, 1vh) * 50 - 4.5rem) !important;
             }
 
             #workspace-screen.exam-mode #text-content,
@@ -1076,7 +1154,6 @@
                                     <option value="danistay">Danıştay Metinleri</option>
                                     <option value="hsk">HSK Metinleri</option>
                                     <option value="yabanci">Yabancı Diller</option>
-                                    <option value="kendi_metnim">Kendi Metnim</option>
                                 </select>
                             </div>
 
@@ -1166,8 +1243,8 @@
                                     <option value="practice">Çalışma Ekranı</option>
                                     <option value="app">Uygulama Ekranı</option>
                                     <option value="exam" selected>Sınav Ekranı</option>
-                                    <option value="exam2">Yan Sayfa Modu</option>
-                                    <option value="exam3">Tam Satır Ekran</option>
+                                    <option value="exam2">Tam Satır Ekran</option>
+                                    <option value="exam3">Yan Sayfa Modu</option>
                                 </select>
                             </div>
 
@@ -1178,11 +1255,11 @@
                                     Seçimi</label>
                                 <select id="time-select"
                                     class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 font-inter text-sm text-light-text dark:text-dark-text focus:border-yaziyo-gold focus:outline-none transition-colors duration-300">
-                                    <option value="sure">Süre</option>
                                     <option value="60">1 Dakika</option>
                                     <option value="180" selected>3 Dakika</option>
                                     <option value="300">5 Dakika</option>
                                     <option value="600">10 Dakika</option>
+                                    <option value="suresiz">Süresiz çalışma</option>
                                 </select>
                             </div>
 
@@ -1264,9 +1341,6 @@
                 <span class="font-inter font-black text-xs uppercase tracking-wider opacity-90">Süre :</span>
                 <span id="timer-display" class="font-poppins font-black">00:00</span>
             </div>
-            <button id="toggle-timer-btn" class="hidden timer-toggle-btn" type="button" title="Süreyi gizle/göster" aria-label="Süreyi gizle/göster">
-                <i id="timer-toggle-icon" class="fa-solid fa-eye"></i>
-            </button>
         </div>
 
         <div id="workspace-top-right" class="absolute top-8 right-8 z-[250] flex items-center gap-2">

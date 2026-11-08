@@ -37,32 +37,6 @@ export const PAKET_YETKILERI = [
             { id: 'egitimlerim-koc', label: 'Koç / mentor desteği' },
             { id: 'egitimlerim-canli-destek', label: 'Canlı destek' }
         ]
-    },
-    {
-        group: 'Klavye & Ders',
-        items: [
-            { id: 'klavye-calismasi', label: 'Klavye çalışması' },
-            { id: 'hiz-testi', label: 'Hız testi' },
-            { id: 'ozel-metin-calismasi', label: 'Özel metin çalışması' },
-            { id: 'klavye-sinavi', label: 'Klavye sınavı' },
-            { id: 'dersler', label: 'Dersler' },
-            { id: 'kpss-calismasi', label: 'KPSS çalışması' }
-        ]
-    },
-    {
-        group: 'Mülakat',
-        items: [
-            { id: 'sozlu-mulakat', label: 'Sözlü mülakat' },
-            { id: 'mulakat-simulasyonu', label: 'Mülakat simülasyonu' }
-        ]
-    },
-    {
-        group: 'Oyunlar',
-        items: [
-            { id: 'klavye-duellosu', label: 'Klavye düellosu' },
-            { id: 'kelime-evi', label: 'Kelime evi' },
-            { id: 'araba-yarisi', label: 'Araba yarışı' }
-        ]
     }
 ];
 
@@ -329,6 +303,20 @@ export async function fetchPaketIptalTalepleri(client = supabase, limit = 50) {
     };
 }
 
+export async function deletePaketIptalTalebi(id, client = supabase) {
+    if (!client || !id) return { error: new Error('Geçersiz istek') };
+    const { data, error } = await client
+        .from('paket_iptal_talepleri')
+        .delete()
+        .eq('id', id)
+        .select('id');
+    if (error) return { error };
+    if (!data?.length) {
+        return { error: new Error('İade mesajı silinemedi. Yönetici silme yetkisi tanımlı olmayabilir.') };
+    }
+    return { error: null };
+}
+
 export async function fetchKullaniciIptalTalepleri(userId, client = supabase) {
     if (!client || !userId) return { data: [], error: null };
     const { data, error } = await client
@@ -421,11 +409,16 @@ export async function markAllAdminBildirimOkundu(client = supabase, types = null
 
 export async function deleteAdminBildirim(id, client = supabase) {
     if (!client || !id) return { error: new Error('Geçersiz istek') };
-    const { error } = await client
+    const { data, error } = await client
         .from('yonetici_bildirimleri')
         .delete()
-        .eq('id', id);
-    return { error };
+        .eq('id', id)
+        .select('id');
+    if (error) return { error };
+    if (!data?.length) {
+        return { error: new Error('Bildirim silinemedi. Yönetici silme yetkisi tanımlı olmayabilir.') };
+    }
+    return { error: null };
 }
 
 /** Yıldız HTML — değerlendirme yoksa boş string (hiçbir şey yazılmaz) */
@@ -511,35 +504,9 @@ export async function userHasActivePaket(client = supabase) {
     return !!data;
 }
 
-/** En az bir aktif (iptal edilmemiş) paket var mı? (navbar Eğitimlerim) */
+/** Eğitimlerim açık mı? Süresi dolmamış, iptal edilmemiş paket gerekir. */
 export async function userHasPurchasedPaket(client = supabase) {
-    if (!client) return false;
-    const { data: { session } } = await client.auth.getSession();
-    if (!session?.user) return false;
-
-    const { data, error } = await client
-        .from('egitim_paketi_satin_almalar')
-        .select('id')
-        .eq('kullanici_id', session.user.id)
-        .eq('durum', 'aktif')
-        .limit(1)
-        .maybeSingle();
-
-    if (error) {
-        const msg = (error.message || '').toLowerCase();
-        if (msg.includes('durum') || error.code === '42703') {
-            const fallback = await client
-                .from('egitim_paketi_satin_almalar')
-                .select('id')
-                .eq('kullanici_id', session.user.id)
-                .limit(1)
-                .maybeSingle();
-            return !!fallback.data;
-        }
-        console.warn('Paket satın alma kontrolü:', error.message || error);
-        return false;
-    }
-    return !!data;
+    return userHasActivePaket(client);
 }
 
 /** Kullanıcının bu pakete ait aktif satın alması var mı? */

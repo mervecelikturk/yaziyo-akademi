@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-adsense-account" content="ca-pub-1680392405109153">
     <meta name="description" content="YAZİYO Yönetici Paneli - Eğitim Paketi Yönetimi.">
-    <title>Eğitim Paketleri - Admin - YAZİYO</title>
+    <title>Paket Ekle - Admin - YAZİYO</title>
     <link rel="icon" type="image/png" href="../../images/favicon-48.png" sizes="48x48">
     <link rel="icon" href="../../favicon.ico" sizes="any">
     <link rel="icon" type="image/png" href="../../images/logo.png" sizes="192x192">
@@ -16,13 +16,13 @@
     <meta property="og:locale" content="tr_TR">
     <meta property="og:site_name" content="YAZİYO">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Eğitim Paketleri - Admin - YAZİYO">
+    <meta property="og:title" content="Paket Ekle - Admin - YAZİYO">
     <meta property="og:description" content="YAZİYO Yönetici Paneli - Eğitim Paketi Yönetimi.">
     <meta property="og:url" content="https://yaziyoakademi.com/pages/admin-egitim-paketleri/">
     <meta property="og:image" content="https://yaziyoakademi.com/images/logo.png">
     <meta property="og:image:alt" content="YAZİYO — Klavye Çalışma Platformu">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Eğitim Paketleri - Admin - YAZİYO">
+    <meta name="twitter:title" content="Paket Ekle - Admin - YAZİYO">
     <meta name="twitter:description" content="YAZİYO Yönetici Paneli - Eğitim Paketi Yönetimi.">
     <meta name="twitter:image" content="https://yaziyoakademi.com/images/logo.png">
     <meta name="twitter:image:alt" content="YAZİYO — Klavye Çalışma Platformu">
@@ -67,6 +67,41 @@
             outline: none; border-color: rgb(var(--yaziyo-gold-rgb)); box-shadow: 0 0 0 4px rgb(var(--yaziyo-gold-rgb) / 0.15);
         }
         .admin-form-textarea { min-height: 90px; resize: vertical; }
+        #package-modal .admin-form-textarea { min-height: 4.25rem; max-height: 8rem; }
+        #package-modal {
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            overflow: hidden;
+        }
+        #package-modal.flex { display: flex; }
+        #package-modal [data-panel] {
+            width: min(42rem, 100%);
+            height: min(70dvh, 680px);
+            max-height: calc(100dvh - 2.5rem);
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #package-modal [data-panel] > .shrink-0,
+        #package-modal #package-form > .shrink-0 {
+            flex-shrink: 0;
+        }
+        #package-modal #package-form {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #package-modal .package-modal-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .admin-stat-card {
             background: rgb(var(--yaziyo-card-rgb)); border: 1px solid rgb(var(--yaziyo-border-rgb));
             border-radius: 1rem; padding: 1.25rem; transition: all 0.3s ease;
@@ -127,7 +162,7 @@
                     <li class="nav-dropdown">
                         <button type="button" class="nav-link nav-dropdown-trigger active" data-page="admin-egitimler"><i class="fa-solid fa-box-open mr-1.5 text-[0.85em]"></i>Eğitim Paketleri <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">
-                            <li><a href="../admin-egitim-paketleri/" class="nav-dropdown-item active" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                            <li><a href="../admin-egitim-paketleri/" class="nav-dropdown-item active" data-page="admin-egitim-paketleri">Paket Ekle</a></li>
                             <li><a href="../admin-egitim-paketleri/#islemler" class="nav-dropdown-item" data-page="admin-egitim-paketleri">Paket İşlemleri</a></li>
                             <li><a href="../admin-egitimlerim/" class="nav-dropdown-item" data-page="admin-egitimlerim">Eğitimlerim</a></li>
                         </ul>
@@ -155,7 +190,7 @@
                         <li class="mobile-dropdown open">
                             <button type="button" class="mobile-nav-link mobile-dropdown-trigger active open w-full text-left flex items-center justify-between" data-page="admin-egitimler">Eğitim Paketleri <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
                             <ul class="mobile-dropdown-menu open flex flex-col gap-1 pl-3 pt-1">
-                                <li><a href="../admin-egitim-paketleri/" class="mobile-nav-link text-[0.8em] active" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                                <li><a href="../admin-egitim-paketleri/" class="mobile-nav-link text-[0.8em] active" data-page="admin-egitim-paketleri">Paket Ekle</a></li>
                                 <li><a href="../admin-egitim-paketleri/#islemler" class="mobile-nav-link text-[0.8em]" data-page="admin-egitim-paketleri">Paket İşlemleri</a></li>
                                 <li><a href="../admin-egitimlerim/" class="mobile-nav-link text-[0.8em]" data-page="admin-egitimlerim">Eğitimlerim</a></li>
                             </ul>
@@ -173,8 +208,8 @@
 
         <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-8">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-poppins font-bold">Eğitim Paketleri</h1>
-                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1 max-w-2xl">
+                <h1 id="paket-page-title" class="text-2xl sm:text-3xl font-poppins font-bold">Paket Ekle</h1>
+                <p id="paket-page-lead" class="text-sm text-light-text-secondary dark:text-dark-text-secondary mt-1 max-w-2xl">
                     Kullanıcı <a href="../egitim-paketleri/" target="_blank" rel="noopener" class="text-yaziyo-gold font-semibold hover:underline">eğitim paketleri sayfasında</a> görünen paketleri buradan ekleyin ve yönetin.
                 </p>
                 <p class="text-[11px] text-green-600 dark:text-green-400 mt-2 flex items-center gap-1.5">
@@ -183,25 +218,11 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <a href="../egitim-paketleri/" target="_blank" rel="noopener"
-                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-sm font-semibold hover:border-yaziyo-gold hover:text-yaziyo-gold transition-all">
-                    <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i> Önizleme
-                </a>
                 <button type="button" id="btn-refresh-packages"
                     class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-sm font-semibold hover:border-yaziyo-gold hover:text-yaziyo-gold transition-all">
                     <i class="fa-solid fa-rotate text-xs"></i> Yenile
                 </button>
             </div>
-        </div>
-
-        <div class="flex flex-wrap gap-2 mb-8">
-            <button type="button" id="tab-yonetim" class="admin-tab admin-tab-active">
-                <i class="fa-solid fa-boxes-stacked mr-1.5"></i>Paket Yönetimi
-            </button>
-            <button type="button" id="tab-islemler" class="admin-tab">
-                <i class="fa-solid fa-clipboard-list mr-1.5"></i>Paket İşlemleri
-                <span id="islemler-badge" class="hidden ml-1.5 inline-flex items-center justify-center min-w-[1.15rem] h-5 px-1.5 rounded-full bg-orange-500 text-white text-[10px] font-bold">0</span>
-            </button>
         </div>
 
         <div id="section-yonetim">
@@ -307,14 +328,15 @@
     </main>
 
     <!-- PAKET MODALI -->
-    <div id="package-modal" class="fixed inset-0 z-[120] hidden items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+    <div id="package-modal" class="fixed inset-0 z-[120] hidden">
         <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
-        <div data-panel class="relative w-full max-w-2xl max-h-[min(92dvh,92vh)] overflow-y-auto custom-scrollbar bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-t-2xl sm:rounded-2xl shadow-2xl opacity-0 scale-95 transition-all duration-300 mt-auto sm:mt-0" style="padding-bottom: env(safe-area-inset-bottom, 0px)">
-            <div class="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-card/95 dark:bg-dark-card/95 backdrop-blur-md">
+        <div data-panel class="relative bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-2xl opacity-0 scale-95 transition-all duration-300">
+            <div class="shrink-0 flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card rounded-t-2xl">
                 <h2 id="package-modal-title" class="font-poppins font-bold text-lg min-w-0 break-words">Yeni Eğitim Paketi</h2>
                 <button type="button" data-close-modal class="w-11 h-11 shrink-0 rounded-full hover:bg-light-bg dark:hover:bg-dark-bg flex items-center justify-center" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="package-form" class="p-4 sm:p-6 space-y-5">
+            <form id="package-form">
+            <div class="package-modal-body custom-scrollbar p-4 sm:p-6 space-y-5">
                 <div>
                     <label for="field-title" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Paket Başlığı *</label>
                     <input id="field-title" type="text" required class="admin-form-input" placeholder="Örn: Zabıt Katipliği Pro Paket">
@@ -356,15 +378,9 @@
                         <textarea id="field-learn" class="admin-form-textarea" placeholder="Sınav günü stratejisi&#10;Zaman yönetimi"></textarea>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="field-cover" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Kapak Görsel URL</label>
-                        <input id="field-cover" type="url" class="admin-form-input" placeholder="https://...">
-                    </div>
-                    <div>
-                        <label for="field-content" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Paket / İçerik Linki</label>
-                        <input id="field-content" type="url" class="admin-form-input" placeholder="https://...">
-                    </div>
+                <div>
+                    <label for="field-cover" class="block text-xs font-bold uppercase tracking-wider text-light-text-secondary mb-2">Kapak Görsel URL</label>
+                    <input id="field-cover" type="url" class="admin-form-input" placeholder="https://...">
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -388,7 +404,7 @@
                         </div>
                     </div>
                     <p class="text-[11px] text-light-text-secondary mb-3">Satın alan kullanıcıda hangi özelliklerin aktif olacağını detaylı seçin.</p>
-                    <div id="field-yetkiler" class="space-y-4 max-h-none sm:max-h-64 overflow-visible sm:overflow-y-auto custom-scrollbar rounded-xl border border-light-border dark:border-dark-border p-3 sm:p-4"></div>
+                    <div id="field-yetkiler" class="rounded-xl border border-light-border dark:border-dark-border p-3 sm:p-4"></div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <label class="flex items-center gap-2 text-sm cursor-pointer min-h-11">
@@ -408,7 +424,8 @@
                         <input id="field-sort" type="number" value="0" class="admin-form-input py-2">
                     </div>
                 </div>
-                <div class="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+            </div>
+                <div class="shrink-0 flex flex-col-reverse sm:flex-row gap-3 px-4 sm:px-6 py-4 border-t border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card">
                     <button type="button" data-close-modal class="flex-1 min-h-11 py-3 rounded-xl border border-light-border dark:border-dark-border font-bold text-sm">İptal</button>
                     <button type="submit" id="btn-save-package" class="flex-1 min-h-11 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white font-poppins font-bold text-sm hover:shadow-lg transition-all">Kaydet</button>
                 </div>
@@ -421,7 +438,7 @@
         <div data-backdrop class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
         <div data-panel class="relative w-full max-w-md bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-6 text-center opacity-0 scale-95 transition-all duration-300">
             <div class="w-14 h-14 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center text-2xl mx-auto mb-4"><i class="fa-solid fa-trash"></i></div>
-            <h3 class="font-poppins font-bold text-lg mb-2">Paketi Sil</h3>
+            <h3 id="delete-modal-title" class="font-poppins font-bold text-lg mb-2">Paketi Sil</h3>
             <p id="delete-message" class="text-sm text-light-text-secondary mb-6"></p>
             <div class="flex gap-3">
                 <button type="button" data-close-delete-modal class="flex-1 py-2.5 rounded-xl border font-bold text-sm">İptal</button>

@@ -253,6 +253,7 @@ export function bindNameInput(input) {
         try {
             input.setSelectionRange(pos, pos);
         } catch { /* ignore */ }
+        input.dispatchEvent(new Event('input', { bubbles: true }));
     });
 }
 

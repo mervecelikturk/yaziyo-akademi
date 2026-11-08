@@ -145,11 +145,11 @@
         </nav>
     </header>
 
-    <main class="flex-grow w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <main id="setup-screen" class="flex-grow flex items-center justify-center py-6 px-4 sm:px-6 relative">
 
         <!-- GİRİŞ YOK -->
-        <section id="auth-gate" class="flex items-center justify-center py-10">
-            <div class="w-full max-w-lg mx-auto bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-2xl p-8 sm:p-12 text-center">
+        <section id="auth-gate" class="w-full max-w-5xl">
+            <div class="w-full max-w-lg mx-auto bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl shadow-xl p-8 sm:p-12 text-center transition-colors duration-300">
                 <div class="w-20 h-20 rounded-full bg-yaziyo-gold/10 flex items-center justify-center text-yaziyo-gold text-4xl mx-auto mb-6 shadow-glow-gold">
                     <i class="fa-solid fa-house-chimney"></i>
                 </div>
@@ -166,91 +166,111 @@
         </section>
 
         <!-- GİRİŞ VAR -->
-        <div id="ke-content">
-            <div class="text-center mb-8">
-                <span class="ke-setup-badge mb-4"><i class="fa-solid fa-seedling"></i> Sakin İnşa</span>
-                <h1 class="text-3xl sm:text-4xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-2">Kelime Evi</h1>
+        <div id="ke-content" class="w-full max-w-5xl">
+            <div class="text-center mb-10">
+                <p class="text-xs font-bold text-yaziyo-gold uppercase tracking-widest mb-3">Sakin İnşa</p>
+                <h1 class="inline-flex items-center justify-center gap-2.5 text-3xl sm:text-4xl font-poppins font-extrabold text-light-text dark:text-dark-text mb-4">
+                    <i class="fa-solid fa-house-chimney text-yaziyo-gold text-[0.7em] leading-none" aria-hidden="true"></i>
+                    <span>Kelime Evi</span>
+                </h1>
                 <p class="text-light-text-secondary dark:text-dark-text-secondary max-w-lg mx-auto text-sm">
                     Yazarak dünyanı inşa et — her doğru kelime tuğla, her combo bahçene bir çiçek.
                 </p>
             </div>
 
-            <div class="ke-setup-card p-6 sm:p-8 max-w-5xl mx-auto">
-                <div class="flex flex-col gap-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="ke-field-label">Metin Türü Seçin</label>
-                            <select id="category-select" class="ke-select text-light-text dark:text-dark-text">
-                                <option value="ozel">Özel Metinler</option>
-                                <option value="zabit" selected>Zabıt Katipliği</option>
-                                <option value="icra">İcra Katipliği</option>
-                                <option value="cte">CTE Katipliği</option>
-                                <option value="yargitay">Yargıtay Metinleri</option>
-                                <option value="danistay">Danıştay Metinleri</option>
-                                <option value="hsk">HSK Metinleri</option>
-                                <option value="yabanci">Yabancı Diller</option>
-                            </select>
-                        </div>
-                        <div class="relative">
-                            <label class="ke-field-label">Metin Grubu</label>
-                            <select id="group-select" class="hidden"></select>
-                            <div id="group-select-trigger" class="ke-dropdown-trigger text-light-text dark:text-dark-text">
-                                <span id="group-select-label">Seçiniz...</span>
-                                <i class="fa-solid fa-chevron-down text-xs text-yaziyo-gold"></i>
+            <div class="max-w-5xl mx-auto w-full">
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-xl border border-light-border dark:border-dark-border p-6 transition-colors duration-300">
+                    <div class="flex flex-col gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                            <div>
+                                <label class="block text-xs font-bold text-yaziyo-gold uppercase tracking-widest mb-2 ml-1">Metin Türü Seçin</label>
+                                <select id="category-select"
+                                    class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 font-inter text-sm text-light-text dark:text-dark-text focus:border-yaziyo-gold focus:outline-none transition-colors duration-300">
+                                    <option value="ozel">Özel Metinler</option>
+                                    <option value="zabit" selected>Zabıt Katipliği</option>
+                                    <option value="icra">İcra Katipliği</option>
+                                    <option value="cte">CTE Katipliği</option>
+                                    <option value="yargitay">Yargıtay Metinleri</option>
+                                    <option value="danistay">Danıştay Metinleri</option>
+                                    <option value="hsk">HSK Metinleri</option>
+                                    <option value="yabanci">Yabancı Diller</option>
+                                </select>
                             </div>
-                            <div id="group-select-options" class="ke-dropdown-menu hidden"></div>
-                        </div>
-                        <div class="relative">
-                            <label class="ke-field-label">Metin Seçimi</label>
-                            <select id="text-select" class="hidden"></select>
-                            <div id="text-select-trigger" class="ke-dropdown-trigger text-light-text dark:text-dark-text">
-                                <span id="text-select-label">Metin Seçin</span>
-                                <i class="fa-solid fa-chevron-down text-xs text-yaziyo-gold"></i>
+                            <div>
+                                <label class="block text-xs font-bold text-yaziyo-gold uppercase tracking-widest mb-2 ml-1">Metin Grubu</label>
+                                <select id="group-select" class="hidden"></select>
+                                <div class="relative">
+                                    <div id="group-select-trigger"
+                                        class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 font-inter text-sm text-light-text dark:text-dark-text cursor-pointer flex items-center justify-between hover:border-yaziyo-gold transition-colors duration-300">
+                                        <span id="group-select-label">Seçiniz...</span>
+                                        <i class="fa-solid fa-chevron-down text-xs text-yaziyo-gold transition-transform duration-200"></i>
+                                    </div>
+                                    <div id="group-select-options"
+                                        class="hidden absolute left-0 right-0 top-full mt-1 z-50 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                                    </div>
+                                </div>
                             </div>
-                            <div id="text-select-options" class="ke-dropdown-menu hidden"></div>
+                            <div>
+                                <label class="block text-xs font-bold text-yaziyo-gold uppercase tracking-widest mb-2 ml-1">Metin Seçimi</label>
+                                <select id="text-select" class="hidden"></select>
+                                <div class="relative">
+                                    <div id="text-select-trigger"
+                                        class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 font-inter text-sm text-light-text dark:text-dark-text cursor-pointer flex items-center justify-between hover:border-yaziyo-gold transition-colors duration-300">
+                                        <span id="text-select-label">Metin Seçin</span>
+                                        <i class="fa-solid fa-chevron-down text-xs text-yaziyo-gold transition-transform duration-200"></i>
+                                    </div>
+                                    <div id="text-select-options"
+                                        class="hidden absolute left-0 right-0 top-full mt-1 z-50 bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-yaziyo-gold uppercase tracking-widest mb-2 ml-1">Klavye Türü Seçin</label>
+                                <select id="keyboard-type-select"
+                                    class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 font-inter text-sm text-light-text dark:text-dark-text focus:border-yaziyo-gold focus:outline-none transition-colors duration-300">
+                                    <option value="q" selected>Q Klavye</option>
+                                    <option value="f">F Klavye</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label class="ke-field-label">Klavye Türü Seçin</label>
-                            <select id="keyboard-type-select" class="ke-select text-light-text dark:text-dark-text">
-                                <option value="q" selected>Q Klavye</option>
-                                <option value="f">F Klavye</option>
-                            </select>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div>
+                                <label class="block text-xs font-bold text-yaziyo-gold uppercase tracking-widest mb-2 ml-1">İmla Seçimi</label>
+                                <select id="punctuation-select"
+                                    class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 font-inter text-sm text-light-text dark:text-dark-text focus:border-yaziyo-gold focus:outline-none transition-colors duration-300">
+                                    <option value="imlasiz" selected>İmlasız</option>
+                                    <option value="imlali">İmlalı</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-yaziyo-gold uppercase tracking-widest mb-2 ml-1">Süre Seçimi</label>
+                                <select id="time-select"
+                                    class="w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 font-inter text-sm text-light-text dark:text-dark-text focus:border-yaziyo-gold focus:outline-none transition-colors duration-300">
+                                    <option value="60">1 Dakika</option>
+                                    <option value="180" selected>3 Dakika</option>
+                                    <option value="300">5 Dakika</option>
+                                    <option value="600">10 Dakika</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-yaziyo-gold uppercase tracking-widest mb-2 ml-1" id="ke-sound-label">Arka Plan Sesi</label>
+                                <div class="ke-sound-toggle-row w-full bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3">
+                                    <span id="ke-sound-status" class="ke-sound-status">Kapalı</span>
+                                    <button type="button" id="ke-sound-toggle" class="ke-toggle" role="switch"
+                                        aria-checked="false" aria-labelledby="ke-sound-label">
+                                        <span class="ke-toggle-track">
+                                            <span class="ke-toggle-knob"></span>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
+                        <button type="button" id="ke-start-btn"
+                            class="w-full max-w-sm mx-auto py-4 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-black text-lg rounded-2xl shadow-xl hover:shadow-glow-gold hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 group">
+                            <i class="fa-solid fa-house-chimney text-xl group-hover:scale-125 transition-transform"></i>
+                            İNŞAYA BAŞLA
+                        </button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="ke-field-label">İmla Seçimi</label>
-                            <select id="punctuation-select" class="ke-select text-light-text dark:text-dark-text">
-                                <option value="imlasiz" selected>İmlasız</option>
-                                <option value="imlali">İmlalı</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="ke-field-label">Süre Seçimi</label>
-                            <select id="time-select" class="ke-select text-light-text dark:text-dark-text">
-                                <option value="60">1 Dakika</option>
-                                <option value="180" selected>3 Dakika</option>
-                                <option value="300">5 Dakika</option>
-                                <option value="600">10 Dakika</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="ke-field-label" id="ke-sound-label">Arka Plan Sesi</label>
-                            <div class="ke-sound-toggle-row">
-                                <span id="ke-sound-status" class="ke-sound-status">Kapalı</span>
-                                <button type="button" id="ke-sound-toggle" class="ke-toggle" role="switch"
-                                    aria-checked="false" aria-labelledby="ke-sound-label">
-                                    <span class="ke-toggle-track">
-                                        <span class="ke-toggle-knob"></span>
-                                    </span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" id="ke-start-btn" class="ke-start-btn">
-                        <i class="fa-solid fa-house-chimney text-xl"></i>
-                        İNŞAYA BAŞLA
-                    </button>
                 </div>
             </div>
         </div>

@@ -69,10 +69,24 @@
                 var remember = localStorage.getItem('yaziyo-remember-me') === 'true';
                 var store = remember ? localStorage : sessionStorage;
                 var raw = store.getItem('yaziyo-verified-auth-user');
-                if (raw) {
-                    var user = JSON.parse(raw);
-                    if (user && user.id && user.email) {
-                        document.documentElement.classList.add('is-logged-in', 'profile-auth-ready');
+                var user = raw ? JSON.parse(raw) : null;
+                if (user && user.id && user.email) {
+                    document.documentElement.classList.add('is-logged-in', 'profile-auth-ready');
+                    var words = 0;
+                    var rankCache = JSON.parse(localStorage.getItem('yaziyo-profile-rank') || 'null');
+                    if (rankCache && rankCache.userId === user.id) {
+                        words = Math.max(0, Number(rankCache.words) || 0);
+                    }
+                    var rank = { id: 'umut', name: 'Umut Vadedenler', color: '#22C55E' };
+                    if (words >= 100000) rank = { id: 'efsane', name: 'Efsaneler', color: '#D97706' };
+                    else if (words >= 50000) rank = { id: 'usta', name: 'Ustalar', color: '#94A3B8' };
+                    else if (words >= 25000) rank = { id: 'gelismis', name: 'Gelişmişler', color: '#A85507' };
+                    else if (words >= 10000) rank = { id: 'caliskan', name: 'Çalışkanlar', color: '#3B82F6' };
+                    document.documentElement.setAttribute('data-yaziyo-rank', rank.id);
+                    document.documentElement.setAttribute('data-yaziyo-rank-name', rank.name);
+                    document.documentElement.style.setProperty('--yaziyo-rank-color', rank.color);
+                    if (rankCache && rankCache.userId === user.id) {
+                        document.documentElement.classList.add('rank-ready');
                     }
                 }
             } catch (e) {}
@@ -132,6 +146,31 @@
         .rank-border-umut {
             border: 4px solid var(--rank-umut);
             box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+        }
+
+        html:not(.rank-ready) #profile-avatar,
+        html:not(.rank-ready) #rank-badge,
+        html:not(.rank-ready) #rank-icon-bg {
+            visibility: hidden;
+        }
+
+        #profile-avatar {
+            border: 4px solid var(--yaziyo-rank-color, var(--rank-umut));
+        }
+
+        #rank-icon-bg {
+            border-color: var(--yaziyo-rank-color, var(--rank-umut)) !important;
+        }
+
+        #rank-icon,
+        #rank-badge-icon,
+        #rank-name {
+            color: var(--yaziyo-rank-color, var(--rank-umut)) !important;
+        }
+
+        #rank-badge {
+            background-color: color-mix(in srgb, var(--yaziyo-rank-color, var(--rank-umut)) 10%, transparent);
+            border-color: color-mix(in srgb, var(--yaziyo-rank-color, var(--rank-umut)) 25%, transparent);
         }
 
         /* Progress Bar Animasyonu */
@@ -599,13 +638,13 @@
                         <!-- BÜYÜK YUVARLAK PROFİL FOTOĞRAFI + RÜTBE ÇERÇEVESİ -->
                         <div class="relative mb-5">
                             <div id="profile-avatar"
-                                class="w-28 h-28 rounded-full bg-light-bg dark:bg-dark-bg flex items-center justify-center text-light-text-secondary/30 dark:text-dark-text-secondary/30 rank-border-efsane">
+                                class="w-28 h-28 rounded-full bg-light-bg dark:bg-dark-bg flex items-center justify-center text-light-text-secondary/30 dark:text-dark-text-secondary/30">
                                 <i class="fa-solid fa-user text-5xl"></i>
                             </div>
                             <!-- Rütbe simgesi (küçük rozet) -->
-                            <div class="absolute -bottom-1 right-0 w-9 h-9 bg-light-card dark:bg-dark-card rounded-full flex items-center justify-center border-2 border-yaziyo-gold shadow-lg"
+                            <div class="absolute -bottom-1 right-0 w-9 h-9 bg-light-card dark:bg-dark-card rounded-full flex items-center justify-center border-2 shadow-lg"
                                 id="rank-icon-bg">
-                                <i class="fa-solid fa-crown text-yaziyo-gold text-base" id="rank-icon"></i>
+                                <i class="fa-solid fa-crown text-base" id="rank-icon"></i>
                             </div>
                         </div>
 
@@ -626,11 +665,18 @@
 
                         <!-- RÜTBE İSMİ VE SİMGESİ -->
                         <div id="rank-badge"
-                            class="px-5 py-1.5 bg-yaziyo-gold/10 border border-yaziyo-gold/25 rounded-full flex items-center gap-2 transition-colors duration-300">
-                            <i id="rank-badge-icon" class="fa-solid fa-medal text-yaziyo-gold text-xs transition-colors duration-300"></i>
-                            <span class="font-poppins font-bold text-yaziyo-gold text-xs uppercase tracking-widest transition-colors duration-300"
-                                id="rank-name">Umut Vadedenler</span>
+                            class="px-5 py-1.5 border rounded-full flex items-center gap-2">
+                            <i id="rank-badge-icon" class="fa-solid fa-medal text-xs"></i>
+                            <span class="font-poppins font-bold text-xs uppercase tracking-widest"
+                                id="rank-name"></span>
                         </div>
+                        <script>
+                            (function () {
+                                var name = document.documentElement.getAttribute('data-yaziyo-rank-name');
+                                var el = document.getElementById('rank-name');
+                                if (el && name) el.textContent = name;
+                            })();
+                        </script>
                     </div>
 
                     <!-- Ayırıcı çizgi -->
@@ -1128,6 +1174,83 @@
                                         <span id="btn-save-personal-text" class="flex items-center justify-center gap-2">
                                             <i class="fa-solid fa-floppy-disk"></i>
                                             Kişisel Bilgileri Kaydet
+                                        </span>
+                                    </button>
+                                </div>
+                            </section>
+
+                            <!-- 1b. Çalışma Ayarları -->
+                            <section class="space-y-6">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-1.5 h-6 bg-yaziyo-gold rounded-full"></div>
+                                    <h4 class="font-poppins font-bold text-lg text-light-text dark:text-dark-text">Çalışma Ayarları</h4>
+                                </div>
+                                <p class="text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                                    Bu tercihler çalışmalarda varsayılan olarak seçilir. İstediğiniz çalışmada yine değiştirebilirsiniz.
+                                </p>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1" for="edit-klavye-layout">Klavye Türü Seçin</label>
+                                        <select id="edit-klavye-layout" data-keyboard-layout-select
+                                            class="w-full px-5 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                            <option value="q">Q Klavye</option>
+                                            <option value="f">F Klavye</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1" for="edit-calisma-imla">İmla Seçin</label>
+                                        <select id="edit-calisma-imla"
+                                            class="w-full px-5 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                            <option value="imlasiz">İmlasız</option>
+                                            <option value="imlali">İmlalı</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1" for="edit-calisma-ekran">Ekran Seçin</label>
+                                        <select id="edit-calisma-ekran"
+                                            class="w-full px-5 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                            <option value="practice">Çalışma Ekranı</option>
+                                            <option value="app">Uygulama Ekranı</option>
+                                            <option value="exam" selected>Sınav Ekranı</option>
+                                            <option value="exam2">Yan Sayfa Modu</option>
+                                            <option value="exam3">Tam Satır Ekran</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1" for="edit-calisma-sure">Süre Seçin</label>
+                                        <select id="edit-calisma-sure"
+                                            class="w-full px-5 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                            <option value="60">1 Dakika</option>
+                                            <option value="180" selected>3 Dakika</option>
+                                            <option value="300">5 Dakika</option>
+                                            <option value="600">10 Dakika</option>
+                                            <option value="suresiz">Süresiz çalışma</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-2 sm:col-span-2">
+                                        <label class="block text-sm font-semibold text-light-text-secondary dark:text-dark-text-secondary ml-1" for="edit-calisma-ses">Arka Plan Sesi Seçin</label>
+                                        <select id="edit-calisma-ses"
+                                            class="w-full px-5 py-3.5 bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl focus:border-yaziyo-gold outline-none transition-all text-sm font-medium">
+                                            <option value="none">Ses Yok</option>
+                                            <option value="keyboard1">Klavye Sesi 1</option>
+                                            <option value="keyboard2">Klavye Sesi 2</option>
+                                            <option value="rain">Yağmur</option>
+                                            <option value="waves">Dalga Sesi</option>
+                                            <option value="bird">Kuş Sesleri</option>
+                                            <option value="clock">Saat Tıklaması</option>
+                                            <option value="steps">Adım Sesleri</option>
+                                            <option value="kafe">Kafe Ortamı</option>
+                                            <option value="somine">Şömine</option>
+                                            <option value="odak">Odaklanma</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end pt-2">
+                                    <button id="btn-save-keyboard" type="button" onclick="saveKeyboardSettings()"
+                                        class="px-8 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-bold text-sm rounded-xl hover:shadow-glow-gold hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                                        <span id="btn-save-keyboard-text" class="flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-sliders"></i>
+                                            Çalışma Ayarlarını Kaydet
                                         </span>
                                     </button>
                                 </div>
@@ -2202,6 +2325,78 @@
             });
         }
 
+        function getKeyboardPrefApi() {
+            return window.YaziyoKeyboardPreference || null;
+        }
+
+        function readPracticeSettingsFromForm() {
+            const api = getKeyboardPrefApi();
+            const raw = {
+                imla: document.getElementById('edit-calisma-imla')?.value,
+                ekran: document.getElementById('edit-calisma-ekran')?.value,
+                sure: document.getElementById('edit-calisma-sure')?.value,
+                ses: document.getElementById('edit-calisma-ses')?.value,
+            };
+            return api?.normalizePracticeSettings ? api.normalizePracticeSettings(raw) : raw;
+        }
+
+        function fillPracticeSettingsForm(settings) {
+            const fields = {
+                'edit-calisma-imla': settings?.imla,
+                'edit-calisma-ekran': settings?.ekran,
+                'edit-calisma-sure': settings?.sure,
+                'edit-calisma-ses': settings?.ses,
+            };
+            Object.entries(fields).forEach(([id, value]) => {
+                const select = document.getElementById(id);
+                if (!select || value == null) return;
+                const hasOption = [...select.options].some((opt) => opt.value === value);
+                if (hasOption) select.value = value;
+            });
+        }
+
+        function fillKeyboardSettingsForm(user) {
+            const select = document.getElementById('edit-klavye-layout');
+            const api = getKeyboardPrefApi();
+            if (select) {
+                const layout = api?.getKeyboardLayoutFromUser
+                    ? api.getKeyboardLayoutFromUser(user)
+                    : 'q';
+                select.value = layout === 'f' ? 'f' : 'q';
+            }
+            const settings = api?.getPracticeSettingsFromUser
+                ? api.getPracticeSettingsFromUser(user)
+                : null;
+            if (settings) fillPracticeSettingsForm(settings);
+        }
+
+        async function saveKeyboardSettings() {
+            const select = document.getElementById('edit-klavye-layout');
+            const layout = select?.value === 'f' ? 'f' : 'q';
+            const practice = readPracticeSettingsFromForm();
+            const btn = document.getElementById('btn-save-keyboard');
+            const btnText = document.getElementById('btn-save-keyboard-text');
+
+            await runProfileSaveButton(btn, btnText, async () => {
+                await getLoggedInUser();
+                const { error: dbError } = await window.yaziyoSupabase.auth.updateUser({
+                    data: {
+                        site_klavye_layout: layout,
+                        site_calisma_imla: practice.imla,
+                        site_calisma_ekran: practice.ekran,
+                        site_calisma_sure: practice.sure,
+                        site_calisma_ses: practice.ses,
+                    },
+                });
+                if (dbError) throw dbError;
+                const api = getKeyboardPrefApi();
+                api?.setStoredKeyboardLayout?.(layout);
+                api?.setStoredPracticeSettings?.(practice);
+                api?.applyPreferredKeyboardSelects?.();
+                api?.applyPreferredPracticeSelects?.();
+            });
+        }
+
         function isProfilePasswordValid(password) {
             return password.length >= 8
                 && password.length <= 64
@@ -2484,6 +2679,7 @@
                     }
 
                     setProfileAvatar(meta.site_avatar_url);
+                    fillKeyboardSettingsForm(user);
 
                     
                     // Veriler tamamen yüklendi
@@ -2492,6 +2688,7 @@
                         applyProfileStatsUI,
                         applyDuelPlaceholderUI,
                         applyRankUI,
+                        readCachedProfileRankWords,
                         loadProfilOzet,
                         applyGenelSiralamaUI,
                         loadGenelSiralama,
@@ -2509,6 +2706,11 @@
                     window._yaziyoApplyRankUI = applyRankUI;
                     window.updateRank = applyRankUI;
                     window._yaziyoCalismaSureSaniye = 0;
+
+                    const cachedRankWords = readCachedProfileRankWords(user.id);
+                    if (cachedRankWords != null) {
+                        applyRankUI(cachedRankWords);
+                    }
 
                     window.openStudyTimeModalFromProfile = () => {
                         openStudyTimeModal(window._yaziyoCalismaSureSaniye);
@@ -2535,7 +2737,7 @@
                         applyProfileStatsUI(stats);
                         applyGenelSiralamaUI(stats.genel_siralama);
                     } else {
-                        applyRankUI(0);
+                        applyRankUI(cachedRankWords != null ? cachedRankWords : 0);
                         applyDuelPlaceholderUI();
                     }
 

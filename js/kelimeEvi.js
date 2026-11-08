@@ -312,7 +312,7 @@
                 textSelect.appendChild(opt);
 
                 const item = document.createElement('div');
-                item.className = 'ke-dropdown-item';
+                item.className = 'px-4 py-2 hover:bg-yaziyo-gold hover:text-slate-900 cursor-pointer transition-colors text-sm border-b border-yaziyo-border last:border-b-0';
                 item.textContent = itemData.id;
                 item.addEventListener('click', () => {
                     textSelect.value = String(index);
@@ -349,7 +349,7 @@
                 groupSelect.appendChild(opt);
 
                 const item = document.createElement('div');
-                item.className = 'ke-dropdown-item';
+                item.className = 'px-4 py-2 hover:bg-yaziyo-gold hover:text-slate-900 cursor-pointer transition-colors text-sm border-b border-yaziyo-border last:border-b-0';
                 item.textContent = g.label;
                 item.addEventListener('click', () => {
                     groupSelect.value = g.id;

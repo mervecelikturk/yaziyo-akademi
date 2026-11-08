@@ -13,6 +13,52 @@ export const RANK_TIERS = [
 ];
 
 const SCALE_MAX = 100000;
+const RANK_CACHE_KEY = 'yaziyo-profile-rank';
+
+function getCachedAuthUserId() {
+    try {
+        const remember = localStorage.getItem('yaziyo-remember-me') === 'true';
+        const store = remember ? localStorage : sessionStorage;
+        const user = JSON.parse(store.getItem('yaziyo-verified-auth-user') || 'null');
+        return user?.id || null;
+    } catch {
+        return null;
+    }
+}
+
+export function persistProfileRankCache(totalWords, userId = null) {
+    const uid = userId || getCachedAuthUserId();
+    if (!uid) return;
+    try {
+        localStorage.setItem(RANK_CACHE_KEY, JSON.stringify({
+            userId: uid,
+            words: Math.max(0, Number(totalWords) || 0),
+        }));
+    } catch {
+        /* ignore */
+    }
+}
+
+export function readCachedProfileRankWords(userId = null) {
+    const uid = userId || getCachedAuthUserId();
+    if (!uid) return null;
+    try {
+        const data = JSON.parse(localStorage.getItem(RANK_CACHE_KEY) || 'null');
+        if (!data || data.userId !== uid) return null;
+        return Math.max(0, Number(data.words) || 0);
+    } catch {
+        return null;
+    }
+}
+
+function paintRankDocument(current) {
+    if (typeof document === 'undefined' || !current) return;
+    const root = document.documentElement;
+    root.setAttribute('data-yaziyo-rank', current.id);
+    root.setAttribute('data-yaziyo-rank-name', current.name);
+    root.style.setProperty('--yaziyo-rank-color', current.color);
+    root.classList.add('rank-ready');
+}
 
 /**
  * Sayıyı profil kartlarında gösterilecek Türkçe formata çevirir (örn. 45240 → 45.240)
@@ -271,6 +317,7 @@ export async function loadProfilOzet(supabase, userId) {
 
     const { data, error } = await supabase.rpc('get_profil_ozet');
     if (!error && data) {
+        persistProfileRankCache(data.toplam_kelime ?? 0, userId);
         return {
             toplam_kelime: data.toplam_kelime ?? 0,
             en_yuksek_kombo: data.en_yuksek_kombo ?? 0,
@@ -288,6 +335,7 @@ export async function loadProfilOzet(supabase, userId) {
     if (error) console.warn('get_profil_ozet kullanılamadı, fallback uygulanıyor:', error);
     const stats = await loadUserStats(supabase, userId);
     if (!stats) return null;
+    persistProfileRankCache(stats.toplam_kelime, userId);
     const siralama = await getUserGenelSiralama(supabase, userId, stats.toplam_kelime);
     return { ...stats, genel_siralama: siralama ?? 1 };
 }
@@ -341,6 +389,8 @@ export async function saveHizTestiSonucu(supabase, kelimeSayisi, maxKombo = 0, e
 
     if (error) throw error;
 
+    persistProfileRankCache(data?.toplam_kelime ?? 0, session.user.id);
+
     return {
         toplam_kelime: data?.toplam_kelime ?? 0,
         en_yuksek_kombo: data?.en_yuksek_kombo ?? 0,
@@ -373,6 +423,8 @@ export async function saveYarisDuelloSonucu(supabase, sonuc, kelimeSayisi, maxKo
 
     if (error) throw error;
 
+    persistProfileRankCache(data?.toplam_kelime ?? 0);
+
     return {
         toplam_kelime: data?.toplam_kelime ?? 0,
         en_yuksek_kombo: data?.en_yuksek_kombo ?? 0,
@@ -402,6 +454,8 @@ export async function loadGunlukHizSiralama(supabase, limit = 50) {
  */
 export function applyRankUI(totalWords) {
     const { words, current, next, progressPercent, scalePercent } = getRankInfo(totalWords);
+    persistProfileRankCache(words);
+    paintRankDocument(current);
 
     const avatarDiv = document.getElementById('profile-avatar');
     if (avatarDiv) {
@@ -739,7 +793,7 @@ function formatExpectedWordsFromMistakes(mistakes) {
  * Son N çalışmanın yanlış kelimelerinden harf frekansı çıkarır.
  * Beklenen harf ile yazılan harf farklıysa, çalışılması gereken harf olarak sayılır.
  */
-export function analyzeLetterMistakesFromSessions(kayitlar, limit = 12) {
+export function analyzeLetterMistakesFromSessions(kayitlar, limit = 10) {
     const counts = new Map();
 
     const bump = (ch) => {
@@ -784,7 +838,7 @@ export function renderHarfAnalizi(kayitlar) {
     const root = document.getElementById('harf-analizi-root');
     if (!root) return;
 
-    const items = analyzeLetterMistakesFromSessions(kayitlar, 12);
+    const items = analyzeLetterMistakesFromSessions(kayitlar, 10);
     if (!items.length) {
         root.innerHTML = '<p class="text-sm text-light-text-secondary dark:text-dark-text-secondary italic">Son 10 çalışmada önerilecek harf hatası bulunamadı. Daha fazla pratik yaptıkça burada görünecek.</p>';
         return;

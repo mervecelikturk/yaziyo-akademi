@@ -311,16 +311,24 @@
                             <input type="text" name="lastname" class="form-input" placeholder="Soyadınız" required>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <label class="text-[11px] font-bold text-yaziyo-gold uppercase tracking-widest ml-1">E-posta <span class="text-red-500">*</span></label>
-                            <input type="email" name="email" class="form-input" placeholder="mailiniz@ornek.com" required>
+                            <label for="contact-email" class="text-[11px] font-bold text-yaziyo-gold uppercase tracking-widest ml-1">E-posta <span class="text-red-500">*</span></label>
+                            <input id="contact-email" type="email" name="email" class="form-input" placeholder="mailiniz@ornek.com" required autocomplete="email">
+                            <div id="email-verify-box" class="hidden px-1">
+                                <button type="button" id="email-verify-btn" class="text-xs font-bold text-yaziyo-gold hover:underline">E-postamı doğrula</button>
+                                <p id="email-verify-status" class="hidden mt-1 text-[11px] leading-relaxed text-light-text-secondary dark:text-dark-text-secondary"></p>
+                                <div id="email-code-row" class="hidden mt-2 flex flex-col sm:flex-row gap-2">
+                                    <input id="email-code" type="text" inputmode="numeric" maxlength="10" autocomplete="one-time-code" class="form-input sm:max-w-[11rem]" placeholder="E-postadaki kod" aria-label="Doğrulama kodu">
+                                    <button type="button" id="email-code-btn" class="px-4 py-2 rounded-xl border border-yaziyo-gold text-yaziyo-gold text-xs font-bold hover:bg-yaziyo-gold/10">Kodu onayla</button>
+                                </div>
+                            </div>
                         </div>
                         <div class="flex flex-col gap-2">
                             <label class="text-[11px] font-bold text-yaziyo-gold uppercase tracking-widest ml-1">Mesajınız <span class="text-red-500">*</span></label>
-                            <textarea name="message" class="form-input min-h-[150px] resize-none" placeholder="Size nasıl yardımcı olabiliriz?" required></textarea>
+                            <textarea name="message" class="form-input min-h-[150px] resize-none" placeholder="Size nasıl yardımcı olabiliriz?" maxlength="256" required></textarea>
                         </div>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="w-full relative py-4 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-black text-lg rounded-2xl shadow-xl hover:shadow-glow-gold hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center overflow-hidden">
+                    <button type="submit" id="submit-btn" class="relative mx-auto px-8 sm:px-10 py-3 bg-gradient-to-r from-yaziyo-gold to-yellow-600 text-slate-900 font-poppins font-black text-sm sm:text-base rounded-xl shadow-xl hover:shadow-glow-gold hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center overflow-hidden">
                         <span class="btn-text">MESAJ GÖNDER</span>
                         <div class="success-icon hidden absolute inset-0 bg-green-500 flex items-center justify-center text-white text-2xl animate-fade-in">
                             <i class="fa-solid fa-check"></i>

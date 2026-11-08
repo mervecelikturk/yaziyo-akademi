@@ -789,8 +789,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // İlk açılış doldurması + kullanıcı metin havuzu
+    // Kendi Metnim: yalnızca aktif (devam eden) eğitim paketi olan kullanıcılara
+    let kendiMetnimUnlocked = false;
+
+    function setKendiMetnimVisible(visible) {
+        if (!categorySelect) return;
+        let opt = categorySelect.querySelector('option[value="kendi_metnim"]');
+        if (visible) {
+            if (!opt) {
+                opt = document.createElement('option');
+                opt.value = 'kendi_metnim';
+                opt.textContent = 'Kendi Metnim';
+                categorySelect.appendChild(opt);
+            }
+            opt.hidden = false;
+            opt.disabled = false;
+            return;
+        }
+        if (opt) {
+            if (categorySelect.value === 'kendi_metnim') {
+                categorySelect.value = 'zabit';
+            }
+            opt.remove();
+        }
+    }
+
+    setKendiMetnimVisible(false);
+
     async function injectKendiMetinler() {
         try {
+            const { initSupabaseClient, getSupabaseClient } = await import('./lib/supabase.js');
+            await initSupabaseClient();
+            const client = getSupabaseClient();
+            const { userHasActivePaket } = await import('./lib/egitimPaketleriApi.js');
+            kendiMetnimUnlocked = !!(client && await userHasActivePaket(client));
+            setKendiMetnimVisible(kendiMetnimUnlocked);
+
+            if (!kendiMetnimUnlocked) {
+                if (categorySelect) updateGroups();
+                return;
+            }
+
             const { fetchMetinHavuzu, applyMetinHavuzuToCalisma } = await import('./lib/egitimlerimApi.js');
             const { data } = await fetchMetinHavuzu();
             const db = (typeof metinlerDB !== 'undefined') ? metinlerDB : window.metinlerDB;
@@ -799,8 +838,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 metinler: db,
                 categorySelect
             });
+            setKendiMetnimVisible(true);
         } catch (err) {
             console.warn('Kendi metinler yüklenemedi:', err);
+            kendiMetnimUnlocked = false;
+            setKendiMetnimVisible(false);
         }
         if (categorySelect) updateGroups();
     }
@@ -842,8 +884,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let timerInterval = null;
     let timeRemaining = 0;
     let initialTimeVal = 0; // Sabit süre modunda seçilen toplam süre (sn)
-    let timeElapsed = 0; // Geçen süre (sn) — Süre modunda ileri akar
-    let isCountUpMode = false; // "Süre" seçeneği: sayaç ileri doğru
+    let timeElapsed = 0; // Geçen süre (sn) — süresiz çalışmada ileri akar
+    let isCountUpMode = false; // Süresiz çalışma: sayaç ileri doğru
     let countdownTimeoutIds = [];
     let workspaceSessionId = 0;
     let currentActiveText = ""; // Kıyaslama (Diff) için asıl metin
@@ -905,7 +947,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentMode === 'practice' || currentMode === 'app') {
             if (currentMode === 'practice') workspaceScreen.classList.add('practice-mode');
             if (liveStats) liveStats.classList.remove('hidden');
-            toggleTimerBtn?.classList.remove('hidden');
             updateLiveStats();
         }
     }
@@ -999,6 +1040,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetCountdownUI() {
         clearCountdownTimers();
+        workspaceScreen?.classList.remove('is-countdown');
         countdownOverlay?.classList.add('hidden');
         if (countdownOverlay?.classList.contains('opacity-100')) {
             countdownOverlay.classList.replace('opacity-100', 'opacity-0');
@@ -1202,6 +1244,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /** Harf metnindeki kelimeleri aynı bırakıp sırayı karıştırır. */
+    function shuffleLetterWords(text) {
+        const words = String(text || '').trim().split(/\s+/).filter((word) => word.length > 0);
+        for (let i = words.length - 1; i > 0; i -= 1) {
+            const j = Math.floor(Math.random() * (i + 1));
+            const current = words[i];
+            words[i] = words[j];
+            words[j] = current;
+        }
+        return words.join(' ');
+    }
+
     /** BAŞLA BUTONU TIKLANDIĞINDA */
     startBtn.addEventListener('click', async () => {
         if (!audioCtx) {
@@ -1215,10 +1269,14 @@ document.addEventListener('DOMContentLoaded', () => {
         await primeBackgroundAudio();
 
         const category = categorySelect.value;
+        if (category === 'kendi_metnim' && !kendiMetnimUnlocked) {
+            showTextWarningModal('Kendi Metnim, aktif eğitim paketi olan kullanıcılar içindir.');
+            return;
+        }
         const group = groupSelect.value;
         const textIndex = textSelect.value;
         const timeSelectRaw = document.getElementById('time-select')?.value;
-        isCountUpMode = timeSelectRaw === 'sure';
+        isCountUpMode = timeSelectRaw === 'suresiz' || timeSelectRaw === 'sure';
         const timeVal = isCountUpMode ? 0 : parseInt(timeSelectRaw, 10);
         currentMode = document.getElementById('display-mode-select').value;
 
@@ -1245,7 +1303,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        currentActiveText = textEntry.text;
+        currentActiveText = (category === 'ozel' && group === 'harfler')
+            ? shuffleLetterWords(textEntry.text)
+            : textEntry.text;
         
         originalWordsForSession = currentActiveText.trim().split(/\s+/).filter(w => w.length > 0);
 
@@ -1284,6 +1344,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function startCountdown() {
         const sessionId = ++workspaceSessionId;
         clearCountdownTimers();
+        workspaceScreen.classList.add('is-countdown');
+        closeWorkspaceBtn?.classList.remove('hidden');
 
         countdownOverlay.classList.remove('hidden');
         const workspaceContent = document.getElementById('workspace-content');
@@ -1326,6 +1388,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function finishCountdown(sessionId) {
         if (sessionId !== workspaceSessionId) return;
         if (workspaceScreen.classList.contains('hidden')) return;
+        workspaceScreen.classList.remove('is-countdown');
+        applyWorkspaceModeUI();
         countdownOverlay.classList.replace('opacity-100', 'opacity-0');
         setTimeout(() => countdownOverlay.classList.add('hidden'), 300);
         countdownNumber.classList.add('text-yaziyo-gold');
@@ -1505,7 +1569,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const isImlasiz = isImlasizMode();
         const originalWords = originalWordsForSession;
         const typedWords = parseWordsFromInput(userInput.value);
-        // Sabit sürede süre bitince yarım kalan son kelime; Süre modunda yalnızca manuel bitiş
+        // Sabit sürede süre bitince yarım kalan son kelime; süresiz çalışmada yalnızca manuel bitiş
         const incompleteLastWord = !isCountUpMode && timeRemaining <= 0 &&
             isIncompleteLastWord(originalWords, typedWords, isImlasiz);
         const examOptions = { incompleteLastWord };

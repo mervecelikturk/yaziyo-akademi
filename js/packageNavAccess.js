@@ -1,6 +1,6 @@
 /**
  * YAZİYO — Paket satın alımına bağlı navbar erişimi
- * Eğitimlerim: hem İçerik Ekle (aktif/pasif) hem aktif paket gerekir.
+ * Eğitimlerim: sayfa açıksa ve süresi dolmamış aktif paket varsa görünür.
  */
 (function (global) {
     const PACKAGE_NAV_IDS = ['egitimlerim'];
@@ -36,7 +36,7 @@
             link.classList.add('disabled', 'cursor-not-allowed');
             link.setAttribute('aria-disabled', 'true');
             link.dataset.packageUnlocked = '0';
-            link.title = 'Eğitim paketi satın alındığında açılır';
+            link.title = 'Geçerli bir eğitim paketi olduğunda açılır';
         }
     }
 
@@ -56,7 +56,7 @@
                 setLinkActive(link, unlocked, pageId);
                 if (!unlocked) {
                     link.title = globallyOn
-                        ? 'Eğitim paketi satın alındığında açılır'
+                        ? 'Geçerli bir eğitim paketi olduğunda açılır'
                         : 'Bu sayfa şu anda kapalı';
                 }
             });

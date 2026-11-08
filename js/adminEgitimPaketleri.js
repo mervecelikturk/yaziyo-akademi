@@ -15,6 +15,8 @@ import {
     fetchAdminBildirimler,
     markAdminBildirimOkundu,
     markAllAdminBildirimOkundu,
+    deleteAdminBildirim,
+    deletePaketIptalTalebi,
     fetchPaketIptalTalepleri,
     fetchAdminAktifSatinAlmalar,
     cancelKullaniciPaketi
@@ -26,6 +28,7 @@ let iadeTalepleri = [];
 let aktifPaketler = [];
 let editingId = null;
 let deleteTarget = null;
+let listDeleteTarget = null;
 let cancelTarget = null;
 let searchQuery = '';
 let statusFilter = 'all';
@@ -83,8 +86,17 @@ function switchSection(id) {
     activeSection = next;
     els.sectionYonetim?.classList.toggle('hidden', activeSection !== 'yonetim');
     els.sectionIslemler?.classList.toggle('hidden', activeSection !== 'islemler');
-    els.tabYonetim?.classList.toggle('admin-tab-active', activeSection === 'yonetim');
-    els.tabIslemler?.classList.toggle('admin-tab-active', activeSection === 'islemler');
+    if (els.pageTitle) {
+        els.pageTitle.textContent = activeSection === 'islemler' ? 'Paket İşlemleri' : 'Paket Ekle';
+    }
+    if (els.pageLead) {
+        els.pageLead.innerHTML = activeSection === 'islemler'
+            ? 'Satış bildirimleri, iade mesajları ve aktif paketler bu ekranda yönetilir.'
+            : 'Kullanıcı <a href="../egitim-paketleri/" target="_blank" rel="noopener" class="text-yaziyo-gold font-semibold hover:underline">eğitim paketleri sayfasında</a> görünen paketleri buradan ekleyin ve yönetin.';
+    }
+    document.title = activeSection === 'islemler'
+        ? 'Paket İşlemleri - Admin - YAZİYO'
+        : 'Paket Ekle - Admin - YAZİYO';
     if (activeSection === 'islemler') {
         if (window.location.hash !== '#islemler') {
             history.replaceState(null, '', `${window.location.pathname}${window.location.search}#islemler`);
@@ -143,12 +155,20 @@ function renderIadeTalepleri() {
                         </p>
                         <p class="text-sm mt-2 leading-relaxed whitespace-pre-wrap">${escapeHtml(t.neden)}</p>
                     </div>
-                    ${canCancel ? `
+                    <div class="flex flex-col gap-2 shrink-0">
+                        ${canCancel ? `
                         <button type="button"
-                            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-red-500/40 text-red-600 text-xs font-bold hover:bg-red-500/10 shrink-0"
+                            class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-red-500/40 text-red-600 text-xs font-bold hover:bg-red-500/10"
                             data-cancel-satin="${t.satinAlmaId}">
                             <i class="fa-solid fa-ban"></i> Paketi İptal Et
                         </button>` : ''}
+                        <button type="button"
+                            class="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-red-500/30 text-red-500 text-xs font-bold hover:bg-red-500 hover:text-white"
+                            data-delete-iade="${t.id}"
+                            title="İade mesajını sil">
+                            <i class="fa-solid fa-trash"></i> Mesajı Sil
+                        </button>
+                    </div>
                 </div>
             </div>`;
     }).join('');
@@ -323,7 +343,12 @@ function renderNotifications() {
                     <span class="text-[10px] text-light-text-secondary whitespace-nowrap">${escapeHtml(formatDateTime(n.created_at))}</span>
                 </div>
                 <p class="text-xs text-light-text-secondary mt-1 leading-relaxed">${escapeHtml(n.mesaj)}</p>
-                ${n.okundu ? '' : `<button type="button" class="mt-2 text-[11px] font-bold text-yaziyo-gold hover:underline" data-mark-notif="${n.id}">Okundu</button>`}
+                <div class="mt-2 flex flex-wrap items-center gap-3">
+                    ${n.okundu ? '' : `<button type="button" class="text-[11px] font-bold text-yaziyo-gold hover:underline" data-mark-notif="${n.id}">Okundu</button>`}
+                    <button type="button" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-red-500 hover:underline" data-delete-notif="${n.id}" title="Bildirimi sil">
+                        <i class="fa-solid fa-trash"></i> Sil
+                    </button>
+                </div>
             </div>
         </div>`).join('');
 }
@@ -430,7 +455,6 @@ function fillForm(pkg) {
     els.fieldModules.value = arrayToLines(pkg.modules);
     els.fieldLearn.value = arrayToLines(pkg.learn);
     els.fieldCover.value = pkg.coverUrl || '';
-    els.fieldContent.value = pkg.contentUrl || '';
     els.fieldMaxSales.value = String(pkg.maxSales || 100);
     els.fieldValidityDays.value = String(pkg.validityDays || 30);
     els.fieldFeatured.checked = !!pkg.featured;
@@ -529,7 +553,9 @@ function readFormData() {
         modules: linesToArray(els.fieldModules.value),
         learn: linesToArray(els.fieldLearn.value),
         coverUrl: els.fieldCover.value,
-        contentUrl: els.fieldContent.value,
+        contentUrl: editingId
+            ? (packages.find((p) => p.id === editingId)?.contentUrl || '')
+            : '',
         maxSales: clampField(els.fieldMaxSales.value, 1, 100, 100),
         validityDays: clampField(els.fieldValidityDays.value, 1, 3650, 30),
         yetkiler: readYetkilerFromForm(),
@@ -553,8 +579,6 @@ function bindEvents() {
         await Promise.all([loadData(), loadOperations()]);
     });
 
-    els.tabYonetim?.addEventListener('click', () => switchSection('yonetim'));
-    els.tabIslemler?.addEventListener('click', () => switchSection('islemler'));
     window.addEventListener('hashchange', () => {
         switchSection(window.location.hash === '#islemler' ? 'islemler' : 'yonetim');
     });
@@ -616,13 +640,22 @@ function bindEvents() {
         if (deleteBtn) {
             const pkg = packages.find((p) => p.id === deleteBtn.dataset.delete);
             if (!pkg) return;
+            listDeleteTarget = null;
             deleteTarget = pkg;
+            if (els.deleteModalTitle) els.deleteModalTitle.textContent = 'Paketi Sil';
             els.deleteMessage.textContent = `"${pkg.title}" paketini silmek istediğinize emin misiniz?`;
             openModal(els.deleteModal);
         }
     });
 
     els.notifList?.addEventListener('click', async (e) => {
+        const delBtn = e.target.closest('[data-delete-notif]');
+        if (delBtn) {
+            const item = notifications.find((n) => n.id === delBtn.dataset.deleteNotif);
+            if (!item) return;
+            openListDelete('notif', item.id, `"${item.baslik}" bildirimi silinsin mi?`);
+            return;
+        }
         const btn = e.target.closest('[data-mark-notif]');
         if (!btn) return;
         const id = btn.dataset.markNotif;
@@ -649,6 +682,13 @@ function bindEvents() {
     });
 
     const onCancelClick = (e) => {
+        const delBtn = e.target.closest('[data-delete-iade]');
+        if (delBtn) {
+            const item = iadeTalepleri.find((t) => t.id === delBtn.dataset.deleteIade);
+            if (!item) return;
+            openListDelete('iade', item.id, `"${item.paketAdi}" iade mesajı silinsin mi? Paket iptal edilmez, yalnızca mesaj listeden kalkar.`);
+            return;
+        }
         const btn = e.target.closest('[data-cancel-satin]');
         if (!btn) return;
         openCancelModal(btn.dataset.cancelSatin, cancelLabelFor(btn.dataset.cancelSatin));
@@ -677,6 +717,30 @@ function bindEvents() {
     });
 
     els.btnConfirmDelete?.addEventListener('click', async () => {
+        if (listDeleteTarget) {
+            els.btnConfirmDelete.disabled = true;
+            const target = listDeleteTarget;
+            const { error } = target.kind === 'iade'
+                ? await deletePaketIptalTalebi(target.id)
+                : await deleteAdminBildirim(target.id);
+            els.btnConfirmDelete.disabled = false;
+            if (error) {
+                showToast(error.message || 'Silme başarısız', 'error');
+                return;
+            }
+            if (target.kind === 'iade') {
+                iadeTalepleri = iadeTalepleri.filter((t) => t.id !== target.id);
+                renderIadeTalepleri();
+            } else {
+                notifications = notifications.filter((n) => n.id !== target.id);
+                renderNotifications();
+            }
+            listDeleteTarget = null;
+            closeModal(els.deleteModal);
+            updateIslemlerBadge();
+            showToast(target.kind === 'iade' ? 'İade mesajı silindi' : 'Bildirim silindi');
+            return;
+        }
         if (!deleteTarget) return;
         els.btnConfirmDelete.disabled = true;
         const { error } = await deletePaket(deleteTarget.id);
@@ -701,8 +765,21 @@ function bindEvents() {
     });
 
     document.querySelectorAll('[data-close-delete-modal]').forEach((btn) => {
-        btn.addEventListener('click', () => closeModal(els.deleteModal));
+        btn.addEventListener('click', () => {
+            listDeleteTarget = null;
+            closeModal(els.deleteModal);
+        });
     });
+}
+
+function openListDelete(kind, id, message) {
+    deleteTarget = null;
+    listDeleteTarget = { kind, id };
+    if (els.deleteModalTitle) {
+        els.deleteModalTitle.textContent = kind === 'iade' ? 'İade Mesajını Sil' : 'Bildirimi Sil';
+    }
+    els.deleteMessage.textContent = message;
+    openModal(els.deleteModal);
 }
 
 function populateCategorySelect() {
@@ -721,6 +798,7 @@ function cacheElements() {
     els.modalTitle = document.getElementById('package-modal-title');
     els.form = document.getElementById('package-form');
     els.btnSave = document.getElementById('btn-save-package');
+    els.deleteModalTitle = document.getElementById('delete-modal-title');
     els.deleteMessage = document.getElementById('delete-message');
     els.btnConfirmDelete = document.getElementById('btn-confirm-delete');
     els.toast = document.getElementById('admin-toast');
@@ -737,7 +815,6 @@ function cacheElements() {
     els.fieldModules = document.getElementById('field-modules');
     els.fieldLearn = document.getElementById('field-learn');
     els.fieldCover = document.getElementById('field-cover');
-    els.fieldContent = document.getElementById('field-content');
     els.fieldMaxSales = document.getElementById('field-max-sales');
     els.fieldValidityDays = document.getElementById('field-validity-days');
     els.fieldYetkiler = document.getElementById('field-yetkiler');
@@ -750,8 +827,8 @@ function cacheElements() {
     els.notifList = document.getElementById('admin-notif-list');
     els.notifBadge = document.getElementById('notif-unread-badge');
     els.btnMarkAllNotif = document.getElementById('btn-mark-all-notif-read');
-    els.tabYonetim = document.getElementById('tab-yonetim');
-    els.tabIslemler = document.getElementById('tab-islemler');
+    els.pageTitle = document.getElementById('paket-page-title');
+    els.pageLead = document.getElementById('paket-page-lead');
     els.sectionYonetim = document.getElementById('section-yonetim');
     els.sectionIslemler = document.getElementById('section-islemler');
     els.islemlerBadge = document.getElementById('islemler-badge');

@@ -224,7 +224,7 @@
                     <li class="nav-dropdown">
                         <button type="button" class="nav-link nav-dropdown-trigger${egitimParentActive(active)}" data-page="admin-egitimler"><i class="fa-solid fa-box-open mr-1 text-[0.85em]"></i>Eğitim Paketleri <i class="fa-solid fa-chevron-down nav-dropdown-chevron"></i></button>
                         <ul class="nav-dropdown-menu">
-                            <li><a href="${p('adminEgitimPaketleri.html')}" class="nav-dropdown-item${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                            <li><a href="${p('adminEgitimPaketleri.html')}" class="nav-dropdown-item${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri">Paket Ekle</a></li>
                             <li><a href="${p('adminEgitimPaketleri.html')}#islemler" class="nav-dropdown-item" data-page="admin-egitim-paketleri">Paket İşlemleri</a></li>
                             <li><a href="${p('adminEgitimlerim.html')}" class="nav-dropdown-item${ac(active, 'admin-egitimlerim')}" data-page="admin-egitimlerim">Eğitimlerim</a></li>
                         </ul>
@@ -256,7 +256,7 @@
                         <li class="mobile-dropdown${egitimOpen(active)}">
                             <button type="button" class="mobile-nav-link mobile-dropdown-trigger${egitimParentActive(active)} w-full text-left flex items-center justify-between" data-page="admin-egitimler">Eğitim Paketleri <i class="fa-solid fa-chevron-down mobile-dropdown-chevron"></i></button>
                             <ul class="mobile-dropdown-menu${egitimOpen(active)} flex flex-col gap-1 pl-3 pt-1">
-                                <li><a href="${p('adminEgitimPaketleri.html')}" class="mobile-nav-link text-[0.8em]${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri">Paket Yönetimi</a></li>
+                                <li><a href="${p('adminEgitimPaketleri.html')}" class="mobile-nav-link text-[0.8em]${ac(active, 'admin-egitim-paketleri')}" data-page="admin-egitim-paketleri">Paket Ekle</a></li>
                                 <li><a href="${p('adminEgitimPaketleri.html')}#islemler" class="mobile-nav-link text-[0.8em]" data-page="admin-egitim-paketleri">Paket İşlemleri</a></li>
                                 <li><a href="${p('adminEgitimlerim.html')}" class="mobile-nav-link text-[0.8em]${ac(active, 'admin-egitimlerim')}" data-page="admin-egitimlerim">Eğitimlerim</a></li>
                             </ul>
